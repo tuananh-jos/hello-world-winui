@@ -1,0 +1,65 @@
+# Build results
+bin/
+obj/
+Debug/
+Release/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+
+# Logs
+*.log
+
+# Windows Store / WinUI packaging
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+
+# Generated files
+Generated Files/
+TestResults/
+
+# Publish output
+publish/
+
+# Windows thumbnails
+Thumbs.db
+ehthumbs.db
+
+# OS files
+.DS_Store
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Temporary files
+*.tmp
+*.temp
+
+# SQLite (nếu có database local)
+*.db
+*.db-journal
+*.sqlite
+
+# MSIX
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
