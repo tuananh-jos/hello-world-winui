@@ -1,0 +1,65 @@
+@startuml UC3_BorrowDevice_Detail
+
+title UC3 - Borrow Device (Correct Business Flow)
+
+actor User
+
+boundary ModelsPage
+control ModelsViewModel
+control BorrowDeviceUseCase
+
+control IDeviceRepository
+control DeviceRepository
+control IDeviceDataSource
+control DeviceDataSource
+
+control IModelRepository
+control ModelRepository
+control IModelDataSource
+control ModelDataSource
+
+database SQLite
+
+User -> ModelsPage : Click Borrow
+ModelsPage -> User : Show quantity popup
+User -> ModelsPage : Confirm(quantity)
+
+ModelsPage -> ModelsViewModel : Borrow(modelId, quantity)
+
+ModelsViewModel -> BorrowDeviceUseCase : Execute(modelId, quantity)
+
+BorrowDeviceUseCase -> IDeviceRepository : GetAvailableDevices(modelId, quantity)
+IDeviceRepository -> DeviceRepository
+DeviceRepository -> IDeviceDataSource : Query available devices
+IDeviceDataSource -> DeviceDataSource
+DeviceDataSource -> SQLite : Query devices
+SQLite --> DeviceDataSource
+DeviceDataSource --> DeviceRepository
+DeviceRepository --> BorrowDeviceUseCase : Devices
+
+BorrowDeviceUseCase -> IDeviceRepository : UpdateStatus(Borrowed)
+IDeviceRepository -> DeviceRepository
+DeviceRepository -> IDeviceDataSource : Update devices
+IDeviceDataSource -> DeviceDataSource
+DeviceDataSource -> SQLite : Update device status
+
+BorrowDeviceUseCase -> IModelRepository : GetById(modelId)
+IModelRepository -> ModelRepository
+ModelRepository -> IModelDataSource : GetById(modelId)
+IModelDataSource -> ModelDataSource
+ModelDataSource -> SQLite : Query model
+SQLite --> ModelDataSource
+ModelDataSource --> ModelRepository
+ModelRepository --> BorrowDeviceUseCase : Model
+
+BorrowDeviceUseCase -> IModelRepository : UpdateAvailableQuantity(-quantity)
+IModelRepository -> ModelRepository
+ModelRepository -> IModelDataSource : Update model
+IModelDataSource -> ModelDataSource
+ModelDataSource -> SQLite : Update available quantity
+
+BorrowDeviceUseCase --> ModelsViewModel : Success
+ModelsViewModel --> ModelsPage : Show confirmation
+ModelsPage --> User : Borrow success
+
+@enduml

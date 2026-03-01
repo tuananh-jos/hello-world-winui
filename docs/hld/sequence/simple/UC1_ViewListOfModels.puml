@@ -1,0 +1,17 @@
+@startuml UC1_ViewListOfModels
+
+title UC1 - View List of Models (Simple Sequence)
+
+actor User
+participant UI
+participant System
+database Database
+
+User -> UI : Open Models page
+UI -> System : Request list of models
+System -> Database : Query models
+Database --> System : Return model list
+System --> UI : Send model list
+UI --> User : Display models with available quantity
+
+@enduml

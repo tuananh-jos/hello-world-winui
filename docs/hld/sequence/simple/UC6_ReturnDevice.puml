@@ -1,0 +1,19 @@
+@startuml UC6_ReturnDevice
+
+title UC6 - Return Device (Simple Sequence)
+
+actor User
+participant UI
+participant System
+database Database
+
+User -> UI : Click Return button
+UI -> User : Show confirmation popup
+User -> UI : Confirm return
+UI -> System : Send return request
+System -> Database : Update device quantity
+Database --> System : Update success
+System --> UI : Return success response
+UI --> User : Show confirmation
+
+@enduml

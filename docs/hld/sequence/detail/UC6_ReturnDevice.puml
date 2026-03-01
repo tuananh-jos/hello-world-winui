@@ -1,0 +1,61 @@
+@startuml UC6_ReturnDevice_Detail
+
+title UC6 - Return Device (Corrected Flow)
+
+actor User
+
+boundary MyDevicesPage
+control MyDevicesViewModel
+control ReturnDeviceUseCase
+
+control IDeviceRepository
+control DeviceRepository
+control IDeviceDataSource
+control DeviceDataSource
+
+control IModelRepository
+control ModelRepository
+control IModelDataSource
+control ModelDataSource
+
+database SQLite
+
+User -> MyDevicesPage : Click Return
+MyDevicesPage -> User : Show confirmation dialog
+User -> MyDevicesPage : Confirm
+
+MyDevicesPage -> MyDevicesViewModel : Return(deviceId)
+
+MyDevicesViewModel -> ReturnDeviceUseCase : Execute(deviceId)
+
+' --- Step 1: Get device ---
+ReturnDeviceUseCase -> IDeviceRepository : GetById(deviceId)
+IDeviceRepository -> DeviceRepository
+DeviceRepository -> IDeviceDataSource : GetById(deviceId)
+IDeviceDataSource -> DeviceDataSource
+DeviceDataSource -> SQLite : Query device by id
+SQLite --> DeviceDataSource : Device row
+DeviceDataSource --> DeviceRepository
+DeviceRepository --> ReturnDeviceUseCase : Device
+
+' --- Step 2: Update device status ---
+ReturnDeviceUseCase -> IDeviceRepository : UpdateStatus(deviceId, Available)
+IDeviceRepository -> DeviceRepository
+DeviceRepository -> IDeviceDataSource : Update device status
+IDeviceDataSource -> DeviceDataSource
+DeviceDataSource -> SQLite : Update device status
+SQLite --> DeviceDataSource : Success
+
+' --- Step 3: Update model quantity ---
+ReturnDeviceUseCase -> IModelRepository : IncreaseAvailableQuantity(modelId, +1)
+IModelRepository -> ModelRepository
+ModelRepository -> IModelDataSource : Update model quantity
+IModelDataSource -> ModelDataSource
+ModelDataSource -> SQLite : Update available quantity
+SQLite --> ModelDataSource : Success
+
+ReturnDeviceUseCase --> MyDevicesViewModel : Success
+MyDevicesViewModel --> MyDevicesPage : Show success message
+MyDevicesPage --> User : Return completed
+
+@enduml

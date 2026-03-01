@@ -1,0 +1,36 @@
+@startuml UC2_SearchSortFilterModels_Detail
+
+title UC2 - Search / Sort / Filter Models (Detailed)
+
+actor User
+
+boundary ModelsPage
+control ModelsViewModel
+control GetModelsUseCase
+control IModelRepository
+control ModelRepository
+control IModelDataSource
+control ModelDataSource
+database SQLite
+
+User -> ModelsPage : Enter search / sort / filter
+ModelsPage -> ModelsViewModel : OnQueryChanged(query)
+
+ModelsViewModel -> GetModelsUseCase : Execute(query)
+
+GetModelsUseCase -> IModelRepository : GetModels(query)
+
+IModelRepository -> ModelRepository
+ModelRepository -> IModelDataSource : GetModels(query)
+IModelDataSource -> ModelDataSource
+ModelDataSource -> SQLite : Query with filter/sort/paging
+SQLite --> ModelDataSource : Result set
+
+ModelDataSource --> ModelRepository : Data rows
+ModelRepository --> GetModelsUseCase : List<Model>
+
+GetModelsUseCase --> ModelsViewModel : PagedResult<Model>
+ModelsViewModel --> ModelsPage : Update list
+ModelsPage --> User : Display filtered models
+
+@enduml

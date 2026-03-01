@@ -1,0 +1,17 @@
+@startuml UC2_SearchSortFilterModels
+
+title UC2 - Search / Sort / Filter Models (Simple Sequence)
+
+actor User
+participant UI
+participant System
+database Database
+
+User -> UI : Enter search / select sort / filter
+UI -> System : Request filtered model list
+System -> Database : Query models with conditions
+Database --> System : Return filtered list
+System --> UI : Send filtered models
+UI --> User : Display updated list
+
+@enduml

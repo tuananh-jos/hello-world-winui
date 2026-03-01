@@ -1,0 +1,17 @@
+@startuml UC5_SearchSortFilterBorrowedDevices
+
+title UC5 - Search / Sort / Filter Borrowed Devices (Simple Sequence)
+
+actor User
+participant UI
+participant System
+database Database
+
+User -> UI : Enter search / select sort / filter
+UI -> System : Request filtered borrowed devices
+System -> Database : Query borrowed devices with conditions
+Database --> System : Return filtered list
+System --> UI : Send filtered borrowed devices
+UI --> User : Display updated list
+
+@enduml

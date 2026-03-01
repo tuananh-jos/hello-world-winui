@@ -1,0 +1,43 @@
+@startuml UC1_ViewListOfModels_Detail
+
+title UC1 - View List of Models (Detailed Clean Architecture)
+
+actor User
+
+boundary ModelsPage
+control ModelsViewModel
+
+control GetModelsUseCase
+control IModelRepository
+
+control ModelRepository
+control IModelDataSource
+control ModelDataSource
+
+database SQLite
+
+User -> ModelsPage : Open page
+ModelsPage -> ModelsViewModel : OnNavigatedTo()
+
+ModelsViewModel -> GetModelsUseCase : Execute(query)
+
+GetModelsUseCase -> IModelRepository : GetModels(query)
+
+IModelRepository -> ModelRepository : (implemented by)
+
+ModelRepository -> IModelDataSource : GetModels(query)
+
+IModelDataSource -> ModelDataSource : (implemented by)
+
+ModelDataSource -> SQLite : Query models with params
+SQLite --> ModelDataSource : Result set
+
+ModelDataSource --> ModelRepository : Data rows
+ModelRepository --> GetModelsUseCase : List<Model>
+
+GetModelsUseCase --> ModelsViewModel : PagedResult<Model>
+
+ModelsViewModel --> ModelsPage : Bind data
+ModelsPage --> User : Display models
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml UC3_BorrowDevice
+
+title UC3 - Borrow Device (Simple Sequence)
+
+actor User
+participant UI
+participant System
+database Database
+
+User -> UI : Click Borrow button
+UI -> User : Show quantity selection popup
+User -> UI : Confirm borrow
+UI -> System : Send borrow request
+System -> Database : Update device quantity
+Database --> System : Update success
+System --> UI : Borrow success response
+UI --> User : Show confirmation
+
+@enduml

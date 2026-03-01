@@ -1,0 +1,17 @@
+@startuml UC4_ViewBorrowedDevices
+
+title UC4 - View Borrowed Devices (Simple Sequence)
+
+actor User
+participant UI
+participant System
+database Database
+
+User -> UI : Open My Devices page
+UI -> System : Request borrowed devices
+System -> Database : Query borrowed devices
+Database --> System : Return borrowed list
+System --> UI : Send borrowed devices
+UI --> User : Display borrowed devices
+
+@enduml

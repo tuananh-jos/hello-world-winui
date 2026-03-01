@@ -1,0 +1,38 @@
+@startuml UC5_SearchSortFilterBorrowedDevices_Detail
+
+title UC5 - Search / Filter Borrowed Devices (No User)
+
+actor User
+
+boundary MyDevicesPage
+control MyDevicesViewModel
+control GetBorrowedDevicesUseCase
+
+control IDeviceRepository
+control DeviceRepository
+control IDeviceDataSource
+control DeviceDataSource
+
+database SQLite
+
+User -> MyDevicesPage : Enter search / filter
+MyDevicesPage -> MyDevicesViewModel : OnQueryChanged(query)
+
+MyDevicesViewModel -> GetBorrowedDevicesUseCase : Execute(query)
+
+GetBorrowedDevicesUseCase -> IDeviceRepository : GetByStatus(Borrowed, query)
+
+IDeviceRepository -> DeviceRepository
+DeviceRepository -> IDeviceDataSource : Query with conditions
+IDeviceDataSource -> DeviceDataSource
+DeviceDataSource -> SQLite : Query status=Borrowed + filter
+SQLite --> DeviceDataSource
+
+DeviceDataSource --> DeviceRepository
+DeviceRepository --> GetBorrowedDevicesUseCase : List<Device>
+
+GetBorrowedDevicesUseCase --> MyDevicesViewModel : PagedResult<Device>
+MyDevicesViewModel --> MyDevicesPage : Update list
+MyDevicesPage --> User : Display filtered result
+
+@enduml

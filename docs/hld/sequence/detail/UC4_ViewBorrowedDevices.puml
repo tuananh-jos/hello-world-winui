@@ -1,0 +1,38 @@
+@startuml UC4_ViewBorrowedDevices_Detail
+
+title UC4 - View Borrowed Devices (No User, Filter by Status)
+
+actor User
+
+boundary MyDevicesPage
+control MyDevicesViewModel
+control GetBorrowedDevicesUseCase
+
+control IDeviceRepository
+control DeviceRepository
+control IDeviceDataSource
+control DeviceDataSource
+
+database SQLite
+
+User -> MyDevicesPage : Open page
+MyDevicesPage -> MyDevicesViewModel : OnNavigatedTo()
+
+MyDevicesViewModel -> GetBorrowedDevicesUseCase : Execute(query)
+
+GetBorrowedDevicesUseCase -> IDeviceRepository : GetByStatus(Borrowed, query)
+
+IDeviceRepository -> DeviceRepository
+DeviceRepository -> IDeviceDataSource : Query by status
+IDeviceDataSource -> DeviceDataSource
+DeviceDataSource -> SQLite : Query devices where status=Borrowed
+SQLite --> DeviceDataSource
+
+DeviceDataSource --> DeviceRepository
+DeviceRepository --> GetBorrowedDevicesUseCase : List<Device>
+
+GetBorrowedDevicesUseCase --> MyDevicesViewModel : PagedResult<Device>
+MyDevicesViewModel --> MyDevicesPage : Bind data
+MyDevicesPage --> User : Display borrowed devices
+
+@enduml
