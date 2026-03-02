@@ -16,56 +16,99 @@ public class DatabaseInitializer
     {
         await _context.Database.EnsureCreatedAsync();
 
-        if (await _context.SampleOrders.AnyAsync())
+        if (await _context.Models.AnyAsync())
             return;
 
-        var filePath = Path.Combine(
+        var basePath = Path.Combine(
             AppContext.BaseDirectory,
             "Assets",
-            "Data",
-            "orders.json");
+            "Data");
 
-        if (!File.Exists(filePath))
-            return;
+        var modelPath = Path.Combine(basePath, "models.json");
+        var devicePath = Path.Combine(basePath, "devices.json");
 
-        const int batchSize = 5000;
+        if (!File.Exists(modelPath) || !File.Exists(devicePath))
+        {
+            await SampleDataGenerator.GenerateAsync();
+        }
+
+        await SeedModelsAsync(modelPath);
+        await SeedDevicesAsync(devicePath);
+    }
+
+    private async Task SeedModelsAsync(string filePath)
+    {
+        using var stream = File.OpenRead(filePath);
 
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        using var stream = File.OpenRead(filePath);
+        const int batchSize = 2000;
+        var batch = new List<Model>(batchSize);
 
-        var batch = new List<SampleOrder>(batchSize);
-
-        await foreach (var order in JsonSerializer.DeserializeAsyncEnumerable<SampleOrder>(stream, options))
+        await foreach (var model in JsonSerializer
+            .DeserializeAsyncEnumerable<Model>(stream, options))
         {
-            if (order == null)
+            if (model == null)
                 continue;
 
-            batch.Add(order);
+            batch.Add(model);
 
             if (batch.Count >= batchSize)
             {
-                await InsertBatchAsync(batch);
+                await InsertModelsBatchAsync(batch);
                 batch.Clear();
             }
         }
 
-        // Insert phần còn lại
         if (batch.Count > 0)
-        {
-            await InsertBatchAsync(batch);
-        }
+            await InsertModelsBatchAsync(batch);
     }
 
-    private async Task InsertBatchAsync(List<SampleOrder> batch)
+    private async Task SeedDevicesAsync(string filePath)
     {
-        _context.SampleOrders.AddRange(batch);
-        await _context.SaveChangesAsync();
+        using var stream = File.OpenRead(filePath);
 
-        // CỰC KỲ QUAN TRỌNG nếu dữ liệu lớn
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        const int batchSize = 5000;
+        var batch = new List<Device>(batchSize);
+
+        await foreach (var device in JsonSerializer
+            .DeserializeAsyncEnumerable<Device>(stream, options))
+        {
+            if (device == null)
+                continue;
+
+            batch.Add(device);
+
+            if (batch.Count >= batchSize)
+            {
+                await InsertDevicesBatchAsync(batch);
+                batch.Clear();
+            }
+        }
+
+        if (batch.Count > 0)
+            await InsertDevicesBatchAsync(batch);
+    }
+
+    private async Task InsertModelsBatchAsync(List<Model> batch)
+    {
+        _context.Models.AddRange(batch);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
+    }
+
+    private async Task InsertDevicesBatchAsync(List<Device> batch)
+    {
+        _context.Devices.AddRange(batch);
+        await _context.SaveChangesAsync();
         _context.ChangeTracker.Clear();
     }
 }

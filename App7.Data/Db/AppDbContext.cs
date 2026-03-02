@@ -7,7 +7,12 @@ namespace App7.Data.Db;
 
 public class AppDbContext : DbContext
 {
-    public DbSet<SampleOrder> SampleOrders
+    public DbSet<Model> Models
+    {
+        get; set;
+    }
+
+    public DbSet<Device> Devices
     {
         get; set;
     }
@@ -19,20 +24,20 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SampleOrder>()
-            .HasIndex(o => o.OrderID);
+        //modelBuilder.Entity<Model>()
+        //    .HasIndex(o => o.OrderID);
 
-        modelBuilder.Entity<SampleOrder>()
-            .HasIndex(o => o.Status);
+        //modelBuilder.Entity<Model>()
+        //    .HasIndex(o => o.Status);
 
-        modelBuilder.Entity<SampleOrder>()
-            .HasIndex(o => o.Company);
+        //modelBuilder.Entity<Model>()
+        //    .HasIndex(o => o.Company);
 
-        modelBuilder.Entity<SampleOrder>()
-            .HasIndex(o => o.OrderDate);
+        //modelBuilder.Entity<Model>()
+        //    .HasIndex(o => o.OrderDate);
 
-        modelBuilder.Entity<SampleOrder>()
-            .HasIndex(o => new { o.Status, o.OrderDate });
+        //modelBuilder.Entity<Model>()
+        //    .HasIndex(o => new { o.Status, o.OrderDate });
     }
 
 }

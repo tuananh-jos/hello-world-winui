@@ -17,12 +17,11 @@
             </controls:DataGrid.Resources>
             <controls:DataGrid.Columns>
                 <!-- TODO: Replace column definitions to match real data. Consider adding Header values to Resources.resw. -->
-                <controls:DataGridTextColumn Binding="{Binding OrderID}" Header="OrderID" />
-                <controls:DataGridTextColumn Binding="{Binding OrderDate}" Header="OrderDate" />
-                <controls:DataGridTextColumn Binding="{Binding Company}" Header="Company" />
-                <controls:DataGridTextColumn Binding="{Binding ShipTo}" Header="ShipTo" />
-                <controls:DataGridTextColumn Binding="{Binding OrderTotal}" Header="OrderTotal" />
-                <controls:DataGridTextColumn Binding="{Binding Status}" Header="Status" />
+                <controls:DataGridTextColumn Binding="{Binding Name}" Header="Name" />
+                <controls:DataGridTextColumn Binding="{Binding Manufacturer}" Header="Manufacturer" />
+                <controls:DataGridTextColumn Binding="{Binding Category}" Header="Category" />
+                <controls:DataGridTextColumn Binding="{Binding SubCategory}" Header="SubCategory" />
+                <controls:DataGridTextColumn Binding="{Binding Available}" Header="Available" />
                 <controls:DataGridTemplateColumn Header="Symbol">
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

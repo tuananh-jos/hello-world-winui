@@ -7,6 +7,9 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="Bogus" Version="35.6.5" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.72.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.72.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 

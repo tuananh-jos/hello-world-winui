@@ -70,17 +70,15 @@ public partial class App : Application
             services.AddSingleton<INavigationService, NavigationService>();
 
             // Usecases
-            services.AddTransient<GetGridDataUseCase>();
+            services.AddTransient<GetModelsUseCase>();
 
             // Repository
-            services.AddSingleton<ISampleCompanyRepository, SampleCompanyRepository>();
-            services.AddSingleton<ISampleOrderRepository, SampleOrderRepository>();
-            services.AddSingleton<ISampleOrderDetailRepository, SampleOrderDetailRepository>();
+            services.AddSingleton<IDeviceRepository, DeviceRepository>();
+            services.AddSingleton<IModelRepository, ModelRepository>();
 
             // DataSource
-            services.AddSingleton<ISampleCompanyDataSource, SampleCompanyDataSource>();
-            services.AddSingleton<ISampleOrderDataSource, SampleOrderDataSource>();
-            services.AddSingleton<ISampleOrderDetailDataSource, SampleOrderDetailDataSource>();
+            services.AddSingleton<IDeviceDataSource, DeviceDataSource>();
+            services.AddSingleton<IModelDataSource, ModelDataSource>();
 
             // add db context
             services.AddDbContext<AppDbContext>(options =>

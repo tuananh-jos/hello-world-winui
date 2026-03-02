@@ -11,13 +11,13 @@ namespace App7.Presentation.ViewModels;
 public partial class DataGridViewModel : ObservableRecipient, INavigationAware
 {
     //private readonly ISampleDataService _sampleDataService;
-    private readonly GetGridDataUseCase _getGridDataUseCase;
+    private readonly GetModelsUseCase _useCase;
 
-    public ObservableCollection<SampleOrder> Source { get; } = new ObservableCollection<SampleOrder>();
+    public ObservableCollection<Model> Source { get; } = new ObservableCollection<Model>();
 
-    public DataGridViewModel(GetGridDataUseCase getGridDataUseCase)
+    public DataGridViewModel(GetModelsUseCase useCase)
     {
-        _getGridDataUseCase = getGridDataUseCase;
+        _useCase = useCase;
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -26,7 +26,7 @@ public partial class DataGridViewModel : ObservableRecipient, INavigationAware
 
         // TODO: Replace with real data.
         //var data = await _sampleDataService.GetGridDataAsync();
-        var data = await _getGridDataUseCase.ExecuteAsync();
+        var data = await _useCase.ExecuteAsync();
 
         foreach (var item in data)
         {
