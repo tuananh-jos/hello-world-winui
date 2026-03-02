@@ -33,7 +33,9 @@ public static class SampleDataGenerator
             .RuleFor(d => d.SerialLab, f => f.Random.AlphaNumeric(10).ToUpper())
             .RuleFor(d => d.SerialNumber, f => f.Random.AlphaNumeric(12).ToUpper())
             .RuleFor(d => d.CircuitSerialNumber, f => f.Random.AlphaNumeric(11).ToUpper())
-            .RuleFor(d => d.HWVersion, f => $"REV0{f.Random.Number(1,5)}");
+            .RuleFor(d => d.HWVersion, f => $"REV0{f.Random.Number(1,5)}")
+            .RuleFor(d => d.Status, _ => "Available");
+
 
         var devices = deviceFaker.Generate(modelCount * devicesPerModel);
 

@@ -34,5 +34,9 @@ public class Device
     {
         get; set;
     }
+    public string Status
+    {
+        get; set;
+    } = "Available";
 }
 
