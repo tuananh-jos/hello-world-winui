@@ -1,85 +1,84 @@
-﻿using App7.Presentation.Contracts.Services;
-using App7.Presentation.Helpers;
+﻿using App7.Presentation.Helpers;
 using App7.Presentation.ViewModels;
-
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-
 using Windows.System;
 
 namespace App7.Presentation.Views;
 
-// TODO: Update NavigationViewItem titles and icons in ShellPage.xaml.
 public sealed partial class ShellPage : Page
 {
-    public ShellViewModel ViewModel
-    {
-        get;
-    }
+    public ShellViewModel ViewModel { get; }
+
+    private readonly SolidColorBrush _selectedBrush;
+    private readonly SolidColorBrush _normalBrush;
+
+    // ── x:Bind properties for sidebar selection highlight ─────────────
+    public Brush NavModelsBg    => GetNavItemBg("ModelList");
+    public Brush NavMyDevicesBg => GetNavItemBg("MyDevices");
 
     public ShellPage(ShellViewModel viewModel)
     {
         ViewModel = viewModel;
+
+        _selectedBrush = (SolidColorBrush)Application.Current.Resources["AppSidebarSelectedBrush"];
+        _normalBrush   = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+
         InitializeComponent();
 
+        // Wire navigation frame
         ViewModel.NavigationService.Frame = NavigationFrame;
-        ViewModel.NavigationViewService.Initialize(NavigationViewControl);
 
-        // TODO: Set the title bar icon by updating /Assets/WindowIcon.ico.
-        // A custom title bar is required for full window theme and Mica support.
-        // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
+        // Re-evaluate nav highlight on every page change
+        ViewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ViewModel.CurrentPageKey))
+                Bindings.Update();
+        };
+
+        // Custom title bar: Row 0 (AppTitleBar) is the drag region.
+        // The header bar (Row 1) is separate, so hamburger clicks work correctly.
         App.MainWindow.ExtendsContentIntoTitleBar = true;
         App.MainWindow.SetTitleBar(AppTitleBar);
-        App.MainWindow.Activated += MainWindow_Activated;
         AppTitleBarText.Text = "AppDisplayName".GetLocalized();
     }
 
-    private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        TitleBarHelper.UpdateTitleBar(RequestedTheme);
-
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
     }
 
-    private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
-    {
-        App.AppTitlebar = AppTitleBarText as UIElement;
-    }
+    // ── Hamburger cursor ──────────────────────────────────────────────
+    // ProtectedCursor is a protected member of UIElement — must be set on
+    // 'this' (the Page), not on the button instance directly.
+    private void HamburgerBtn_PointerEntered(object sender, PointerRoutedEventArgs e)
+        => ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
 
-    private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
-    {
-        AppTitleBar.Margin = new Thickness()
-        {
-            Left = sender.CompactPaneLength * (sender.DisplayMode == NavigationViewDisplayMode.Minimal ? 2 : 1),
-            Top = AppTitleBar.Margin.Top,
-            Right = AppTitleBar.Margin.Right,
-            Bottom = AppTitleBar.Margin.Bottom
-        };
-    }
+    private void HamburgerBtn_PointerExited(object sender, PointerRoutedEventArgs e)
+        => ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
 
+    // ── Sidebar selection helper ──────────────────────────────────────
+    private Brush GetNavItemBg(string pageKeyFragment)
+        => ViewModel.CurrentPageKey.Contains(pageKeyFragment)
+            ? _selectedBrush
+            : _normalBrush;
+
+    // ── Keyboard back nav ─────────────────────────────────────────────
     private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
     {
-        var keyboardAccelerator = new KeyboardAccelerator() { Key = key };
-
-        if (modifiers.HasValue)
-        {
-            keyboardAccelerator.Modifiers = modifiers.Value;
-        }
-
-        keyboardAccelerator.Invoked += OnKeyboardAcceleratorInvoked;
-
-        return keyboardAccelerator;
+        var ka = new KeyboardAccelerator { Key = key };
+        if (modifiers.HasValue) ka.Modifiers = modifiers.Value;
+        ka.Invoked += OnKeyboardAcceleratorInvoked;
+        return ka;
     }
 
     private static void OnKeyboardAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        var navigationService = App.GetService<INavigationService>();
-
-        var result = navigationService.GoBack();
-
-        args.Handled = result;
+        var nav = App.GetService<App7.Presentation.Contracts.Services.INavigationService>();
+        args.Handled = nav.GoBack();
     }
 }

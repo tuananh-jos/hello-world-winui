@@ -1,8 +1,6 @@
 ﻿using App7.Presentation.Contracts.Services;
-using App7.Presentation.Views;
-
 using CommunityToolkit.Mvvm.ComponentModel;
-
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace App7.Presentation.ViewModels;
@@ -10,35 +8,42 @@ namespace App7.Presentation.ViewModels;
 public partial class ShellViewModel : ObservableRecipient
 {
     [ObservableProperty]
-    private bool isBackEnabled;
+    private bool _isBackEnabled;
 
     [ObservableProperty]
-    private object? selected;
+    private bool _isSidebarOpen = true;
 
-    public INavigationService NavigationService
-    {
-        get;
-    }
+    // Tracks which page is currently active (for sidebar highlight)
+    [ObservableProperty]
+    private string _currentPageKey = string.Empty;
 
-    public INavigationViewService NavigationViewService
-    {
-        get;
-    }
+    public INavigationService NavigationService { get; }
 
-    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
+    public ShellViewModel(INavigationService navigationService)
     {
         NavigationService = navigationService;
         NavigationService.Navigated += OnNavigated;
-        NavigationViewService = navigationViewService;
     }
 
+    // ── Sidebar toggle ────────────────────────────────────────────────
+    [RelayCommand]
+    private void ToggleSidebar() => IsSidebarOpen = !IsSidebarOpen;
+
+    // ── Nav commands ──────────────────────────────────────────────────
+    [RelayCommand]
+    private void NavigateToModels()
+        => NavigationService.NavigateTo(typeof(ModelListViewModel).FullName!);
+
+    [RelayCommand]
+    private void NavigateToMyDevices()
+        => NavigationService.NavigateTo(typeof(MyDevicesViewModel).FullName!);
+
+    // ── Back ──────────────────────────────────────────────────────────
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
         IsBackEnabled = NavigationService.CanGoBack;
-        var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
-        if (selectedItem != null)
-        {
-            Selected = selectedItem;
-        }
+
+        // Update current page key for sidebar selection highlight
+        CurrentPageKey = e.SourcePageType?.FullName ?? string.Empty;
     }
 }

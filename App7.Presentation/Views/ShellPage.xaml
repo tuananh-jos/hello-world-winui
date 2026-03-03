@@ -4,82 +4,136 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:helpers="using:App7.Presentation.Helpers"
-    xmlns:behaviors="using:App7.Presentation.Behaviors"
-    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    mc:Ignorable="d"
     Loaded="OnLoaded">
 
-    <Grid>
-        <Grid x:Name="AppTitleBar"
-              Canvas.ZIndex="1"
-              Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
-              IsHitTestVisible="True"
-              VerticalAlignment="Top">
-            <Image Source="/Assets/WindowIcon.ico"
-                   HorizontalAlignment="Left"
-                   Width="16"
-                   Height="16" />
-            <TextBlock x:Name="AppTitleBarText"
-                       VerticalAlignment="Center"
-                       TextWrapping="NoWrap"
-                       Style="{StaticResource CaptionTextBlockStyle}"
-                       Margin="28,0,0,0"/>
+    <!--
+        Row 0 (48px) — AppTitleBar: thin strip with app name, aligned with min/max/close.
+                        This is designated as the custom title bar drag area.
+        Row 1 (56px) — Header bar: hamburger + logo (image background).
+        Row 2 (*)    — SplitView: sidebar + Frame.
+    -->
+    <Grid RowDefinitions="48,56,*">
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ROW 0 — TITLE BAR STRIP
+             Designated as the drag region via SetTitleBar(AppTitleBar).
+             IsHitTestVisible keeps the strip interactive for dragging,
+             but nothing inside needs to be clickable.
+             ═══════════════════════════════════════════════════════════ -->
+        <Grid
+            Grid.Row="0"
+            x:Name="AppTitleBar"
+            IsHitTestVisible="True"
+            Background="Transparent">
+
+            <TextBlock
+                x:Name="AppTitleBarText"
+                VerticalAlignment="Center"
+                Margin="12,0,0,0"
+                Style="{StaticResource CaptionTextBlockStyle}" />
         </Grid>
-        <NavigationView
-            x:Name="NavigationViewControl"
-            Canvas.ZIndex="0"
-            IsBackButtonVisible="Visible"
-            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
-            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-            IsSettingsVisible="False"
-            ExpandedModeThresholdWidth="1280"
-            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
-            <NavigationView.MenuItems>
-                <!--
-                TODO: Update item titles by updating <x:Uid>.Content entries in Strings/en-us/Resources.resw.
-                https://docs.microsoft.com/windows/uwp/app-resources/localize-strings-ui-manifest#refer-to-a-string-resource-identifier-from-xaml
-            
-                TODO: Update item icons by updating FontIcon.Glyph properties.
-                https://docs.microsoft.com/windows/apps/design/style/segoe-fluent-icons-font#icon-list
-                -->
-                <NavigationViewItem x:Uid="Shell_Models" helpers:NavigationHelper.NavigateTo="App7.Presentation.ViewModels.ModelListViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe80a;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_MyDevices" helpers:NavigationHelper.NavigateTo="App7.Presentation.ViewModels.MyDevicesViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8EA;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-            <NavigationView.HeaderTemplate>
-                <DataTemplate>
-                    <Grid>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ROW 1 — HEADER BAR (hamburger + logo)
+             NOT part of the title bar → clicks work normally.
+             ═══════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="1">
+            <Grid.Background>
+                <ImageBrush
+                    ImageSource="/Assets/header-bg.png"
+                    Stretch="UniformToFill" />
+            </Grid.Background>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />   <!-- hamburger -->
+                <ColumnDefinition Width="200" />    <!-- logo zone (~sidebar width) -->
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ☰ Hamburger — flush left -->
+            <Button
+                Grid.Column="0"
+                x:Name="HamburgerBtn"
+                Command="{x:Bind ViewModel.ToggleSidebarCommand}"
+                Background="Transparent"
+                BorderThickness="0"
+                Foreground="White"
+                FontSize="18"
+                Width="48"
+                Height="56"
+                Content="&#xE700;"
+                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                VerticalAlignment="Center"
+                PointerEntered="HamburgerBtn_PointerEntered"
+                PointerExited="HamburgerBtn_PointerExited" />
+
+            <!-- Logo — centred in sidebar-width zone -->
+            <Image
+                Grid.Column="1"
+                Source="/Assets/logo.png"
+                Height="36"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ROW 2 — SPLITVIEW
+             ═══════════════════════════════════════════════════════════ -->
+        <SplitView
+            Grid.Row="2"
+            x:Name="MainSplitView"
+            DisplayMode="Inline"
+            OpenPaneLength="200"
+            IsPaneOpen="{x:Bind ViewModel.IsSidebarOpen, Mode=TwoWay}"
+            PanePlacement="Left">
+
+            <!-- ─── SIDEBAR PANE ──────────────────────────────────── -->
+            <SplitView.Pane>
+                <Grid
+                    Background="{StaticResource AppSidebarBrush}"
+                    RowDefinitions="Auto,*">
+
+                    <!-- Sidebar header -->
+                    <Border
+                        Grid.Row="0"
+                        Background="{StaticResource AppSidebarHeaderBrush}"
+                        Padding="16,12">
                         <TextBlock
-                            Text="{Binding}"
-                            Style="{ThemeResource TitleTextBlockStyle}" />
-                    </Grid>
-                </DataTemplate>
-            </NavigationView.HeaderTemplate>
-            <i:Interaction.Behaviors>
-                <behaviors:NavigationViewHeaderBehavior
-                    DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
-                    <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <TextBlock
-                                    Text="{Binding}"
-                                    Style="{ThemeResource TitleTextBlockStyle}" />
-                            </Grid>
-                        </DataTemplate>
-                    </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                </behaviors:NavigationViewHeaderBehavior>
-            </i:Interaction.Behaviors>
-            <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
-                <Frame x:Name="NavigationFrame" />
-            </Grid>
-        </NavigationView>
+                            Text="Device Management"
+                            Foreground="White"
+                            FontSize="13"
+                            FontWeight="SemiBold" />
+                    </Border>
+
+                    <!-- Nav items -->
+                    <StackPanel Grid.Row="1">
+
+                        <Button
+                            x:Name="NavRequestDevice"
+                            Content="Request Device"
+                            Command="{x:Bind ViewModel.NavigateToModelsCommand}"
+                            Height="44"
+                            Padding="16,0"
+                            Style="{StaticResource AppSidebarItemStyle}"
+                            Background="{x:Bind NavModelsBg, Mode=OneWay}" />
+
+                        <Button
+                            x:Name="NavMyDevice"
+                            Content="My Device"
+                            Command="{x:Bind ViewModel.NavigateToMyDevicesCommand}"
+                            Height="44"
+                            Padding="16,0"
+                            Style="{StaticResource AppSidebarItemStyle}"
+                            Background="{x:Bind NavMyDevicesBg, Mode=OneWay}" />
+
+                    </StackPanel>
+                </Grid>
+            </SplitView.Pane>
+
+            <!-- ─── CONTENT FRAME ─────────────────────────────────── -->
+            <Frame x:Name="NavigationFrame" />
+
+        </SplitView>
     </Grid>
 </Page>

@@ -20,6 +20,10 @@
     <Color x:Key="RawOrangeHover">#C0530A</Color>
     <Color x:Key="RawBlue">#0078D4</Color>
     <Color x:Key="RawBlueHover">#006CBE</Color>
+    <Color x:Key="RawSidebar">#566b7f</Color>
+    <Color x:Key="RawSidebarHeader">#3f5061</Color>
+    <Color x:Key="RawSidebarSelected">#4a5f72</Color>
+    <Color x:Key="RawSidebarHover">#60798d</Color>
 
     <!-- ── Semantic brushes (reference these in UI) ──────────────── -->
 
@@ -45,6 +49,12 @@
 
     <!-- Disabled field background -->
     <SolidColorBrush x:Key="AppDisabledFieldBrush" Color="#F3F3F3" />
+
+    <!-- Sidebar -->
+    <SolidColorBrush x:Key="AppSidebarBrush"         Color="{StaticResource RawSidebar}" />
+    <SolidColorBrush x:Key="AppSidebarHeaderBrush"   Color="{StaticResource RawSidebarHeader}" />
+    <SolidColorBrush x:Key="AppSidebarSelectedBrush" Color="{StaticResource RawSidebarSelected}" />
+    <SolidColorBrush x:Key="AppSidebarHoverBrush"    Color="{StaticResource RawSidebarHover}" />
 
     <!--
         ┌─────────────────────────────────────────────────────────────┐
@@ -132,6 +142,50 @@
                             VerticalAlignment="Center"
                             Foreground="{TemplateBinding Foreground}"
                             FontWeight="{TemplateBinding FontWeight}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Sidebar nav item button style -->
+    <Style x:Key="AppSidebarItemStyle" TargetType="Button">
+        <Setter Property="Background"              Value="Transparent" />
+        <Setter Property="Foreground"              Value="White" />
+        <Setter Property="BorderThickness"         Value="0" />
+        <Setter Property="CornerRadius"            Value="0" />
+        <Setter Property="HorizontalAlignment"     Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="UseSystemFocusVisuals"   Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="Root"
+                        Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        Height="{TemplateBinding Height}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Background"
+                                                Value="{StaticResource AppSidebarHoverBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="0.7" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <ContentPresenter
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="Center"
+                            Foreground="{TemplateBinding Foreground}"
+                            FontSize="{TemplateBinding FontSize}" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
