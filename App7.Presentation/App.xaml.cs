@@ -95,6 +95,8 @@ public partial class App : Application
             // Views and ViewModels
             services.AddTransient<ModelListViewModel>();
             services.AddTransient<ModelListPage>();
+            services.AddTransient<MyDevicesViewModel>();
+            services.AddTransient<MyDevicesPage>();
             services.AddTransient<ShellPage>();
             services.AddTransient<ShellViewModel>();
 

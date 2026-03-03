@@ -15,6 +15,7 @@ public class PageService : IPageService
     public PageService()
     {
         Configure<ModelListViewModel, ModelListPage>();
+        Configure<MyDevicesViewModel, MyDevicesPage>();
     }
 
     public Type GetPageType(string key)
