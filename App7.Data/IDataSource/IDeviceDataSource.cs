@@ -1,14 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using App7.Domain.Entities;
+﻿using App7.Domain.Entities;
 
 namespace App7.Data.IDataSource;
+
 public interface IDeviceDataSource
 {
-    Task<List<Device>> GetAllAsync();
-    Task InsertAsync(Device company);
+    Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
+        int page,
+        int pageSize,
+        string? searchText,
+        string? filterHWVersion,
+        string? sortColumn,
+        bool ascending);
 
+    Task<List<string>> GetBorrowedHWVersionsAsync();
+
+    Task BorrowAsync(Guid modelId, int quantity);
+
+    Task ReturnAsync(Guid deviceId);
+
+    Task InsertAsync(Device device);
 }

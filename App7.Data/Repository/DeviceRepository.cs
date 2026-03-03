@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using App7.Data.IDataSource;
+﻿using App7.Data.IDataSource;
 using App7.Domain.Entities;
 using App7.Domain.IRepository;
 
 namespace App7.Data.Repository;
-public class DeviceRepository: IDeviceRepository
+
+public class DeviceRepository : IDeviceRepository
 {
     private readonly IDeviceDataSource _dataSource;
 
@@ -17,13 +13,27 @@ public class DeviceRepository: IDeviceRepository
         _dataSource = dataSource;
     }
 
-    public async Task<IEnumerable<Device>> GetAllAsync()
+    public async Task<(IEnumerable<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
+        int page, int pageSize,
+        string? searchText, string? filterHWVersion,
+        string? sortColumn, bool ascending)
     {
-        return await _dataSource.GetAllAsync();
+        var result = await _dataSource.GetBorrowedPagedAsync(
+            page, pageSize,
+            searchText, filterHWVersion,
+            sortColumn, ascending);
+        return (result.Items, result.TotalCount);
     }
 
-    public async Task AddAsync(Device company)
-    {
-        await _dataSource.InsertAsync(company);
-    }
+    public async Task<IEnumerable<string>> GetBorrowedHWVersionsAsync()
+        => await _dataSource.GetBorrowedHWVersionsAsync();
+
+    public async Task BorrowAsync(Guid modelId, int quantity)
+        => await _dataSource.BorrowAsync(modelId, quantity);
+
+    public async Task ReturnAsync(Guid deviceId)
+        => await _dataSource.ReturnAsync(deviceId);
+
+    public async Task AddAsync(Device device)
+        => await _dataSource.InsertAsync(device);
 }

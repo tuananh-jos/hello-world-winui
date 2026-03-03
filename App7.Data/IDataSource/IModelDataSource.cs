@@ -1,14 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using App7.Domain.Entities;
+﻿using App7.Domain.Entities;
 
 namespace App7.Data.IDataSource;
+
 public interface IModelDataSource
 {
-    Task<List<Model>> GetAllAsync();
-    Task InsertAsync(Model order);
+    Task<(List<Model> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchName,
+        string? searchManufacturer,
+        string? filterCategory,
+        string? filterSubCategory,
+        string? sortColumn,
+        bool ascending);
 
+    Task<List<string>> GetCategoriesAsync();
+
+    Task<List<string>> GetSubCategoriesAsync(string category);
+
+    Task IncrementAvailableAsync(Guid modelId);
+
+    Task DecrementAvailableAsync(Guid modelId, int quantity);
+
+    Task InsertAsync(Model model);
 }

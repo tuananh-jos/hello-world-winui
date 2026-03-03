@@ -2,7 +2,6 @@
 using App7.Data.Db;
 using App7.Data.IDataSource;
 using App7.Data.Repository;
-using App7.Domain.Entities;
 using App7.Domain.IRepository;
 using App7.Domain.Usecases;
 using App7.Presentation.Activation;
@@ -15,8 +14,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-using Microsoft.EntityFrameworkCore;
-using App7.Data.Db;
 
 namespace App7.Presentation;
 
@@ -69,26 +66,31 @@ public partial class App : Application
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
 
-            // Usecases
+            // UseCases
             services.AddTransient<GetModelsUseCase>();
+            services.AddTransient<GetModelsPagedUseCase>();
+            services.AddTransient<GetModelFiltersUseCase>();
+            services.AddTransient<BorrowDeviceUseCase>();
+            services.AddTransient<GetBorrowedDevicesUseCase>();
+            services.AddTransient<ReturnDeviceUseCase>();
 
-            // Repository
-            services.AddSingleton<IDeviceRepository, DeviceRepository>();
-            services.AddSingleton<IModelRepository, ModelRepository>();
+            // Repository — Transient (matches ViewModel and UseCase lifetimes; single-user desktop app)
+            services.AddTransient<IDeviceRepository, DeviceRepository>();
+            services.AddTransient<IModelRepository, ModelRepository>();
 
-            // DataSource
-            services.AddSingleton<IDeviceDataSource, DeviceDataSource>();
-            services.AddSingleton<IModelDataSource, ModelDataSource>();
+            // DataSource — Transient
+            services.AddTransient<IDeviceDataSource, DeviceDataSource>();
+            services.AddTransient<IModelDataSource, ModelDataSource>();
 
-            // add db context
+            // DbContext — Transient (each operation gets a fresh context; safe for single-user desktop)
             services.AddDbContext<AppDbContext>(options =>
             {
                 var dbPath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "app.db");
                 options.UseSqlite($"Data Source={dbPath}");
-            });
+            }, ServiceLifetime.Transient);
 
-            // init DB
-            services.AddSingleton<DatabaseInitializer>();
+            // DB initializer
+            services.AddTransient<DatabaseInitializer>();
 
 
             // Views and ViewModels
