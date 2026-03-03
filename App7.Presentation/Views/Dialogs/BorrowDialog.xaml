@@ -1,0 +1,142 @@
+<ContentDialog
+    x:Class="App7.Presentation.Views.Dialogs.BorrowDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    DefaultButton="None"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <!--
+        We own the entire layout: no Title, no built-in buttons.
+        The ContentDialog just provides the backdrop + focus trap.
+    -->
+    <ContentDialog.Resources>
+        <!-- Remove ContentDialog default padding so our custom layout fills edge-to-edge -->
+        <Thickness x:Key="ContentDialogPadding">0</Thickness>
+    </ContentDialog.Resources>
+
+    <!-- Root card (min 460 wide) -->
+    <Grid MinWidth="480" RowDefinitions="Auto,*,Auto">
+
+        <!-- ═══════════════════════════════════════════════════════════
+             HEADER   — navy background, white text, X close button
+             ═══════════════════════════════════════════════════════════ -->
+        <Grid
+            Grid.Row="0"
+            Background="{StaticResource AppDialogHeaderBrush}"
+            Padding="20,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Title -->
+            <TextBlock
+                Grid.Column="0"
+                x:Name="DialogTitleText"
+                VerticalAlignment="Center"
+                FontSize="15"
+                FontWeight="SemiBold"
+                Foreground="{StaticResource AppOnNavyBrush}" />
+
+            <!-- X button -->
+            <Button
+                Grid.Column="1"
+                x:Name="CloseButton"
+                Content="✕"
+                Foreground="{StaticResource AppOnNavyBrush}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="8,4"
+                FontSize="14"
+                VerticalAlignment="Center"
+                Click="OnCloseClicked" />
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             BODY
+             ═══════════════════════════════════════════════════════════ -->
+        <StackPanel
+            Grid.Row="1"
+            Background="{StaticResource AppDialogBodyBrush}"
+            Padding="20,16"
+            Spacing="16">
+
+            <!-- Row 1: Inventory | Manage | Address -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+
+                <!-- Inventory -->
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Inventory" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <ComboBox
+                        x:Name="InventoryCombo"
+                        HorizontalAlignment="Stretch"
+                        SelectedIndex="0">
+                        <ComboBoxItem Content="PM P/Technology Strategy G" IsSelected="True" />
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Manage (disabled) -->
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="Manage" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox
+                        Text="thithe.ha"
+                        IsEnabled="False"
+                        Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+
+                <!-- Address (disabled) -->
+                <StackPanel Grid.Column="2" Spacing="4">
+                    <TextBlock Text="Address" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox
+                        Text="2F phòng Device"
+                        IsEnabled="False"
+                        Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Row 2: Number -->
+            <Grid ColumnDefinitions="160,*">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Number" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <ComboBox
+                        x:Name="QuantityCombo"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{x:Bind ViewModel.QuantityOptions}"
+                        SelectedItem="{x:Bind ViewModel.SelectedQuantity, Mode=TwoWay}"
+                        SelectedIndex="0" />
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             FOOTER   — Cancel (orange) + OK (blue), right-aligned
+             ═══════════════════════════════════════════════════════════ -->
+        <Border
+            Grid.Row="2"
+            Background="{StaticResource AppDialogBodyBrush}"
+            BorderThickness="0,1,0,0"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+            Padding="20,12">
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Spacing="8">
+                <Button
+                    x:Name="CancelBtn"
+                    Content="Cancel"
+                    Style="{StaticResource AppCancelButtonStyle}"
+                    Click="OnCancelClicked" />
+                <Button
+                    x:Name="OkBtn"
+                    Content="OK"
+                    Style="{StaticResource AppOkButtonStyle}"
+                    Click="OnOkClicked" />
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</ContentDialog>

@@ -72,6 +72,19 @@
                 <controls:DataGridTextColumn Header="Category"    Binding="{Binding Category}"     Tag="Category"     MinWidth="130" />
                 <controls:DataGridTextColumn Header="SubCategory" Binding="{Binding SubCategory}"  Tag="SubCategory"  MinWidth="130" />
                 <controls:DataGridTextColumn Header="Available"   Binding="{Binding Available}"    Tag="Available"    MinWidth="100" />
+                <controls:DataGridTemplateColumn Header="" MinWidth="90" IsReadOnly="True" CanUserSort="False">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button
+                                Content="Borrow"
+                                Tag="{Binding}"
+                                Style="{StaticResource AppOkButtonStyle}"
+                                Padding="10,4"
+                                Margin="4,0"
+                                Click="OnBorrowClicked" />
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
             </controls:DataGrid.Columns>
         </controls:DataGrid>
 
