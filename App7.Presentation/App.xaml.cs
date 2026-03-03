@@ -67,7 +67,6 @@ public partial class App : Application
             services.AddSingleton<INavigationService, NavigationService>();
 
             // UseCases
-            services.AddTransient<GetModelsUseCase>();
             services.AddTransient<GetModelsPagedUseCase>();
             services.AddTransient<GetModelFiltersUseCase>();
             services.AddTransient<BorrowDeviceUseCase>();
@@ -94,10 +93,8 @@ public partial class App : Application
 
 
             // Views and ViewModels
-            services.AddTransient<DataGridViewModel>();
-            services.AddTransient<DataGridPage>();
-            services.AddTransient<MainViewModel>();
-            services.AddTransient<MainPage>();
+            services.AddTransient<ModelListViewModel>();
+            services.AddTransient<ModelListPage>();
             services.AddTransient<ShellPage>();
             services.AddTransient<ShellViewModel>();
 
