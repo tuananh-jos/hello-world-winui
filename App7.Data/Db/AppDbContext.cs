@@ -46,9 +46,6 @@ public class AppDbContext : DbContext
             .HasIndex(d => d.ModelId);
 
         modelBuilder.Entity<Device>()
-            .HasIndex(d => d.Name);
-
-        modelBuilder.Entity<Device>()
             .HasIndex(d => d.IMEI);
 
         modelBuilder.Entity<Device>()

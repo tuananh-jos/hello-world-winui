@@ -34,130 +34,170 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Table area: custom header | filter row | DataGrid -->
-                        <Grid Grid.Row="2" Margin="16,0,16,0" RowDefinitions="Auto,Auto,Auto">
+                        <!-- Table area: border wrap → header | filter | DataGrid -->
+                        <Border Grid.Row="2" Margin="16,0,16,0"
+                                BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="2">
+                            <Grid RowDefinitions="Auto,Auto,Auto">
 
-                            <!-- Custom column header row -->
-                            <Border Grid.Row="0" Background="#2D8A8888" Height="40">
-                                <Grid Height="40">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200" />
-                                        <ColumnDefinition Width="160" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Name"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Name" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconName" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="1" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Manufacturer"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Manufacturer" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconManufacturer" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="2" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Category"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Category" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconCategory" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="3" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="SubCategory"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Sub Category" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconSubCategory" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="4" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Available"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Available" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconAvailable" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Border Grid.Column="5" Padding="8,0">
-                                        <TextBlock Text="Function" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                            </Border>
+                                <!-- Custom column header row -->
+                                <Border Grid.Row="0" Background="#2D8A8888">
+                                    <Grid x:Name="HeaderGrid" Height="40">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition x:Name="HdrColName"         Width="200" />
+                                            <ColumnDefinition x:Name="HdrColManufacturer" Width="160" />
+                                            <ColumnDefinition x:Name="HdrColCategory"     Width="140" />
+                                            <ColumnDefinition x:Name="HdrColSubCategory"  Width="140" />
+                                            <ColumnDefinition x:Name="HdrColAvailable"    Width="100" />
+                                            <ColumnDefinition x:Name="HdrColFunction"     Width="120" />
+                                        </Grid.ColumnDefinitions>
 
-                            <!-- Filter row -->
-                            <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,0,0,1" Padding="0,4">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200" />
-                                        <ColumnDefinition Width="160" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" PlaceholderText="Filter name / mfr…"
-                                             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
-                                             KeyDown="OnSearchKeyDown" Margin="4,0" FontSize="12" />
-                                    <ComboBox Grid.Column="2"
-                                              ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
-                                              SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
-                                              PlaceholderText="All" SelectionChanged="OnCategoryChanged"
-                                              HorizontalAlignment="Stretch" Margin="4,0" FontSize="12" />
-                                    <ComboBox Grid.Column="3"
-                                              ItemsSource="{x:Bind ViewModel.SubCategories, Mode=OneWay}"
-                                              SelectedItem="{x:Bind ViewModel.SelectedSubCategory, Mode=TwoWay}"
-                                              PlaceholderText="All" SelectionChanged="OnSubCategoryChanged"
-                                              HorizontalAlignment="Stretch" Margin="4,0" FontSize="12" />
-                                    <Button Grid.Column="5" Content="Clear Filter"
-                                            Command="{x:Bind ViewModel.ClearFiltersCommand}"
-                                            Style="{StaticResource AppClearFilterButtonStyle}"
-                                            HorizontalAlignment="Stretch" Margin="4,0" />
-                                </Grid>
-                            </Border>
+                                        <Button Grid.Column="0" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Name"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Name" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconName" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="1" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Manufacturer"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Manufacturer" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconManufacturer" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="2" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Category"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Category" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconCategory" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="3" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="SubCategory"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Sub Category" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconSubCategory" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="4" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Available"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Available" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconAvailable" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Border Grid.Column="5" Padding="8,0" BorderThickness="0" >
+                                            <TextBlock Text="Function" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
 
-                            <!-- DataGrid (data rows only, no built-in header) -->
-                            <controls:DataGrid Grid.Row="2" x:Name="ModelsGrid"
-                                               AutoGenerateColumns="False"
-                                               GridLinesVisibility="Horizontal"
-                                               CanUserSortColumns="False"
-                                               HeadersVisibility="None"
-                                               RowBackground="White"
-                                               AlternatingRowBackground="#F9F9F9"
-                                               ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
-                                               IsReadOnly="True" MinHeight="200">
-                                <controls:DataGrid.Columns>
-                                    <controls:DataGridTextColumn Binding="{Binding Name}"         Tag="Name"         Width="200" />
-                                    <controls:DataGridTextColumn Binding="{Binding Manufacturer}" Tag="Manufacturer" Width="160" />
-                                    <controls:DataGridTextColumn Binding="{Binding Category}"     Tag="Category"     Width="140" />
-                                    <controls:DataGridTextColumn Binding="{Binding SubCategory}"  Tag="SubCategory"  Width="140" />
-                                    <controls:DataGridTextColumn Binding="{Binding Available}"    Tag="Available"    Width="100" />
-                                    <controls:DataGridTemplateColumn Tag="Function" Width="120" IsReadOnly="True">
-                                        <controls:DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button Tag="{Binding}" Click="OnBorrowClicked"
-                                                        Style="{StaticResource AppFunctionButtonStyle}">
-                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
-                                                        <TextBlock Text="Borrow" VerticalAlignment="Center" FontSize="12" />
-                                                    </StackPanel>
-                                                </Button>
-                                            </DataTemplate>
-                                        </controls:DataGridTemplateColumn.CellTemplate>
-                                    </controls:DataGridTemplateColumn>
-                                </controls:DataGrid.Columns>
-                            </controls:DataGrid>
+                                <!-- Filter row -->
+                                <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,1,0,1" Padding="0,4">
+                                    <Grid x:Name="FilterGrid">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition x:Name="FltColName"         Width="200" />
+                                            <ColumnDefinition x:Name="FltColManufacturer" Width="160" />
+                                            <ColumnDefinition x:Name="FltColCategory"     Width="140" />
+                                            <ColumnDefinition x:Name="FltColSubCategory"  Width="140" />
+                                            <ColumnDefinition x:Name="FltColAvailable"    Width="100" />
+                                            <ColumnDefinition x:Name="FltColFunction"     Width="120" />
+                                        </Grid.ColumnDefinitions>
 
-                        </Grid>
+                                        <!-- Name: search TextBox -->
+                                        <TextBox Grid.Column="0"
+                                                 x:Name="SearchNameBox"
+                                                 PlaceholderText="Search name…"
+                                                 Text="{x:Bind ViewModel.SearchName, Mode=TwoWay}"
+                                                 KeyDown="OnSearchKeyDown"
+                                                 Margin="4,0" FontSize="12" />
+
+                                        <!-- Manufacturer: filter button that opens popup -->
+                                        <Button Grid.Column="1"
+                                                x:Name="ManufacturerFilterBtn"
+                                                Click="OnManufacturerFilterClicked"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                Margin="4,0" Padding="8,0"
+                                                Background="White" BorderBrush="#CCCCCC" BorderThickness="1"
+                                                Height="32" FontSize="12">
+                                            <Grid>
+                                                <TextBlock x:Name="ManufacturerFilterLabel"
+                                                           Text="All manufacturers"
+                                                           Foreground="#888888"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Left"
+                                                           FontSize="12" />
+                                                <TextBlock Text="&#xE70D;"
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                           FontSize="10" Opacity="0.5"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+
+                                        <!-- Category filter -->
+                                        <ComboBox Grid.Column="2"
+                                                  ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+                                                  SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
+                                                  PlaceholderText="All" SelectionChanged="OnCategoryChanged"
+                                                  HorizontalAlignment="Stretch" Margin="4,0" FontSize="12" />
+
+                                        <!-- SubCategory filter -->
+                                        <ComboBox Grid.Column="3"
+                                                  ItemsSource="{x:Bind ViewModel.SubCategories, Mode=OneWay}"
+                                                  SelectedItem="{x:Bind ViewModel.SelectedSubCategory, Mode=TwoWay}"
+                                                  PlaceholderText="All" SelectionChanged="OnSubCategoryChanged"
+                                                  HorizontalAlignment="Stretch" Margin="4,0" FontSize="12" />
+
+                                        <!-- Clear filter button -->
+                                        <Button Grid.Column="5" Content="Clear Filter"
+                                                Command="{x:Bind ViewModel.ClearFiltersCommand}"
+                                                Style="{StaticResource AppClearFilterButtonStyle}"
+                                                HorizontalAlignment="Stretch" Margin="4,0" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- DataGrid (data rows only, no built-in header) -->
+                                <controls:DataGrid Grid.Row="2" x:Name="ModelsGrid"
+                                                   AutoGenerateColumns="False"
+                                                   GridLinesVisibility="All"
+                                                   CanUserSortColumns="False"
+                                                   HeadersVisibility="None"
+                                                   RowBackground="White"
+                                                   AlternatingRowBackground="#F9F9F9"
+                                                   ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
+                                                   IsReadOnly="True" MinHeight="200"
+                                                   BorderThickness="0">
+                                    <controls:DataGrid.Columns>
+                                        <controls:DataGridTextColumn Binding="{Binding Name}"         Tag="Name"         Width="200" />
+                                        <controls:DataGridTextColumn Binding="{Binding Manufacturer}" Tag="Manufacturer" Width="160" />
+                                        <controls:DataGridTextColumn Binding="{Binding Category}"     Tag="Category"     Width="140" />
+                                        <controls:DataGridTextColumn Binding="{Binding SubCategory}"  Tag="SubCategory"  Width="140" />
+                                        <controls:DataGridTextColumn Binding="{Binding Available}"    Tag="Available"    Width="100" />
+                                        <controls:DataGridTemplateColumn Tag="Function" Width="120" IsReadOnly="True">
+                                            <controls:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Tag="{Binding}" Click="OnBorrowClicked"
+                                                            Style="{StaticResource AppFunctionButtonStyle}">
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
+                                                            <TextBlock Text="Borrow" VerticalAlignment="Center" FontSize="12" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </controls:DataGridTemplateColumn.CellTemplate>
+                                        </controls:DataGridTemplateColumn>
+                                    </controls:DataGrid.Columns>
+                                </controls:DataGrid>
+
+                            </Grid>
+                        </Border>
 
                         <!-- Pagination -->
                         <Grid Grid.Row="3" Background="#FAFAFA" MinHeight="80" Padding="16,0"
@@ -209,6 +249,23 @@
                 </ItemsControl>
             </Border>
         </Grid>
+
+        <!-- Manufacturer filter popup -->
+        <Popup x:Name="ManufacturerPopup" IsLightDismissEnabled="True">
+            <Border Background="White" CornerRadius="6"
+                    BorderBrush="#CCCCCC" BorderThickness="1"
+                    Width="200" Padding="8">
+                <StackPanel Spacing="6">
+                    <TextBox x:Name="ManufacturerSearchBox"
+                             PlaceholderText="Search…"
+                             TextChanged="OnManufacturerSearchChanged"
+                             FontSize="12" />
+                    <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="ManufacturerListPanel" Spacing="2" />
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+        </Popup>
 
         <InfoBar x:Name="BorrowInfoBar" IsOpen="False" IsClosable="True" VerticalAlignment="Top" Margin="20,8,20,0" />
     </Grid>

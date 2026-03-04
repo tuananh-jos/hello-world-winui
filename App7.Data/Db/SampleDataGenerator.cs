@@ -24,7 +24,6 @@ public static class SampleDataGenerator
         var deviceFaker = new Faker<Device>()
             .RuleFor(d => d.Id, f => Guid.NewGuid())
             .RuleFor(d => d.ModelId, f => f.PickRandom(models).Id)
-            .RuleFor(d => d.Name, f => $"SM-{f.Random.AlphaNumeric(6).ToUpper()}")
             .RuleFor(d => d.IMEI, f => f.Random.ReplaceNumbers("###############"))
             .RuleFor(d => d.SerialLab, f => f.Random.AlphaNumeric(10).ToUpper())
             .RuleFor(d => d.SerialNumber, f => f.Random.AlphaNumeric(12).ToUpper())

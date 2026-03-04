@@ -7,8 +7,12 @@ public interface IDeviceDataSource
     Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page,
         int pageSize,
-        string? searchText,
-        string? filterHWVersion,
+        string? searchModelName,
+        string? searchIMEI,
+        string? searchSerialLab,
+        string? searchSerialNumber,
+        string? searchCircuitSerial,
+        string? searchHWVersion,
         string? sortColumn,
         bool ascending);
 

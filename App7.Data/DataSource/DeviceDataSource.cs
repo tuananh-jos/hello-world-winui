@@ -10,39 +10,47 @@ public class DeviceDataSource : IDeviceDataSource
     private readonly AppDbContext _context;
 
     public DeviceDataSource(AppDbContext context)
-    {
-        _context = context;
-    }
+        => _context = context;
 
     public async Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page,
         int pageSize,
-        string? searchText,
-        string? filterHWVersion,
+        string? searchModelName,
+        string? searchIMEI,
+        string? searchSerialLab,
+        string? searchSerialNumber,
+        string? searchCircuitSerial,
+        string? searchHWVersion,
         string? sortColumn,
         bool ascending)
     {
+        // Join Devices with Models to get ModelName
         var query = _context.Devices
             .AsNoTracking()
-            .Where(d => d.Status == "Borrowed");
+            .Where(d => d.Status == "Borrowed")
+            .Join(_context.Models,
+                  d => d.ModelId,
+                  m => m.Id,
+                  (d, m) => new { Device = d, ModelName = m.Name });
 
-        // Multi-field search
-        if (!string.IsNullOrWhiteSpace(searchText))
-        {
-            var t = searchText;
-            query = query.Where(d =>
-                d.Name.Contains(t) ||
-                d.IMEI.Contains(t) ||
-                d.SerialLab.Contains(t) ||
-                d.SerialNumber.Contains(t) ||
-                d.CircuitSerialNumber.Contains(t) ||
-                d.HWVersion.Contains(t) ||
-                d.ModelId.ToString().Contains(t));
-        }
+        // Per-column search — each filter is independent
+        if (!string.IsNullOrWhiteSpace(searchModelName))
+            query = query.Where(x => x.ModelName.Contains(searchModelName));
 
-        // Filter by HWVersion
-        if (!string.IsNullOrWhiteSpace(filterHWVersion))
-            query = query.Where(d => d.HWVersion == filterHWVersion);
+        if (!string.IsNullOrWhiteSpace(searchIMEI))
+            query = query.Where(x => x.Device.IMEI.Contains(searchIMEI));
+
+        if (!string.IsNullOrWhiteSpace(searchSerialLab))
+            query = query.Where(x => x.Device.SerialLab.Contains(searchSerialLab));
+
+        if (!string.IsNullOrWhiteSpace(searchSerialNumber))
+            query = query.Where(x => x.Device.SerialNumber.Contains(searchSerialNumber));
+
+        if (!string.IsNullOrWhiteSpace(searchCircuitSerial))
+            query = query.Where(x => x.Device.CircuitSerialNumber.Contains(searchCircuitSerial));
+
+        if (!string.IsNullOrWhiteSpace(searchHWVersion))
+            query = query.Where(x => x.Device.HWVersion.Contains(searchHWVersion));
 
         // Total count BEFORE pagination
         var totalCount = await query.CountAsync();
@@ -50,18 +58,31 @@ public class DeviceDataSource : IDeviceDataSource
         // Sort
         query = (sortColumn?.ToLowerInvariant()) switch
         {
-            "imei"               => ascending ? query.OrderBy(d => d.IMEI)               : query.OrderByDescending(d => d.IMEI),
-            "seriallab"          => ascending ? query.OrderBy(d => d.SerialLab)          : query.OrderByDescending(d => d.SerialLab),
-            "serialnumber"       => ascending ? query.OrderBy(d => d.SerialNumber)       : query.OrderByDescending(d => d.SerialNumber),
-            "circuitserialnumber"=> ascending ? query.OrderBy(d => d.CircuitSerialNumber): query.OrderByDescending(d => d.CircuitSerialNumber),
-            "hwversion"          => ascending ? query.OrderBy(d => d.HWVersion)          : query.OrderByDescending(d => d.HWVersion),
-            _                    => ascending ? query.OrderBy(d => d.Name)               : query.OrderByDescending(d => d.Name),
+            "modelname"          => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
+            "imei"               => ascending ? query.OrderBy(x => x.Device.IMEI)             : query.OrderByDescending(x => x.Device.IMEI),
+            "seriallab"          => ascending ? query.OrderBy(x => x.Device.SerialLab)        : query.OrderByDescending(x => x.Device.SerialLab),
+            "serialnumber"       => ascending ? query.OrderBy(x => x.Device.SerialNumber)     : query.OrderByDescending(x => x.Device.SerialNumber),
+            "circuitserialnumber"=> ascending ? query.OrderBy(x => x.Device.CircuitSerialNumber) : query.OrderByDescending(x => x.Device.CircuitSerialNumber),
+            "hwversion"          => ascending ? query.OrderBy(x => x.Device.HWVersion)        : query.OrderByDescending(x => x.Device.HWVersion),
+            _                    => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
         };
 
-        // Pagination
+        // Pagination + project into Device with ModelName populated
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(x => new Device
+            {
+                Id                  = x.Device.Id,
+                ModelId             = x.Device.ModelId,
+                ModelName           = x.ModelName,
+                IMEI                = x.Device.IMEI,
+                SerialLab           = x.Device.SerialLab,
+                SerialNumber        = x.Device.SerialNumber,
+                CircuitSerialNumber = x.Device.CircuitSerialNumber,
+                HWVersion           = x.Device.HWVersion,
+                Status              = x.Device.Status,
+            })
             .ToListAsync();
 
         return (items, totalCount);
@@ -85,7 +106,6 @@ public class DeviceDataSource : IDeviceDataSource
     /// </summary>
     public async Task BorrowAsync(Guid modelId, int quantity)
     {
-        // Get the IDs of available devices first (read phase — no lock yet)
         var candidateIds = await _context.Devices
             .AsNoTracking()
             .Where(d => d.ModelId == modelId && d.Status == "Available")
@@ -100,7 +120,6 @@ public class DeviceDataSource : IDeviceDataSource
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // Bulk update: mark selected devices as Borrowed (NFR6 — atomic)
             var updatedCount = await _context.Devices
                 .Where(d => candidateIds.Contains(d.Id) && d.Status == "Available")
                 .ExecuteUpdateAsync(s => s.SetProperty(d => d.Status, "Borrowed"));

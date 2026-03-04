@@ -14,7 +14,8 @@ public partial class ModelListViewModel : PagedListViewModelBase
     public ObservableCollection<Model> Models { get; } = new();
 
     // ── Filters ───────────────────────────────────────────────────────
-    [ObservableProperty] private string  _searchText        = string.Empty;
+    [ObservableProperty] private string  _searchName          = string.Empty;
+    [ObservableProperty] private string? _selectedManufacturer;
     [ObservableProperty] private string? _selectedCategory;
     [ObservableProperty] private string? _selectedSubCategory;
 
@@ -51,13 +52,11 @@ public partial class ModelListViewModel : PagedListViewModelBase
     // ── PagedListViewModelBase contract ────────────────────────────────
     protected override async Task LoadDataCoreAsync()
     {
-        var search = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText;
-
         var (items, total) = await _getModelsPaged.ExecuteAsync(
             page:              CurrentPage,
             pageSize:          SelectedPageSize,
-            searchName:        search,
-            searchManufacturer: search,
+            searchName:        NullIfEmpty(SearchName),
+            searchManufacturer: SelectedManufacturer,   // exact match from hardcoded list
             filterCategory:    SelectedCategory,
             filterSubCategory: SelectedSubCategory,
             sortColumn:        SortColumn,
@@ -77,7 +76,8 @@ public partial class ModelListViewModel : PagedListViewModelBase
 
     protected override void ClearFilterValues()
     {
-        SearchText          = string.Empty;
+        SearchName          = string.Empty;
+        SelectedManufacturer = null;
         SelectedCategory    = null;
         SelectedSubCategory = null;
         SubCategories.Clear();
@@ -90,4 +90,7 @@ public partial class ModelListViewModel : PagedListViewModelBase
         SubCategories.Clear();
         foreach (var s in subs) SubCategories.Add(s);
     }
+
+    private static string? NullIfEmpty(string s)
+        => string.IsNullOrWhiteSpace(s) ? null : s;
 }

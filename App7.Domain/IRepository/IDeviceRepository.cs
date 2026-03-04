@@ -6,12 +6,17 @@ public interface IDeviceRepository
 {
     /// <summary>
     /// Returns a paginated, filtered, and sorted list of borrowed devices (Status = "Borrowed").
+    /// Each result has ModelName populated via join.
     /// </summary>
     Task<(IEnumerable<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page,
         int pageSize,
-        string? searchText,
-        string? filterHWVersion,
+        string? searchModelName,
+        string? searchIMEI,
+        string? searchSerialLab,
+        string? searchSerialNumber,
+        string? searchCircuitSerial,
+        string? searchHWVersion,
         string? sortColumn,
         bool ascending);
 

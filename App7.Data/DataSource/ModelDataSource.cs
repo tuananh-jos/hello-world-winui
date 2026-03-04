@@ -31,7 +31,7 @@ public class ModelDataSource : IModelDataSource
             query = query.Where(m => m.Name.Contains(searchName));
 
         if (!string.IsNullOrWhiteSpace(searchManufacturer))
-            query = query.Where(m => m.Manufacturer.Contains(searchManufacturer));
+            query = query.Where(m => m.Manufacturer == searchManufacturer);
 
         // Filter
         if (!string.IsNullOrWhiteSpace(filterCategory))

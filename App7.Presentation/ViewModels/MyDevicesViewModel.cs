@@ -12,16 +12,18 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
     // ── Data ──────────────────────────────────────────────────────────
     public ObservableCollection<Device> Devices { get; } = new();
 
-    // ── Filters ───────────────────────────────────────────────────────
-    [ObservableProperty] private string  _searchText        = string.Empty;
-    [ObservableProperty] private string? _selectedHWVersion;
-
-    public ObservableCollection<string> HWVersions { get; } = new();
+    // ── Per-column search ─────────────────────────────────────────────
+    [ObservableProperty] private string _searchModelName    = string.Empty;
+    [ObservableProperty] private string _searchIMEI         = string.Empty;
+    [ObservableProperty] private string _searchSerialLab    = string.Empty;
+    [ObservableProperty] private string _searchSerialNumber = string.Empty;
+    [ObservableProperty] private string _searchCircuitSerial= string.Empty;
+    [ObservableProperty] private string _searchHWVersion    = string.Empty;
 
     // ── Column visibility ─────────────────────────────────────────────
     public override ObservableCollection<ColumnVisibilityItem> ColumnVisibilities { get; } = new()
     {
-        new() { ColumnTag = "Name",                DisplayName = "Name",           IsVisible = true },
+        new() { ColumnTag = "ModelName",           DisplayName = "Model Name",     IsVisible = true },
         new() { ColumnTag = "IMEI",                DisplayName = "IMEI",           IsVisible = true },
         new() { ColumnTag = "SerialLab",           DisplayName = "Serial Lab",     IsVisible = true },
         new() { ColumnTag = "SerialNumber",        DisplayName = "Serial No.",     IsVisible = true },
@@ -35,31 +37,35 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
     // ── PagedListViewModelBase contract ────────────────────────────────
     protected override async Task LoadDataCoreAsync()
     {
-        var search = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText;
-
         var (items, total) = await _getDevices.ExecuteAsync(
-            page:            CurrentPage,
-            pageSize:        SelectedPageSize,
-            searchText:      search,
-            filterHWVersion: SelectedHWVersion,
-            sortColumn:      SortColumn,
-            ascending:       SortAscending);
+            page:               CurrentPage,
+            pageSize:           SelectedPageSize,
+            searchModelName:    NullIfEmpty(SearchModelName),
+            searchIMEI:         NullIfEmpty(SearchIMEI),
+            searchSerialLab:    NullIfEmpty(SearchSerialLab),
+            searchSerialNumber: NullIfEmpty(SearchSerialNumber),
+            searchCircuitSerial:NullIfEmpty(SearchCircuitSerial),
+            searchHWVersion:    NullIfEmpty(SearchHWVersion),
+            sortColumn:         SortColumn,
+            ascending:          SortAscending);
 
         Devices.Clear();
         foreach (var d in items) Devices.Add(d);
         TotalCount = total;
     }
 
-    protected override async Task LoadFilterOptionsAsync()
-    {
-        var versions = await _getDevices.GetHWVersionsAsync();
-        HWVersions.Clear();
-        foreach (var v in versions) HWVersions.Add(v);
-    }
+    protected override Task LoadFilterOptionsAsync() => Task.CompletedTask;
 
     protected override void ClearFilterValues()
     {
-        SearchText        = string.Empty;
-        SelectedHWVersion = null;
+        SearchModelName     = string.Empty;
+        SearchIMEI          = string.Empty;
+        SearchSerialLab     = string.Empty;
+        SearchSerialNumber  = string.Empty;
+        SearchCircuitSerial = string.Empty;
+        SearchHWVersion     = string.Empty;
     }
+
+    private static string? NullIfEmpty(string s)
+        => string.IsNullOrWhiteSpace(s) ? null : s;
 }

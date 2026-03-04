@@ -21,7 +21,7 @@
                     <Grid RowDefinitions="Auto,Auto,Auto,Auto">
 
                         <!-- Title -->
-                        <TextBlock Grid.Row="0" Text="Device List" FontSize="18" FontWeight="Bold" Padding="16,16,16,8" />
+                        <TextBlock Grid.Row="0" Text="My Devices" FontSize="18" FontWeight="Bold" Padding="16,16,16,8" />
 
                         <!-- Controls bar -->
                         <Grid Grid.Row="1" Padding="16,0,16,8">
@@ -34,136 +34,158 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Table area: custom header | filter row | DataGrid -->
-                        <Grid Grid.Row="2" Margin="16,0,16,0" RowDefinitions="Auto,Auto,Auto">
+                        <!-- Table area: border wrap → header | filter | DataGrid -->
+                        <Border Grid.Row="2" Margin="16,0,16,0"
+                                BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="2">
+                            <Grid RowDefinitions="Auto,Auto,Auto">
 
-                            <!-- Custom column header row -->
-                            <Border Grid.Row="0" Background="#2D8A8888" Height="40">
-                                <Grid Height="40">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="180" />
-                                        <ColumnDefinition Width="160" />
-                                        <ColumnDefinition Width="130" />
-                                        <ColumnDefinition Width="130" />
-                                        <ColumnDefinition Width="130" />
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="Name"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Name" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconName" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="1" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="IMEI"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="IMEI" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconIMEI" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="2" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="SerialLab"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Serial Lab" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconSerialLab" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="3" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="SerialNumber"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Serial No." Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconSerialNumber" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="4" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="CircuitSerialNumber"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="Circuit Serial" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconCircuitSerial" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Button Grid.Column="5" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="HWVersion"
-                                            Background="Transparent" BorderThickness="0" Height="40"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                                        <Grid>
-                                            <TextBlock Text="HW Version" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="SortIconHWVersion" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Button>
-                                    <Border Grid.Column="6" Padding="8,0">
-                                        <TextBlock Text="Function" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                            </Border>
+                                <!-- Custom column header row -->
+                                <Border Grid.Row="0" Background="#2D8A8888">
+                                    <Grid x:Name="HeaderGrid" Height="40">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition x:Name="ColDefModelName"          Width="180" />
+                                            <ColumnDefinition x:Name="ColDefIMEI"               Width="160" />
+                                            <ColumnDefinition x:Name="ColDefSerialLab"          Width="130" />
+                                            <ColumnDefinition x:Name="ColDefSerialNumber"       Width="130" />
+                                            <ColumnDefinition x:Name="ColDefCircuitSerial"      Width="130" />
+                                            <ColumnDefinition x:Name="ColDefHWVersion"          Width="120" />
+                                            <ColumnDefinition x:Name="ColDefFunction"           Width="120" />
+                                        </Grid.ColumnDefinitions>
 
-                            <!-- Filter row -->
-                            <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,0,0,1" Padding="0,4">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="180" />
-                                        <ColumnDefinition Width="160" />
-                                        <ColumnDefinition Width="130" />
-                                        <ColumnDefinition Width="130" />
-                                        <ColumnDefinition Width="130" />
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" PlaceholderText="Filter name / serial…"
-                                             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
-                                             KeyDown="OnSearchKeyDown" Margin="4,0" FontSize="12" />
-                                    <ComboBox Grid.Column="5"
-                                              ItemsSource="{x:Bind ViewModel.HWVersions, Mode=OneWay}"
-                                              SelectedItem="{x:Bind ViewModel.SelectedHWVersion, Mode=TwoWay}"
-                                              PlaceholderText="All" SelectionChanged="OnHWVersionChanged"
-                                              HorizontalAlignment="Stretch" Margin="4,0" FontSize="12" />
-                                    <Button Grid.Column="6" Content="Clear Filter"
-                                            Command="{x:Bind ViewModel.ClearFiltersCommand}"
-                                            Style="{StaticResource AppClearFilterButtonStyle}"
-                                            HorizontalAlignment="Stretch" Margin="4,0" />
-                                </Grid>
-                            </Border>
+                                        <Button Grid.Column="0" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="ModelName"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Model Name" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconModelName" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="1" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="IMEI"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="IMEI" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconIMEI" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="2" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="SerialLab"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Serial Lab" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconSerialLab" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="3" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="SerialNumber"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Serial No." Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconSerialNumber" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="4" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="CircuitSerialNumber"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="Circuit Serial" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconCircuitSerial" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Button Grid.Column="5" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="HWVersion"
+                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
+                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
+                                            <Grid>
+                                                <TextBlock Text="HW Version" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                <TextBlock x:Name="SortIconHWVersion" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Button>
+                                        <Border Grid.Column="6" Padding="8,0" BorderThickness="0">
+                                            <TextBlock Text="Function" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
 
-                            <!-- DataGrid (data rows only) -->
-                            <controls:DataGrid Grid.Row="2" x:Name="DevicesGrid"
-                                               AutoGenerateColumns="False"
-                                               GridLinesVisibility="Horizontal"
-                                               CanUserSortColumns="False"
-                                               HeadersVisibility="None"
-                                               RowBackground="White"
-                                               AlternatingRowBackground="#F9F9F9"
-                                               ItemsSource="{x:Bind ViewModel.Devices, Mode=OneWay}"
-                                               IsReadOnly="True" MinHeight="200">
-                                <controls:DataGrid.Columns>
-                                    <controls:DataGridTextColumn Binding="{Binding Name}"               Tag="Name"               Width="180" />
-                                    <controls:DataGridTextColumn Binding="{Binding IMEI}"               Tag="IMEI"               Width="160" />
-                                    <controls:DataGridTextColumn Binding="{Binding SerialLab}"          Tag="SerialLab"          Width="130" />
-                                    <controls:DataGridTextColumn Binding="{Binding SerialNumber}"       Tag="SerialNumber"       Width="130" />
-                                    <controls:DataGridTextColumn Binding="{Binding CircuitSerialNumber}" Tag="CircuitSerialNumber" Width="130" />
-                                    <controls:DataGridTextColumn Binding="{Binding HWVersion}"          Tag="HWVersion"          Width="120" />
-                                    <controls:DataGridTemplateColumn Tag="Function" Width="120" IsReadOnly="True">
-                                        <controls:DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button Tag="{Binding}" Click="OnReturnClicked"
-                                                        Style="{StaticResource AppFunctionButtonStyle}">
-                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
-                                                        <TextBlock Text="Return" VerticalAlignment="Center" FontSize="12" />
-                                                    </StackPanel>
-                                                </Button>
-                                            </DataTemplate>
-                                        </controls:DataGridTemplateColumn.CellTemplate>
-                                    </controls:DataGridTemplateColumn>
-                                </controls:DataGrid.Columns>
-                            </controls:DataGrid>
+                                <!-- Filter row: 6 independent search TextBoxes -->
+                                <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,1,0,1" Padding="0,4">
+                                    <Grid x:Name="FilterGrid">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition x:Name="FilterColDefModelName"          Width="180" />
+                                            <ColumnDefinition x:Name="FilterColDefIMEI"               Width="160" />
+                                            <ColumnDefinition x:Name="FilterColDefSerialLab"          Width="130" />
+                                            <ColumnDefinition x:Name="FilterColDefSerialNumber"       Width="130" />
+                                            <ColumnDefinition x:Name="FilterColDefCircuitSerial"      Width="130" />
+                                            <ColumnDefinition x:Name="FilterColDefHWVersion"          Width="120" />
+                                            <ColumnDefinition x:Name="FilterColDefFunction"           Width="120" />
+                                        </Grid.ColumnDefinitions>
 
-                        </Grid>
+                                        <TextBox Grid.Column="0" PlaceholderText="Search model…"
+                                                 Text="{x:Bind ViewModel.SearchModelName, Mode=TwoWay}"
+                                                 KeyDown="OnSearchKeyDown" Tag="ModelName"
+                                                 Margin="4,0" FontSize="12" />
+                                        <TextBox Grid.Column="1" PlaceholderText="Search IMEI…"
+                                                 Text="{x:Bind ViewModel.SearchIMEI, Mode=TwoWay}"
+                                                 KeyDown="OnSearchKeyDown" Tag="IMEI"
+                                                 Margin="4,0" FontSize="12" />
+                                        <TextBox Grid.Column="2" PlaceholderText="Search lab…"
+                                                 Text="{x:Bind ViewModel.SearchSerialLab, Mode=TwoWay}"
+                                                 KeyDown="OnSearchKeyDown" Tag="SerialLab"
+                                                 Margin="4,0" FontSize="12" />
+                                        <TextBox Grid.Column="3" PlaceholderText="Search serial…"
+                                                 Text="{x:Bind ViewModel.SearchSerialNumber, Mode=TwoWay}"
+                                                 KeyDown="OnSearchKeyDown" Tag="SerialNumber"
+                                                 Margin="4,0" FontSize="12" />
+                                        <TextBox Grid.Column="4" PlaceholderText="Search circuit…"
+                                                 Text="{x:Bind ViewModel.SearchCircuitSerial, Mode=TwoWay}"
+                                                 KeyDown="OnSearchKeyDown" Tag="CircuitSerialNumber"
+                                                 Margin="4,0" FontSize="12" />
+                                        <TextBox Grid.Column="5" PlaceholderText="Search HW ver…"
+                                                 Text="{x:Bind ViewModel.SearchHWVersion, Mode=TwoWay}"
+                                                 KeyDown="OnSearchKeyDown" Tag="HWVersion"
+                                                 Margin="4,0" FontSize="12" />
+                                        <Button Grid.Column="6" Content="Clear Filter"
+                                                Command="{x:Bind ViewModel.ClearFiltersCommand}"
+                                                Style="{StaticResource AppClearFilterButtonStyle}"
+                                                HorizontalAlignment="Stretch" Margin="4,0" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- DataGrid -->
+                                <controls:DataGrid Grid.Row="2" x:Name="DevicesGrid"
+                                                   AutoGenerateColumns="False"
+                                                   GridLinesVisibility="All"
+                                                   CanUserSortColumns="False"
+                                                   HeadersVisibility="None"
+                                                   RowBackground="White"
+                                                   AlternatingRowBackground="#F9F9F9"
+                                                   ItemsSource="{x:Bind ViewModel.Devices, Mode=OneWay}"
+                                                   IsReadOnly="True" MinHeight="200"
+                                                   BorderThickness="0">
+                                    <controls:DataGrid.Columns>
+                                        <controls:DataGridTextColumn Binding="{Binding ModelName}"          Tag="ModelName"          Width="180" />
+                                        <controls:DataGridTextColumn Binding="{Binding IMEI}"               Tag="IMEI"               Width="160" />
+                                        <controls:DataGridTextColumn Binding="{Binding SerialLab}"          Tag="SerialLab"          Width="130" />
+                                        <controls:DataGridTextColumn Binding="{Binding SerialNumber}"       Tag="SerialNumber"       Width="130" />
+                                        <controls:DataGridTextColumn Binding="{Binding CircuitSerialNumber}" Tag="CircuitSerialNumber" Width="130" />
+                                        <controls:DataGridTextColumn Binding="{Binding HWVersion}"          Tag="HWVersion"          Width="120" />
+                                        <controls:DataGridTemplateColumn Tag="Function" Width="120" IsReadOnly="True">
+                                            <controls:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Tag="{Binding}" Click="OnReturnClicked"
+                                                            Style="{StaticResource AppFunctionButtonStyle}">
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
+                                                            <TextBlock Text="Return" VerticalAlignment="Center" FontSize="12" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </controls:DataGridTemplateColumn.CellTemplate>
+                                        </controls:DataGridTemplateColumn>
+                                    </controls:DataGrid.Columns>
+                                </controls:DataGrid>
+
+                            </Grid>
+                        </Border>
 
                         <!-- Pagination -->
                         <Grid Grid.Row="3" Background="#FAFAFA" MinHeight="80" Padding="16,0"

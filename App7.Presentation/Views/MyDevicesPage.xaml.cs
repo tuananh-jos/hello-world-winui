@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 using Windows.UI;
 
 namespace App7.Presentation.Views;
@@ -54,7 +55,7 @@ public sealed partial class MyDevicesPage : Page
     {
         var icons = new (string col, TextBlock tb)[]
         {
-            ("Name",                SortIconName),
+            ("ModelName",           SortIconModelName),
             ("IMEI",                SortIconIMEI),
             ("SerialLab",           SortIconSerialLab),
             ("SerialNumber",        SortIconSerialNumber),
@@ -77,15 +78,12 @@ public sealed partial class MyDevicesPage : Page
         }
     }
 
-    // ── Filter handlers ───────────────────────────────────────────────
+    // ── Shared KeyDown handler for all search TextBoxes ───────────────
     private async void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == Windows.System.VirtualKey.Enter)
             await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
     }
-
-    private async void OnHWVersionChanged(object sender, SelectionChangedEventArgs e)
-        => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
 
     // ── Return device ─────────────────────────────────────────────────
     private async void OnReturnClicked(object sender, RoutedEventArgs e)
@@ -94,8 +92,8 @@ public sealed partial class MyDevicesPage : Page
 
         var confirm = new ContentDialog
         {
-            Title = "Return Device",
-            Content = $"Return {device.Name}?\nIMEI: {device.IMEI}",
+            Title             = "Return Device",
+            Content           = $"Return {device.ModelName}?\nIMEI: {device.IMEI}",
             PrimaryButtonText = "Return",
             CloseButtonText   = "Cancel",
             DefaultButton     = ContentDialogButton.Primary,
@@ -108,7 +106,7 @@ public sealed partial class MyDevicesPage : Page
         {
             await _returnUseCase.ExecuteAsync(device.Id, device.ModelId);
             await ViewModel.ReloadAsync();
-            ShowInfoBar(InfoBarSeverity.Success, $"Returned \"{device.Name}\" successfully.");
+            ShowInfoBar(InfoBarSeverity.Success, $"Returned \"{device.ModelName}\" (IMEI: {device.IMEI}) successfully.");
         }
         catch (Exception ex)
         {
@@ -156,7 +154,7 @@ public sealed partial class MyDevicesPage : Page
     private void OnColumnsButtonClicked(object sender, RoutedEventArgs e)
     {
         var transform = ColumnsBtn.TransformToVisual(PageRoot);
-        var pt = transform.TransformPoint(new Windows.Foundation.Point(0, ColumnsBtn.ActualHeight + 4));
+        var pt = transform.TransformPoint(new Point(0, ColumnsBtn.ActualHeight + 4));
         ColumnsPanel.Margin = new Thickness(pt.X, pt.Y, 0, 0);
         ViewModel.IsColumnsPopupOpen = true;
     }
@@ -164,16 +162,66 @@ public sealed partial class MyDevicesPage : Page
     private void OnColumnsOverlayPressed(object sender, PointerRoutedEventArgs e)
         => ViewModel.CloseColumnsPopupCommand.Execute(null);
 
-    // ── Column visibility ─────────────────────────────────────────────
+    // ── Column visibility — sync DataGrid column + header + filter ────
     private void SyncColumnVisibility(ColumnVisibilityItem item)
     {
+        var visible = item.IsVisible;
+        var tag = item.ColumnTag;
+
+        // 1. DataGrid column
         foreach (var col in DevicesGrid.Columns)
         {
-            if (col.Tag?.ToString() == item.ColumnTag)
+            if (col.Tag?.ToString() == tag)
             {
-                col.Visibility = item.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+                col.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
                 break;
             }
         }
+
+        // 2. Header ColumnDefinition width
+        var hdrColDef = GetHeaderColDef(tag);
+        if (hdrColDef != null)
+            hdrColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
+
+        // 3. Filter ColumnDefinition width
+        var fltColDef = GetFilterColDef(tag);
+        if (fltColDef != null)
+            fltColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
     }
+
+    private ColumnDefinition? GetHeaderColDef(string tag) => tag switch
+    {
+        "ModelName"          => ColDefModelName,
+        "IMEI"               => ColDefIMEI,
+        "SerialLab"          => ColDefSerialLab,
+        "SerialNumber"       => ColDefSerialNumber,
+        "CircuitSerialNumber"=> ColDefCircuitSerial,
+        "HWVersion"          => ColDefHWVersion,
+        "Function"           => ColDefFunction,
+        _                    => null
+    };
+
+    private ColumnDefinition? GetFilterColDef(string tag) => tag switch
+    {
+        "ModelName"          => FilterColDefModelName,
+        "IMEI"               => FilterColDefIMEI,
+        "SerialLab"          => FilterColDefSerialLab,
+        "SerialNumber"       => FilterColDefSerialNumber,
+        "CircuitSerialNumber"=> FilterColDefCircuitSerial,
+        "HWVersion"          => FilterColDefHWVersion,
+        "Function"           => FilterColDefFunction,
+        _                    => null
+    };
+
+    private static GridLength GetNaturalWidth(string tag) => tag switch
+    {
+        "ModelName"          => new GridLength(180),
+        "IMEI"               => new GridLength(160),
+        "SerialLab"          => new GridLength(130),
+        "SerialNumber"       => new GridLength(130),
+        "CircuitSerialNumber"=> new GridLength(130),
+        "HWVersion"          => new GridLength(120),
+        "Function"           => new GridLength(120),
+        _                    => new GridLength(100),
+    };
 }

@@ -11,21 +11,25 @@ public class GetBorrowedDevicesUseCase
     private readonly IDeviceRepository _deviceRepository;
 
     public GetBorrowedDevicesUseCase(IDeviceRepository deviceRepository)
-    {
-        _deviceRepository = deviceRepository;
-    }
+        => _deviceRepository = deviceRepository;
 
     public async Task<(IEnumerable<Device> Items, int TotalCount)> ExecuteAsync(
         int page,
         int pageSize,
-        string? searchText = null,
-        string? filterHWVersion = null,
-        string? sortColumn = null,
-        bool ascending = true)
+        string? searchModelName  = null,
+        string? searchIMEI       = null,
+        string? searchSerialLab  = null,
+        string? searchSerialNumber  = null,
+        string? searchCircuitSerial = null,
+        string? searchHWVersion  = null,
+        string? sortColumn       = null,
+        bool    ascending        = true)
     {
         return await _deviceRepository.GetBorrowedPagedAsync(
             page, pageSize,
-            searchText, filterHWVersion,
+            searchModelName, searchIMEI,
+            searchSerialLab, searchSerialNumber,
+            searchCircuitSerial, searchHWVersion,
             sortColumn, ascending);
     }
 

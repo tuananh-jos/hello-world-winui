@@ -9,18 +9,20 @@ public class DeviceRepository : IDeviceRepository
     private readonly IDeviceDataSource _dataSource;
 
     public DeviceRepository(IDeviceDataSource dataSource)
-    {
-        _dataSource = dataSource;
-    }
+        => _dataSource = dataSource;
 
     public async Task<(IEnumerable<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page, int pageSize,
-        string? searchText, string? filterHWVersion,
+        string? searchModelName, string? searchIMEI,
+        string? searchSerialLab, string? searchSerialNumber,
+        string? searchCircuitSerial, string? searchHWVersion,
         string? sortColumn, bool ascending)
     {
         var result = await _dataSource.GetBorrowedPagedAsync(
             page, pageSize,
-            searchText, filterHWVersion,
+            searchModelName, searchIMEI,
+            searchSerialLab, searchSerialNumber,
+            searchCircuitSerial, searchHWVersion,
             sortColumn, ascending);
         return (result.Items, result.TotalCount);
     }
