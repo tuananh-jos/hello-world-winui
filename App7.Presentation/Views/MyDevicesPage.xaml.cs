@@ -10,7 +10,6 @@ namespace App7.Presentation.Views;
 public sealed partial class MyDevicesPage : Page
 {
     public MyDevicesViewModel ViewModel { get; }
-
     private readonly ReturnDeviceUseCase _returnUseCase;
 
     public MyDevicesPage()
@@ -42,7 +41,6 @@ public sealed partial class MyDevicesPage : Page
     {
         if (sender is not Button btn || btn.Tag is not Device device) return;
 
-        // Simple confirmation dialog
         var confirm = new ContentDialog
         {
             Title = "Return Device",
@@ -60,17 +58,27 @@ public sealed partial class MyDevicesPage : Page
         {
             await _returnUseCase.ExecuteAsync(device.Id, device.ModelId);
             await ViewModel.ReloadAsync();
+            ShowInfoBar(InfoBarSeverity.Success, $"Returned \"{device.Name}\" successfully.");
         }
         catch (Exception ex)
         {
-            var errorDialog = new ContentDialog
-            {
-                Title = "Return failed",
-                Content = ex.Message,
-                CloseButtonText = "OK",
-                XamlRoot = XamlRoot
-            };
-            await errorDialog.ShowAsync();
+            ShowInfoBar(InfoBarSeverity.Error, $"Return failed: {ex.Message}");
         }
+    }
+
+    // ── InfoBar helper ────────────────────────────────────────────────
+    private void ShowInfoBar(InfoBarSeverity severity, string message)
+    {
+        ReturnInfoBar.Severity = severity;
+        ReturnInfoBar.Message  = message;
+        ReturnInfoBar.IsOpen   = true;
+
+        var timer = new Microsoft.UI.Xaml.DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        timer.Tick += (_, _) =>
+        {
+            ReturnInfoBar.IsOpen = false;
+            timer.Stop();
+        };
+        timer.Start();
     }
 }

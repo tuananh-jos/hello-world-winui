@@ -7,7 +7,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="0,8,0,0">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="0,8,0,0">
 
         <!-- ── Toolbar: Search + HWVersion filter + Buttons ── -->
         <Grid Grid.Row="0" Padding="0,0,0,8" ColumnDefinitions="*,Auto,Auto">
@@ -37,16 +37,24 @@
             </StackPanel>
         </Grid>
 
+        <!-- ── InfoBar: post-return feedback ── -->
+        <InfoBar
+            Grid.Row="1"
+            x:Name="ReturnInfoBar"
+            IsOpen="False"
+            IsClosable="True"
+            Margin="0,0,0,4" />
+
         <!-- ── Loading indicator ── -->
         <ProgressBar
-            Grid.Row="1"
+            Grid.Row="2"
             x:Name="LoadingBar"
             IsIndeterminate="True"
             x:Load="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         <!-- ── Data Grid ── -->
         <controls:DataGrid
-            Grid.Row="2"
+            Grid.Row="3"
             AutoGenerateColumns="False"
             GridLinesVisibility="Horizontal"
             CanUserSortColumns="True"
@@ -84,7 +92,7 @@
         </controls:DataGrid>
 
         <!-- ── Pagination bar ── -->
-        <Grid Grid.Row="3" Padding="0,8,0,0" ColumnDefinitions="Auto,*,Auto">
+        <Grid Grid.Row="4" Padding="0,8,0,0" ColumnDefinitions="Auto,*,Auto">
 
             <TextBlock
                 Grid.Column="0"

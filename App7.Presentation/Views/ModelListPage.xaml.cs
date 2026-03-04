@@ -11,7 +11,6 @@ namespace App7.Presentation.Views;
 public sealed partial class ModelListPage : Page
 {
     public ModelListViewModel ViewModel { get; }
-
     private readonly BorrowDeviceUseCase _borrowUseCase;
 
     public ModelListPage()
@@ -43,16 +42,33 @@ public sealed partial class ModelListPage : Page
     {
         if (sender is not Button btn || btn.Tag is not Model model) return;
 
-        var dialog = new BorrowDialog(_borrowUseCase)
-        {
-            XamlRoot = XamlRoot
-        };
+        var dialog = new BorrowDialog(_borrowUseCase) { XamlRoot = XamlRoot };
         dialog.Init(model);
-
         await dialog.ShowAsync();
 
-        // If the user confirmed, reload the list so Available count refreshes
         if (dialog.ViewModel.Confirmed)
+        {
             await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+            ShowInfoBar(
+                InfoBarSeverity.Success,
+                $"Borrowed {dialog.ViewModel.SelectedQuantity} device(s) from model \"{model.Name}\" successfully.");
+        }
+    }
+
+    // ── InfoBar helper ────────────────────────────────────────────────
+    private void ShowInfoBar(InfoBarSeverity severity, string message)
+    {
+        BorrowInfoBar.Severity = severity;
+        BorrowInfoBar.Message  = message;
+        BorrowInfoBar.IsOpen   = true;
+
+        // Auto-dismiss after 3 seconds
+        var timer = new Microsoft.UI.Xaml.DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        timer.Tick += (_, _) =>
+        {
+            BorrowInfoBar.IsOpen = false;
+            timer.Stop();
+        };
+        timer.Start();
     }
 }
