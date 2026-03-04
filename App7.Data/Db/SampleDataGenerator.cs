@@ -8,8 +8,8 @@ public static class SampleDataGenerator
 {
     public static async Task GenerateAsync()
     {
-        const int modelCount = 50;
-        const int devicesPerModel = 20;
+        const int modelCount = 10000;
+        const int devicesPerModel = 10;
 
         var modelFaker = new Faker<Model>()
             .RuleFor(m => m.Id, f => Guid.NewGuid())

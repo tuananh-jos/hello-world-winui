@@ -5,121 +5,259 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    mc:Ignorable="d">
+    xmlns:vm="using:App7.Presentation.ViewModels"
+    mc:Ignorable="d"
+    x:Name="PageRoot">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="0,8,0,0">
+    <!--
+        Root Grid:
+          Row 0 (*) — scrollable panel area
+          Row 1 (90px) — footer
+        Overlays span all rows via ZIndex
+    -->
+    <Grid Background="White">
 
-        <!-- ── Toolbar: Search + Filters + Buttons ── -->
-        <Grid Grid.Row="0" Padding="0,0,0,8" ColumnDefinitions="*,Auto,Auto,Auto">
+        <!-- ════════════════════════════════════════════════════════════
+             SCROLLABLE PANEL AREA (+ footer at the bottom)
+             ════════════════════════════════════════════════════════════ -->
+        <ScrollViewer x:Name="MainScroller" VerticalScrollBarVisibility="Auto">
+            <!-- Grid fills ScrollViewer; MinHeight set from code-behind = viewport height
+                 so that Row 0 (*) stretches and footer sticks to bottom when content is short -->
+            <Grid x:Name="ContentGrid" RowDefinitions="*,Auto">
 
-            <TextBox
-                Grid.Column="0"
-                PlaceholderText="Search by name or manufacturer…"
-                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                Margin="0,0,8,0" />
+                <!-- Row 0: Panel card with margin (takes * when grid is tall) -->
+                <Border
+                    Grid.Row="0"
+                    VerticalAlignment="Top"
+                    Margin="20,20,20,20"
+                    CornerRadius="8"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    Translation="0,0,32">
+                    <Border.Shadow>
+                        <ThemeShadow />
+                    </Border.Shadow>
 
-            <ComboBox
-                Grid.Column="1"
-                PlaceholderText="Category"
-                ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
-                MinWidth="140"
-                Margin="0,0,8,0" />
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto">
 
-            <ComboBox
-                Grid.Column="2"
-                PlaceholderText="SubCategory"
-                ItemsSource="{x:Bind ViewModel.SubCategories, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.SelectedSubCategory, Mode=TwoWay}"
-                MinWidth="140"
-                Margin="0,0,8,0" />
+                        <!-- Row 0: Page title -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Text="Model List"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Padding="16,16,16,8" />
 
-            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
-                <Button
-                    Content="Search"
-                    Command="{x:Bind ViewModel.ApplyFiltersCommand}"
-                    Style="{ThemeResource AccentButtonStyle}" />
-                <Button
-                    Content="Clear"
-                    Command="{x:Bind ViewModel.ClearFiltersCommand}" />
-            </StackPanel>
+                        <!-- Row 1: Controls (Columns + PageSize) -->
+                        <Grid Grid.Row="1" Padding="16,0,16,8">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+
+                                <!-- Columns toggle button -->
+                                <Button
+                                    x:Name="ColumnsBtn"
+                                    Content="Columns"
+                                    Click="OnColumnsButtonClicked" />
+
+                                <!-- Page size -->
+                                <ComboBox
+                                    PlaceholderText="Rows"
+                                    ItemsSource="{x:Bind ViewModel.PageSizeOptions}"
+                                    SelectedItem="{x:Bind ViewModel.SelectedPageSize, Mode=TwoWay}"
+                                    MinWidth="90" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Row 2: Search + DataGrid -->
+                        <Grid Grid.Row="2" RowDefinitions="Auto,*" Padding="0,0,0,0">
+
+                            <!-- Search / Filter bar (inside panel) -->
+                            <Grid Grid.Row="0" Padding="16,0,16,8"
+                                  ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+
+                                <TextBox
+                                    Grid.Column="0"
+                                    PlaceholderText="Search by name or manufacturer…"
+                                    Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Margin="0,0,8,0" />
+
+                                <ComboBox
+                                    Grid.Column="1"
+                                    PlaceholderText="Category"
+                                    ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+                                    SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
+                                    MinWidth="130"
+                                    Margin="0,0,8,0" />
+
+                                <ComboBox
+                                    Grid.Column="2"
+                                    PlaceholderText="Sub Category"
+                                    ItemsSource="{x:Bind ViewModel.SubCategories, Mode=OneWay}"
+                                    SelectedItem="{x:Bind ViewModel.SelectedSubCategory, Mode=TwoWay}"
+                                    MinWidth="130"
+                                    Margin="0,0,8,0" />
+
+                                <Button
+                                    Grid.Column="3"
+                                    Content="Search"
+                                    Command="{x:Bind ViewModel.ApplyFiltersCommand}"
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    Margin="0,0,8,0" />
+
+                                <Button
+                                    Grid.Column="4"
+                                    Content="Clear"
+                                    Command="{x:Bind ViewModel.ClearFiltersCommand}" />
+                            </Grid>
+
+                            <!-- Initial load ProgressBar -->
+                            <ProgressBar
+                                Grid.Row="0"
+                                x:Name="InitialLoadBar"
+                                IsIndeterminate="True"
+                                VerticalAlignment="Bottom"
+                                Visibility="{x:Bind ViewModel.InitialLoadingVisibility, Mode=OneWay}" />
+
+                            <!-- DataGrid -->
+                            <controls:DataGrid
+                                Grid.Row="1"
+                                x:Name="ModelsGrid"
+                                AutoGenerateColumns="False"
+                                GridLinesVisibility="Horizontal"
+                                CanUserSortColumns="True"
+                                Sorting="OnSorting"
+                                ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
+                                IsReadOnly="True"
+                                MinHeight="200">
+
+                                <controls:DataGrid.Resources>
+                                    <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
+                                </controls:DataGrid.Resources>
+
+                                <controls:DataGrid.Columns>
+                                    <controls:DataGridTextColumn Header="Name"         Binding="{Binding Name}"         Tag="Name"         MinWidth="180" />
+                                    <controls:DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" Tag="Manufacturer" MinWidth="150" />
+                                    <controls:DataGridTextColumn Header="Category"     Binding="{Binding Category}"     Tag="Category"     MinWidth="130" />
+                                    <controls:DataGridTextColumn Header="SubCategory"  Binding="{Binding SubCategory}"  Tag="SubCategory"  MinWidth="130" />
+                                    <controls:DataGridTextColumn Header="Available"    Binding="{Binding Available}"    Tag="Available"    MinWidth="100" />
+                                    <controls:DataGridTemplateColumn Header="" MinWidth="90" IsReadOnly="True" CanUserSort="False">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Content="Borrow"
+                                                    Tag="{Binding}"
+                                                    Style="{StaticResource AppOkButtonStyle}"
+                                                    Padding="10,4"
+                                                    Margin="4,0"
+                                                    Click="OnBorrowClicked" />
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                </controls:DataGrid.Columns>
+                            </controls:DataGrid>
+                        </Grid>
+
+                        <!-- Row 3: Pagination bar -->
+                        <Grid
+                            Grid.Row="3"
+                            Background="#FAFAFA"
+                            MinHeight="80"
+                            Padding="16,0"
+                            ColumnDefinitions="Auto,*,Auto">
+
+                            <!-- Left: showing text -->
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap"
+                                MaxWidth="280"
+                                Text="{x:Bind ViewModel.ShowingText, Mode=OneWay}"
+                                FontSize="13"
+                                Foreground="#555555" />
+
+                            <!-- Right: First Prev [1][2][3][4][5] Next Last -->
+                            <StackPanel
+                                Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="4"
+                                VerticalAlignment="Center">
+
+                                <Button Content="First"    Command="{x:Bind ViewModel.FirstPageCommand}"    Style="{StaticResource AppNavButtonStyle}" />
+                                <Button Content="Previous" Command="{x:Bind ViewModel.PreviousPageCommand}" Style="{StaticResource AppNavButtonStyle}" />
+
+                                <!-- Page number circle buttons — populated from code-behind -->
+                                <StackPanel x:Name="PageNumbersPanel" Orientation="Horizontal" Spacing="4" />
+
+                                <Button Content="Next" Command="{x:Bind ViewModel.NextPageCommand}" Style="{StaticResource AppNavButtonStyle}" />
+                                <Button Content="Last" Command="{x:Bind ViewModel.LastPageCommand}" Style="{StaticResource AppNavButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+
+                    </Grid>
+                </Border>
+
+                <!-- Row 1: Footer (sticks to bottom when content is short) -->
+                <Border Grid.Row="1" Background="#F5F5F5" Padding="0,20,0,20">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock
+                            Text="DPI Team &#x00A9; 2026 &#xB7; Report a problem"
+                            HorizontalAlignment="Center" FontSize="12" Foreground="#777777" />
+                        <Image Source="/Assets/logo.png" Height="22" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </ScrollViewer>
+
+        <!-- ════════════════════════════════════════════════════════════
+             LOADING OVERLAY (all async ops except initial load)
+             ════════════════════════════════════════════════════════════ -->
+        <Grid
+            Background="#60000000"
+            Visibility="{x:Bind ViewModel.IsOverlayVisible, Mode=OneWay}">
+            <ProgressRing IsActive="True" Width="48" Height="48" />
         </Grid>
 
-        <!-- ── InfoBar: post-borrow feedback ── -->
+        <!-- ════════════════════════════════════════════════════════════
+             COLUMNS POPUP OVERLAY
+             ════════════════════════════════════════════════════════════ -->
+        <Grid
+            x:Name="ColumnsOverlay"
+            Background="#40000000"
+            Visibility="{x:Bind ViewModel.ColumnsOverlayVisibility, Mode=OneWay}"
+            PointerPressed="OnColumnsOverlayPressed">
+
+            <!-- Columns panel — position set from code-behind -->
+            <Border
+                x:Name="ColumnsPanel"
+                Background="White"
+                CornerRadius="6"
+                BorderBrush="#DDDDDD"
+                BorderThickness="1"
+                Padding="8"
+                MinWidth="180"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top">
+                <ItemsControl ItemsSource="{x:Bind ViewModel.ColumnVisibilities}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ColumnVisibilityItem">
+                            <CheckBox
+                                Content="{x:Bind DisplayName}"
+                                IsChecked="{x:Bind IsVisible, Mode=TwoWay}"
+                                Margin="0,2" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+        </Grid>
+
+        <!-- post-borrow InfoBar (floating, above content) -->
         <InfoBar
-            Grid.Row="1"
             x:Name="BorrowInfoBar"
             IsOpen="False"
             IsClosable="True"
-            Margin="0,0,0,4" />
-
-        <!-- ── Loading indicator ── -->
-        <ProgressBar
-            Grid.Row="2"
-            x:Name="LoadingBar"
-            IsIndeterminate="True"
-            x:Load="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-
-        <!-- ── Data Grid ── -->
-        <controls:DataGrid
-            Grid.Row="3"
-            AutoGenerateColumns="False"
-            GridLinesVisibility="Horizontal"
-            CanUserSortColumns="True"
-            Sorting="OnSorting"
-            ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
-            IsReadOnly="True">
-
-            <controls:DataGrid.Resources>
-                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
-            </controls:DataGrid.Resources>
-
-            <controls:DataGrid.Columns>
-                <controls:DataGridTextColumn Header="Name"        Binding="{Binding Name}"         Tag="Name"         MinWidth="180" />
-                <controls:DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" Tag="Manufacturer" MinWidth="150" />
-                <controls:DataGridTextColumn Header="Category"    Binding="{Binding Category}"     Tag="Category"     MinWidth="130" />
-                <controls:DataGridTextColumn Header="SubCategory" Binding="{Binding SubCategory}"  Tag="SubCategory"  MinWidth="130" />
-                <controls:DataGridTextColumn Header="Available"   Binding="{Binding Available}"    Tag="Available"    MinWidth="100" />
-                <controls:DataGridTemplateColumn Header="" MinWidth="90" IsReadOnly="True" CanUserSort="False">
-                    <controls:DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button
-                                Content="Borrow"
-                                Tag="{Binding}"
-                                Style="{StaticResource AppOkButtonStyle}"
-                                Padding="10,4"
-                                Margin="4,0"
-                                Click="OnBorrowClicked" />
-                        </DataTemplate>
-                    </controls:DataGridTemplateColumn.CellTemplate>
-                </controls:DataGridTemplateColumn>
-            </controls:DataGrid.Columns>
-        </controls:DataGrid>
-
-        <!-- ── Pagination bar ── -->
-        <Grid Grid.Row="4" Padding="0,8,0,0" ColumnDefinitions="Auto,*,Auto">
-
-            <TextBlock
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                Text="{x:Bind ViewModel.TotalCountText, Mode=OneWay}" />
-
-            <StackPanel
-                Grid.Column="1"
-                Orientation="Horizontal"
-                HorizontalAlignment="Center"
-                Spacing="8"
-                VerticalAlignment="Center">
-                <Button Content="◀ Prev" Command="{x:Bind ViewModel.PreviousPageCommand}" />
-                <TextBlock VerticalAlignment="Center">
-                    <Run Text="Page " />
-                    <Run Text="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
-                    <Run Text=" of " />
-                    <Run Text="{x:Bind ViewModel.TotalPages, Mode=OneWay}" />
-                </TextBlock>
-                <Button Content="Next ▶" Command="{x:Bind ViewModel.NextPageCommand}" />
-            </StackPanel>
-        </Grid>
+            VerticalAlignment="Top"
+            Margin="20,8,20,0" />
 
     </Grid>
 </Page>
