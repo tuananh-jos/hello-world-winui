@@ -2,7 +2,6 @@
 using App7.Domain.Usecases;
 using App7.Presentation.ViewModels;
 using App7.Presentation.Views.Dialogs;
-using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,33 +16,33 @@ public sealed partial class ModelListPage : Page
     public ModelListViewModel ViewModel { get; }
     private readonly BorrowDeviceUseCase _borrowUseCase;
 
-    // Brushes for page-number circle buttons
     private static readonly SolidColorBrush ActivePageBrush
         = (SolidColorBrush)Application.Current.Resources["AppOkBrush"];
-    private static readonly SolidColorBrush InactivePageBrush
-        = new(Colors.Transparent);
-    private static readonly SolidColorBrush InactiveTextBrush
-        = new(Color.FromArgb(255, 0x33, 0x33, 0x33));
+    private static readonly SolidColorBrush InactivePageBrush = new(Colors.Transparent);
+    private static readonly SolidColorBrush InactiveTextBrush = new(Color.FromArgb(255, 0x33, 0x33, 0x33));
 
     public ModelListPage()
     {
-        ViewModel     = App.GetService<ModelListViewModel>();
+        ViewModel      = App.GetService<ModelListViewModel>();
         _borrowUseCase = App.GetService<BorrowDeviceUseCase>();
         InitializeComponent();
 
-        // Rebuild page-number buttons whenever page state changes
         ViewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is nameof(ViewModel.PageNumbers) or nameof(ViewModel.CurrentPage))
-                RebuildPageNumberButtons();
+            switch (e.PropertyName)
+            {
+                case nameof(ViewModel.SortColumn) or nameof(ViewModel.SortAscending):
+                    UpdateSortIcons();
+                    break;
+                case nameof(ViewModel.PageNumbers) or nameof(ViewModel.CurrentPage):
+                    RebuildPageNumberButtons();
+                    break;
+            }
         };
 
-        // Hide/show DataGrid columns when column-visibility checkbox changes
         foreach (var col in ViewModel.ColumnVisibilities)
             col.PropertyChanged += (_, _) => SyncColumnVisibility(col);
 
-        // Sticky footer: ContentGrid fills at least the viewport height
-        // so footer (Grid Row 1) stays pinned to bottom when content is short
         Loaded += (_, _) =>
         {
             ContentGrid.MinHeight = MainScroller.ActualHeight;
@@ -51,20 +50,45 @@ public sealed partial class ModelListPage : Page
         };
     }
 
-    // ── DataGrid sort ─────────────────────────────────────────────────
-    private void OnSorting(object sender, DataGridColumnEventArgs e)
+    // ── Sort icons (named TextBlocks directly from XAML) ─────────────
+    private void UpdateSortIcons()
     {
-        var columnName = e.Column.Tag?.ToString();
-        if (string.IsNullOrEmpty(columnName)) return;
+        var icons = new (string col, TextBlock tb)[]
+        {
+            ("Name",         SortIconName),
+            ("Manufacturer", SortIconManufacturer),
+            ("Category",     SortIconCategory),
+            ("SubCategory",  SortIconSubCategory),
+            ("Available",    SortIconAvailable),
+        };
 
-        _ = ViewModel.SortByCommand.ExecuteAsync(columnName);
-
-        var grid = (DataGrid)sender;
-        foreach (var col in grid.Columns) col.SortDirection = null;
-        e.Column.SortDirection = ViewModel.SortAscending
-            ? DataGridSortDirection.Ascending
-            : DataGridSortDirection.Descending;
+        foreach (var (col, tb) in icons)
+        {
+            if (col == ViewModel.SortColumn)
+            {
+                tb.Text    = ViewModel.SortAscending ? "\uE70E" : "\uE70D";
+                tb.Opacity = 1.0;
+            }
+            else
+            {
+                tb.Text    = "\uE70D";
+                tb.Opacity = 0.4;
+            }
+        }
     }
+
+    // ── Filter handlers ───────────────────────────────────────────────
+    private async void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Enter)
+            await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+    }
+
+    private async void OnCategoryChanged(object sender, SelectionChangedEventArgs e)
+        => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+
+    private async void OnSubCategoryChanged(object sender, SelectionChangedEventArgs e)
+        => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
 
     // ── Borrow ────────────────────────────────────────────────────────
     private async void OnBorrowClicked(object sender, RoutedEventArgs e)
@@ -89,32 +113,29 @@ public sealed partial class ModelListPage : Page
         BorrowInfoBar.Severity = severity;
         BorrowInfoBar.Message  = message;
         BorrowInfoBar.IsOpen   = true;
-
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         timer.Tick += (_, _) => { BorrowInfoBar.IsOpen = false; timer.Stop(); };
         timer.Start();
     }
 
-    // ── Page-number circle buttons ────────────────────────────────────
+    // ── Page-number buttons ───────────────────────────────────────────
     private void RebuildPageNumberButtons()
     {
         PageNumbersPanel.Children.Clear();
-
         foreach (var pageNum in ViewModel.PageNumbers)
         {
             var isActive = pageNum == ViewModel.CurrentPage;
             var btn = new Button
             {
-                Content      = pageNum.ToString(),
-                Width        = 32,
-                Height       = 32,
+                Content = pageNum.ToString(),
+                Width = 32, Height = 32,
                 CornerRadius = new CornerRadius(16),
-                Padding      = new Thickness(0),
-                Margin       = new Thickness(2, 0, 2, 0),
-                Background   = isActive ? ActivePageBrush : InactivePageBrush,
-                Foreground   = isActive ? new SolidColorBrush(Colors.White) : InactiveTextBrush,
+                Padding = new Thickness(0),
+                Margin = new Thickness(2, 0, 2, 0),
+                Background = isActive ? ActivePageBrush : InactivePageBrush,
+                Foreground = isActive ? new SolidColorBrush(Colors.White) : InactiveTextBrush,
                 BorderThickness = new Thickness(isActive ? 0 : 1),
-                BorderBrush  = new SolidColorBrush(Color.FromArgb(255, 0xDD, 0xDD, 0xDD)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(255, 0xDD, 0xDD, 0xDD)),
             };
             var captured = pageNum;
             btn.Click += async (_, _) => await ViewModel.GoToPageCommand.ExecuteAsync(captured);
@@ -125,18 +146,16 @@ public sealed partial class ModelListPage : Page
     // ── Columns popup ─────────────────────────────────────────────────
     private void OnColumnsButtonClicked(object sender, RoutedEventArgs e)
     {
-        // Position the panel directly below the Columns button
         var transform = ColumnsBtn.TransformToVisual(PageRoot);
         var pt = transform.TransformPoint(new Windows.Foundation.Point(0, ColumnsBtn.ActualHeight + 4));
         ColumnsPanel.Margin = new Thickness(pt.X, pt.Y, 0, 0);
-
         ViewModel.IsColumnsPopupOpen = true;
     }
 
     private void OnColumnsOverlayPressed(object sender, PointerRoutedEventArgs e)
         => ViewModel.CloseColumnsPopupCommand.Execute(null);
 
-    // ── Column visibility sync → DataGrid ────────────────────────────
+    // ── Column visibility ─────────────────────────────────────────────
     private void SyncColumnVisibility(ColumnVisibilityItem item)
     {
         foreach (var col in ModelsGrid.Columns)

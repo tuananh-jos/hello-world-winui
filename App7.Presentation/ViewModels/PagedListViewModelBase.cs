@@ -46,7 +46,7 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     private int _currentPage = 1;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TotalPages), nameof(HasNextPage), nameof(ShowingText), nameof(PageNumbers))]
+    [NotifyPropertyChangedFor(nameof(TotalPages), nameof(HasNextPage), nameof(ShowingText), nameof(PageNumbers), nameof(PaginationVisibility))]
     [NotifyCanExecuteChangedFor(nameof(NextPageCommand), nameof(LastPageCommand))]
     private int _totalCount;
 
@@ -83,6 +83,10 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
             return Enumerable.Range(start, count).ToList();
         }
     }
+
+    /// <summary>Hides pagination bar when there is no data or only 1 page.</summary>
+    public Visibility PaginationVisibility
+        => TotalCount > 0 && TotalPages > 1 ? Visibility.Visible : Visibility.Collapsed;
 
     // ── Sort ──────────────────────────────────────────────────────────
     [ObservableProperty] private string? _sortColumn;
