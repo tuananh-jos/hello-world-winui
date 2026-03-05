@@ -31,4 +31,7 @@ public class Model
     {
         get; set;
     }
+
+    /// <summary>True when there is at least one device available to borrow.</summary>
+    public bool IsAvailable => Available > 0;
 }

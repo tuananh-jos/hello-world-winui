@@ -41,12 +41,15 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
 
     // ── Pagination ────────────────────────────────────────────────────
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasPreviousPage), nameof(ShowingText), nameof(PageNumbers))]
-    [NotifyCanExecuteChangedFor(nameof(FirstPageCommand), nameof(PreviousPageCommand))]
+    [NotifyPropertyChangedFor(nameof(HasPreviousPage), nameof(HasNextPage), nameof(ShowingText), nameof(PageNumbers))]
+    [NotifyCanExecuteChangedFor(nameof(FirstPageCommand), nameof(PreviousPageCommand),
+                                nameof(NextPageCommand), nameof(LastPageCommand))]
     private int _currentPage = 1;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TotalPages), nameof(HasNextPage), nameof(ShowingText), nameof(PageNumbers), nameof(PaginationVisibility))]
+    [NotifyPropertyChangedFor(nameof(TotalPages), nameof(HasNextPage), nameof(ShowingText),
+        nameof(PageNumbers), nameof(PaginationVisibility), nameof(ShowingTextVisibility),
+        nameof(PageNavVisibility), nameof(EmptyVisibility))]
     [NotifyCanExecuteChangedFor(nameof(NextPageCommand), nameof(LastPageCommand))]
     private int _totalCount;
 
@@ -60,7 +63,7 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     {
         get
         {
-            if (TotalCount == 0) return "No entries";
+            if (TotalCount == 0) return "Showing 0 results";
             var from = (CurrentPage - 1) * SelectedPageSize + 1;
             var to   = Math.Min(CurrentPage * SelectedPageSize, TotalCount);
             return $"Showing {from} to {to} of {TotalCount:N0} entries";
@@ -84,7 +87,19 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
         }
     }
 
-    /// <summary>Hides pagination bar when there is no data or only 1 page.</summary>
+    /// <summary>Always Visible — footer is always shown.</summary>
+    public Visibility ShowingTextVisibility
+        => Visibility.Visible;
+
+    /// <summary>Shows page nav buttons only when there are multiple pages.</summary>
+    public Visibility PageNavVisibility
+        => TotalPages > 1 ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>Shows "No matching records" when TotalCount == 0.</summary>
+    public Visibility EmptyVisibility
+        => TotalCount == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>Legacy: kept for compat.</summary>
     public Visibility PaginationVisibility
         => TotalCount > 0 && TotalPages > 1 ? Visibility.Visible : Visibility.Collapsed;
 

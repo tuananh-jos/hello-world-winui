@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
 
@@ -31,6 +32,8 @@ public sealed partial class ModelListPage : Page
     };
 
     private string? _selectedManufacturer;
+    private string? _selectedCategory;
+    private string? _selectedSubCategory;
 
     public ModelListPage()
     {
@@ -59,6 +62,50 @@ public sealed partial class ModelListPage : Page
             ContentGrid.MinHeight = MainScroller.ActualHeight;
             MainScroller.SizeChanged += (_, e) => ContentGrid.MinHeight = e.NewSize.Height;
             PopulateManufacturerList(string.Empty);
+            PopulatePageSizeList();
+        };
+
+        // Hover effect on DataGrid rows
+        ModelsGrid.LoadingRow += (_, e) =>
+        {
+            var row = e.Row;
+            row.PointerEntered += (_, _) =>
+                row.Background = new SolidColorBrush(Color.FromArgb(255, 0xEC, 0xF3, 0xF8));
+            row.PointerExited += (_, _) =>
+                row.Background = new SolidColorBrush(Colors.Transparent);
+        };
+
+        // Reset all filter labels when ClearFilters is called
+        ViewModel.PropertyChanged += (_, e) =>
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(ViewModel.SelectedCategory):
+                    RefreshSubCategoryList(string.Empty);
+                    // If category was cleared (by ClearFilters), reset label too
+                    if (ViewModel.SelectedCategory == null)
+                    {
+                        _selectedCategory = null;
+                        _selectedSubCategory = null;
+                        CategoryFilterLabel.Text = "All categories";
+                        CategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+                        SubCategoryFilterLabel.Text = "All sub-categories";
+                        SubCategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+                    }
+                    break;
+                case nameof(ViewModel.SelectedManufacturer):
+                    if (ViewModel.SelectedManufacturer == null)
+                    {
+                        _selectedManufacturer = null;
+                        ManufacturerFilterLabel.Text = "All manufacturers";
+                        ManufacturerFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+                    }
+                    break;
+                case nameof(ViewModel.SearchName):
+                    if (string.IsNullOrEmpty(ViewModel.SearchName))
+                        SearchNameBox.Text = string.Empty;
+                    break;
+            }
         };
     }
 
@@ -90,17 +137,54 @@ public sealed partial class ModelListPage : Page
     }
 
     // ── Filter handlers ───────────────────────────────────────────────
+    private void OnSearchNameChanged(object sender, TextChangedEventArgs e)
+        => ViewModel.SearchName = SearchNameBox.Text;
+
     private async void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == Windows.System.VirtualKey.Enter)
             await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
     }
 
-    private async void OnCategoryChanged(object sender, SelectionChangedEventArgs e)
+    private async void OnSearchLostFocus(object sender, RoutedEventArgs e)
         => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
 
-    private async void OnSubCategoryChanged(object sender, SelectionChangedEventArgs e)
-        => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+    private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        => ModelsGrid.SelectedItem = null;
+
+    // ── Sync header/filter column widths with DataGrid actual widths ───
+    private bool _syncingLayout = false;
+    private void OnGridLayoutUpdated(object? sender, object e)
+    {
+        if (_syncingLayout) return;
+        if (ModelsGrid.Columns.Count < 6) return;
+
+        var colWidths = ModelsGrid.Columns.Select(c => c.ActualWidth).ToArray();
+        // Only skip if NOTHING has rendered yet (all zeros)
+        if (colWidths.All(w => w <= 0)) return;
+
+        _syncingLayout = true;
+        try
+        {
+            HdrColName.Width         = new GridLength(colWidths[0]);
+            HdrColManufacturer.Width = new GridLength(colWidths[1]);
+            HdrColCategory.Width     = new GridLength(colWidths[2]);
+            HdrColSubCategory.Width  = new GridLength(colWidths[3]);
+            HdrColAvailable.Width    = new GridLength(colWidths[4]);
+            HdrColFunction.Width     = new GridLength(colWidths[5]);
+
+            FltColName.Width         = new GridLength(colWidths[0]);
+            FltColManufacturer.Width = new GridLength(colWidths[1]);
+            FltColCategory.Width     = new GridLength(colWidths[2]);
+            FltColSubCategory.Width  = new GridLength(colWidths[3]);
+            FltColAvailable.Width    = new GridLength(colWidths[4]);
+            FltColFunction.Width     = new GridLength(colWidths[5]);
+        }
+        finally
+        {
+            _syncingLayout = false;
+        }
+    }
 
     // ── Manufacturer filter popup ─────────────────────────────────────
     private void OnManufacturerFilterClicked(object sender, RoutedEventArgs e)
@@ -124,7 +208,7 @@ public sealed partial class ModelListPage : Page
         ManufacturerListPanel.Children.Clear();
 
         // "All" option at top
-        var allBtn = MakeManufacturerItem("All manufacturers", _selectedManufacturer == null);
+        var allBtn = MakeFilterItem("All manufacturers", _selectedManufacturer == null);
         allBtn.Click += async (_, _) =>
         {
             _selectedManufacturer = null;
@@ -144,7 +228,7 @@ public sealed partial class ModelListPage : Page
         foreach (var name in matches)
         {
             var captured = name;
-            var btn = MakeManufacturerItem(captured, _selectedManufacturer == captured);
+            var btn = MakeFilterItem(captured, _selectedManufacturer == captured);
             btn.Click += async (_, _) =>
             {
                 _selectedManufacturer = captured;
@@ -158,20 +242,159 @@ public sealed partial class ModelListPage : Page
         }
     }
 
-    private static Button MakeManufacturerItem(string text, bool isSelected)
+    private static Button MakeFilterItem(string text, bool isSelected)
     {
         return new Button
         {
-            Content             = text,
+            Content = text,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Left,
-            Background          = isSelected
-                                    ? new SolidColorBrush(Color.FromArgb(255, 0xE8, 0xF4, 0xF8))
-                                    : new SolidColorBrush(Colors.Transparent),
-            BorderThickness     = new Thickness(0),
-            Padding             = new Thickness(8, 4, 8, 4),
-            FontSize            = 12,
+            Background = isSelected
+                ? new SolidColorBrush(Color.FromArgb(255, 0xE8, 0xF4, 0xF8))
+                : new SolidColorBrush(Colors.Transparent),
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(8, 4, 8, 4),
+            FontSize = 12,
         };
+    }
+
+    // ── Category filter popup ─────────────────────────────────────────
+    private void OnCategoryFilterClicked(object sender, RoutedEventArgs e)
+    {
+        CategorySearchBox.Text = string.Empty;
+        PopulateCategoryList(string.Empty);
+        var transform = CategoryFilterBtn.TransformToVisual(PageRoot);
+        var pt = transform.TransformPoint(new Point(0, CategoryFilterBtn.ActualHeight + 2));
+        CategoryPopup.HorizontalOffset = pt.X;
+        CategoryPopup.VerticalOffset   = pt.Y;
+        CategoryPopup.IsOpen = true;
+    }
+
+    private void OnCategorySearchChanged(object sender, TextChangedEventArgs e)
+        => PopulateCategoryList(CategorySearchBox.Text.Trim());
+
+    private void PopulateCategoryList(string filter)
+    {
+        CategoryListPanel.Children.Clear();
+
+        var allBtn = MakeFilterItem("All categories", _selectedCategory == null);
+        allBtn.Click += async (_, _) =>
+        {
+            _selectedCategory = null;
+            _selectedSubCategory = null;
+            ViewModel.SelectedCategory = null;
+            CategoryFilterLabel.Text = "All categories";
+            CategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+            SubCategoryFilterLabel.Text = "All sub-categories";
+            SubCategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+            CategoryPopup.IsOpen = false;
+            await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+        };
+        CategoryListPanel.Children.Add(allBtn);
+
+        var matches = string.IsNullOrEmpty(filter)
+            ? ViewModel.Categories
+            : ViewModel.Categories.Where(c => c.Contains(filter, StringComparison.OrdinalIgnoreCase));
+
+        foreach (var cat in matches)
+        {
+            var captured = cat;
+            var btn = MakeFilterItem(captured, _selectedCategory == captured);
+            btn.Click += async (_, _) =>
+            {
+                _selectedCategory = captured;
+                _selectedSubCategory = null;
+                ViewModel.SelectedCategory = captured;
+                CategoryFilterLabel.Text = captured;
+                CategoryFilterLabel.Foreground = new SolidColorBrush(Colors.Black);
+                SubCategoryFilterLabel.Text = "All sub-categories";
+                SubCategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+                CategoryPopup.IsOpen = false;
+                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+            };
+            CategoryListPanel.Children.Add(btn);
+        }
+    }
+
+    // ── SubCategory filter popup ──────────────────────────────────────
+    private void OnSubCategoryFilterClicked(object sender, RoutedEventArgs e)
+    {
+        SubCategorySearchBox.Text = string.Empty;
+        RefreshSubCategoryList(string.Empty);
+        var transform = SubCategoryFilterBtn.TransformToVisual(PageRoot);
+        var pt = transform.TransformPoint(new Point(0, SubCategoryFilterBtn.ActualHeight + 2));
+        SubCategoryPopup.HorizontalOffset = pt.X;
+        SubCategoryPopup.VerticalOffset   = pt.Y;
+        SubCategoryPopup.IsOpen = true;
+    }
+
+    private void OnSubCategorySearchChanged(object sender, TextChangedEventArgs e)
+        => RefreshSubCategoryList(SubCategorySearchBox.Text.Trim());
+
+    private void RefreshSubCategoryList(string filter = "")
+    {
+        SubCategoryListPanel.Children.Clear();
+
+        var allBtn = MakeFilterItem("All sub-categories", _selectedSubCategory == null);
+        allBtn.Click += async (_, _) =>
+        {
+            _selectedSubCategory = null;
+            ViewModel.SelectedSubCategory = null;
+            SubCategoryFilterLabel.Text = "All sub-categories";
+            SubCategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+            SubCategoryPopup.IsOpen = false;
+            await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+        };
+        SubCategoryListPanel.Children.Add(allBtn);
+
+        var matches = string.IsNullOrEmpty(filter)
+            ? ViewModel.SubCategories
+            : ViewModel.SubCategories.Where(s => s.Contains(filter, StringComparison.OrdinalIgnoreCase));
+
+        foreach (var sub in matches)
+        {
+            var captured = sub;
+            var btn = MakeFilterItem(captured, _selectedSubCategory == captured);
+            btn.Click += async (_, _) =>
+            {
+                _selectedSubCategory = captured;
+                ViewModel.SelectedSubCategory = captured;
+                SubCategoryFilterLabel.Text = captured;
+                SubCategoryFilterLabel.Foreground = new SolidColorBrush(Colors.Black);
+                SubCategoryPopup.IsOpen = false;
+                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+            };
+            SubCategoryListPanel.Children.Add(btn);
+        }
+    }
+
+    // ── PageSize popup ────────────────────────────────────────────────
+    private void OnPageSizeFilterClicked(object sender, RoutedEventArgs e)
+    {
+        PopulatePageSizeList();
+        var transform = PageSizeFilterBtn.TransformToVisual(PageRoot);
+        var pt = transform.TransformPoint(new Point(0, PageSizeFilterBtn.ActualHeight + 2));
+        PageSizePopup.HorizontalOffset = pt.X;
+        PageSizePopup.VerticalOffset   = pt.Y;
+        PageSizePopup.IsOpen = true;
+    }
+
+    private void PopulatePageSizeList()
+    {
+        PageSizeListPanel.Children.Clear();
+        foreach (var size in ViewModel.PageSizeOptions)
+        {
+            var captured = size;
+            var btn = MakeFilterItem(size.ToString(), ViewModel.SelectedPageSize == captured);
+            btn.Click += async (_, _) =>
+            {
+                ViewModel.SelectedPageSize = captured;
+                PageSizeFilterLabel.Text = captured.ToString();
+                PageSizePopup.IsOpen = false;
+                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+            };
+            PageSizeListPanel.Children.Add(btn);
+        }
     }
 
     // ── Borrow ────────────────────────────────────────────────────────
@@ -291,14 +514,6 @@ public sealed partial class ModelListPage : Page
         _             => null
     };
 
-    private static GridLength GetNaturalWidth(string tag) => tag switch
-    {
-        "Name"        => new GridLength(200),
-        "Manufacturer"=> new GridLength(160),
-        "Category"    => new GridLength(140),
-        "SubCategory" => new GridLength(140),
-        "Available"   => new GridLength(100),
-        "Function"    => new GridLength(120),
-        _             => new GridLength(100),
-    };
+    private static GridLength GetNaturalWidth(string tag) =>
+        new GridLength(1, GridUnitType.Star);
 }

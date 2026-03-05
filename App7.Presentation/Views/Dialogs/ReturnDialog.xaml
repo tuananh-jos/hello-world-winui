@@ -1,0 +1,127 @@
+<ContentDialog
+    x:Class="App7.Presentation.Views.Dialogs.ReturnDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    DefaultButton="None"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <ContentDialog.Resources>
+        <Thickness x:Key="ContentDialogPadding">0</Thickness>
+    </ContentDialog.Resources>
+
+    <!-- Root card -->
+    <Grid MinWidth="440" RowDefinitions="Auto,*,Auto">
+
+        <!-- ═══ HEADER ═══ -->
+        <Grid Grid.Row="0"
+              Background="{StaticResource AppDialogHeaderBrush}"
+              Padding="20,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       x:Name="DialogTitleText"
+                       VerticalAlignment="Center"
+                       FontSize="15" FontWeight="SemiBold"
+                       Foreground="{StaticResource AppOnNavyBrush}" />
+
+            <Button Grid.Column="1"
+                    x:Name="CloseButton"
+                    Content="✕"
+                    Foreground="{StaticResource AppOnNavyBrush}"
+                    Background="Transparent" BorderThickness="0"
+                    Padding="8,4" FontSize="14"
+                    VerticalAlignment="Center"
+                    Click="OnCloseClicked" />
+        </Grid>
+
+        <!-- ═══ BODY ═══ -->
+        <StackPanel Grid.Row="1"
+                    Background="{StaticResource AppDialogBodyBrush}"
+                    Padding="20,16" Spacing="12">
+
+            <!-- Row 1: Model | IMEI -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Model" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox x:Name="ModelNameBox"
+                             IsEnabled="False"
+                             Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="IMEI" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox x:Name="IMEIBox"
+                             IsEnabled="False"
+                             Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Row 2: Serial Lab | Serial Number -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Serial Lab" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox x:Name="SerialLabBox"
+                             IsEnabled="False"
+                             Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="Serial Number" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox x:Name="SerialNumberBox"
+                             IsEnabled="False"
+                             Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Row 3: Circuit Serial | HW Version -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Circuit Serial" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox x:Name="CircuitSerialBox"
+                             IsEnabled="False"
+                             Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="HW Version" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox x:Name="HWVersionBox"
+                             IsEnabled="False"
+                             Background="{StaticResource AppDisabledFieldBrush}" />
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+
+        <!-- ═══ FOOTER ═══ -->
+        <Border Grid.Row="2"
+                Background="{StaticResource AppDialogBodyBrush}"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                Padding="20,12">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right" Spacing="8">
+                <Button x:Name="CancelBtn"
+                        Content="Cancel"
+                        Style="{StaticResource AppCancelButtonStyle}"
+                        Click="OnCancelClicked" />
+                <Button x:Name="ConfirmBtn"
+                        Content="Confirm Return"
+                        Style="{StaticResource AppOkButtonStyle}"
+                        Click="OnConfirmClicked" />
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</ContentDialog>

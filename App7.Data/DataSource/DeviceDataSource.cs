@@ -35,22 +35,22 @@ public class DeviceDataSource : IDeviceDataSource
 
         // Per-column search — each filter is independent
         if (!string.IsNullOrWhiteSpace(searchModelName))
-            query = query.Where(x => x.ModelName.Contains(searchModelName));
+            query = query.Where(x => x.ModelName.ToLower().Contains(searchModelName.ToLower()));
 
         if (!string.IsNullOrWhiteSpace(searchIMEI))
-            query = query.Where(x => x.Device.IMEI.Contains(searchIMEI));
+            query = query.Where(x => x.Device.IMEI.ToLower().Contains(searchIMEI.ToLower()));
 
         if (!string.IsNullOrWhiteSpace(searchSerialLab))
-            query = query.Where(x => x.Device.SerialLab.Contains(searchSerialLab));
+            query = query.Where(x => x.Device.SerialLab.ToLower().Contains(searchSerialLab.ToLower()));
 
         if (!string.IsNullOrWhiteSpace(searchSerialNumber))
-            query = query.Where(x => x.Device.SerialNumber.Contains(searchSerialNumber));
+            query = query.Where(x => x.Device.SerialNumber.ToLower().Contains(searchSerialNumber.ToLower()));
 
         if (!string.IsNullOrWhiteSpace(searchCircuitSerial))
-            query = query.Where(x => x.Device.CircuitSerialNumber.Contains(searchCircuitSerial));
+            query = query.Where(x => x.Device.CircuitSerialNumber.ToLower().Contains(searchCircuitSerial.ToLower()));
 
         if (!string.IsNullOrWhiteSpace(searchHWVersion))
-            query = query.Where(x => x.Device.HWVersion.Contains(searchHWVersion));
+            query = query.Where(x => x.Device.HWVersion.ToLower().Contains(searchHWVersion.ToLower()));
 
         // Total count BEFORE pagination
         var totalCount = await query.CountAsync();

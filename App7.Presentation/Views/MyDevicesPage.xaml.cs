@@ -1,11 +1,13 @@
 using App7.Domain.Entities;
 using App7.Domain.Usecases;
 using App7.Presentation.ViewModels;
+using App7.Presentation.Views.Dialogs;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
 
@@ -47,6 +49,17 @@ public sealed partial class MyDevicesPage : Page
         {
             ContentGrid.MinHeight = MainScroller.ActualHeight;
             MainScroller.SizeChanged += (_, e) => ContentGrid.MinHeight = e.NewSize.Height;
+            PopulatePageSizeList();
+        };
+
+        // Hover effect on DataGrid rows
+        DevicesGrid.LoadingRow += (_, e) =>
+        {
+            var row = e.Row;
+            row.PointerEntered += (_, _) =>
+                row.Background = new SolidColorBrush(Color.FromArgb(255, 0xEC, 0xF3, 0xF8));
+            row.PointerExited += (_, _) =>
+                row.Background = new SolidColorBrush(Colors.Transparent);
         };
     }
 
@@ -78,6 +91,106 @@ public sealed partial class MyDevicesPage : Page
         }
     }
 
+    // ── Sync header/filter column widths ──────────────────────────────
+    private bool _syncingLayout = false;
+    private void OnGridLayoutUpdated(object? sender, object e)
+    {
+        if (_syncingLayout) return;
+        if (DevicesGrid.Columns.Count < 7) return;
+
+        var colWidths = DevicesGrid.Columns.Select(c => c.ActualWidth).ToArray();
+        if (colWidths.All(w => w <= 0)) return;
+
+        _syncingLayout = true;
+        try
+        {
+            ColDefModelName.Width    = new GridLength(colWidths[0]);
+            ColDefIMEI.Width         = new GridLength(colWidths[1]);
+            ColDefSerialLab.Width    = new GridLength(colWidths[2]);
+            ColDefSerialNumber.Width = new GridLength(colWidths[3]);
+            ColDefCircuitSerial.Width= new GridLength(colWidths[4]);
+            ColDefHWVersion.Width    = new GridLength(colWidths[5]);
+            ColDefFunction.Width     = new GridLength(colWidths[6]);
+
+            FilterColDefModelName.Width    = new GridLength(colWidths[0]);
+            FilterColDefIMEI.Width         = new GridLength(colWidths[1]);
+            FilterColDefSerialLab.Width    = new GridLength(colWidths[2]);
+            FilterColDefSerialNumber.Width = new GridLength(colWidths[3]);
+            FilterColDefCircuitSerial.Width= new GridLength(colWidths[4]);
+            FilterColDefHWVersion.Width    = new GridLength(colWidths[5]);
+            FilterColDefFunction.Width     = new GridLength(colWidths[6]);
+        }
+        finally
+        {
+            _syncingLayout = false;
+        }
+    }
+
+    // ── PageSize popup ────────────────────────────────────────────────
+    private void OnPageSizeFilterClicked(object sender, RoutedEventArgs e)
+    {
+        PopulatePageSizeList();
+        var transform = PageSizeFilterBtn.TransformToVisual(PageRoot);
+        var pt = transform.TransformPoint(new Point(0, PageSizeFilterBtn.ActualHeight + 2));
+        PageSizePopup.HorizontalOffset = pt.X;
+        PageSizePopup.VerticalOffset   = pt.Y;
+        PageSizePopup.IsOpen = true;
+    }
+
+    private void PopulatePageSizeList()
+    {
+        PageSizeListPanel.Children.Clear();
+        foreach (var size in ViewModel.PageSizeOptions)
+        {
+            var captured = size;
+            var btn = MakeFilterItem(size.ToString(), ViewModel.SelectedPageSize == captured);
+            btn.Click += async (_, _) =>
+            {
+                ViewModel.SelectedPageSize = captured;
+                PageSizeFilterLabel.Text = captured.ToString();
+                PageSizePopup.IsOpen = false;
+                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+            };
+            PageSizeListPanel.Children.Add(btn);
+        }
+    }
+
+    private static Button MakeFilterItem(string text, bool isSelected) => new()
+    {
+        Content = text,
+        HorizontalAlignment = HorizontalAlignment.Stretch,
+        HorizontalContentAlignment = HorizontalAlignment.Left,
+        Background = isSelected
+            ? new SolidColorBrush(Color.FromArgb(255, 0xE8, 0xF4, 0xF8))
+            : new SolidColorBrush(Colors.Transparent),
+        BorderThickness = new Thickness(0),
+        Padding = new Thickness(8, 4, 8, 4),
+        FontSize = 12,
+    };
+
+    // ── Shared search handlers ──────────────────────────────────────
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not TextBox tb) return;
+        // Update the bound ViewModel property immediately so Enter works correctly
+        var text = tb.Text;
+        // x:Bind TwoWay already declared, but TextChanged fires before focus-loss sync
+        // so we just re-trigger by re-assigning via x:Bind (binding already set above tracks it)
+        // For safety, dispatch a property set via the Tag convention:
+        switch (tb.Tag?.ToString())
+        {
+            case "ModelName":        ViewModel.SearchModelName   = text; break;
+            case "IMEI":             ViewModel.SearchIMEI         = text; break;
+            case "SerialLab":        ViewModel.SearchSerialLab    = text; break;
+            case "SerialNumber":     ViewModel.SearchSerialNumber = text; break;
+            case "CircuitSerialNumber": ViewModel.SearchCircuitSerial = text; break;
+            case "HWVersion":        ViewModel.SearchHWVersion    = text; break;
+        }
+    }
+
+    private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        => DevicesGrid.SelectedItem = null;
+
     // ── Shared KeyDown handler for all search TextBoxes ───────────────
     private async void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -85,32 +198,23 @@ public sealed partial class MyDevicesPage : Page
             await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
     }
 
+    private async void OnSearchLostFocus(object sender, RoutedEventArgs e)
+        => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+
     // ── Return device ─────────────────────────────────────────────────
     private async void OnReturnClicked(object sender, RoutedEventArgs e)
     {
         if (sender is not Button btn || btn.Tag is not Device device) return;
 
-        var confirm = new ContentDialog
-        {
-            Title             = "Return Device",
-            Content           = $"Return {device.ModelName}?\nIMEI: {device.IMEI}",
-            PrimaryButtonText = "Return",
-            CloseButtonText   = "Cancel",
-            DefaultButton     = ContentDialogButton.Primary,
-            XamlRoot          = XamlRoot
-        };
+        var dialog = new ReturnDialog(_returnUseCase) { XamlRoot = XamlRoot };
+        dialog.Init(device);
+        await dialog.ShowAsync();
 
-        if (await confirm.ShowAsync() != ContentDialogResult.Primary) return;
-
-        try
+        if (dialog.Confirmed)
         {
-            await _returnUseCase.ExecuteAsync(device.Id, device.ModelId);
             await ViewModel.ReloadAsync();
-            ShowInfoBar(InfoBarSeverity.Success, $"Returned \"{device.ModelName}\" (IMEI: {device.IMEI}) successfully.");
-        }
-        catch (Exception ex)
-        {
-            ShowInfoBar(InfoBarSeverity.Error, $"Return failed: {ex.Message}");
+            ShowInfoBar(InfoBarSeverity.Success,
+                $"Returned \"{device.ModelName}\" (IMEI: {device.IMEI}) successfully.");
         }
     }
 
@@ -213,15 +317,6 @@ public sealed partial class MyDevicesPage : Page
         _                    => null
     };
 
-    private static GridLength GetNaturalWidth(string tag) => tag switch
-    {
-        "ModelName"          => new GridLength(180),
-        "IMEI"               => new GridLength(160),
-        "SerialLab"          => new GridLength(130),
-        "SerialNumber"       => new GridLength(130),
-        "CircuitSerialNumber"=> new GridLength(130),
-        "HWVersion"          => new GridLength(120),
-        "Function"           => new GridLength(120),
-        _                    => new GridLength(100),
-    };
+    private static GridLength GetNaturalWidth(string tag) =>
+        new GridLength(1, GridUnitType.Star);
 }
