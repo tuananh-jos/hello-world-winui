@@ -1,15 +1,15 @@
 using System.Collections.ObjectModel;
 using App7.Domain.Entities;
+using App7.Domain.Services;
 using App7.Domain.Usecases;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Dispatching;
 
 namespace App7.Presentation.ViewModels;
 
 public partial class MyDevicesViewModel : PagedListViewModelBase
 {
-    private readonly GetBorrowedDevicesUseCase _getDevices;
 
-    // ── Data ──────────────────────────────────────────────────────────
     public ObservableCollection<Device> Devices { get; } = new();
 
     // ── Per-column search ─────────────────────────────────────────────
@@ -31,8 +31,20 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
         new() { ColumnTag = "HWVersion",           DisplayName = "HW Version",     IsVisible = true },
     };
 
-    public MyDevicesViewModel(GetBorrowedDevicesUseCase getDevices)
-        => _getDevices = getDevices;
+    private readonly GetBorrowedDevicesUseCase _getDevices;
+    private readonly IInstanceSyncService       _syncService;
+    private readonly DispatcherQueue            _dispatcher;
+
+    public MyDevicesViewModel(
+        GetBorrowedDevicesUseCase getDevices,
+        IInstanceSyncService      syncService)
+    {
+        _getDevices  = getDevices;
+        _syncService = syncService;
+        _dispatcher  = DispatcherQueue.GetForCurrentThread();
+
+        _syncService.DataChanged += OnExternalDataChanged;
+    }
 
     // ── PagedListViewModelBase contract ────────────────────────────────
     protected override async Task LoadDataCoreAsync()
@@ -68,4 +80,10 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
 
     private static string? NullIfEmpty(string s)
         => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    // ── External sync ─────────────────────────────────────────────────
+    private void OnExternalDataChanged()
+    {
+        _dispatcher.TryEnqueue(async () => await ReloadAsync());
+    }
 }

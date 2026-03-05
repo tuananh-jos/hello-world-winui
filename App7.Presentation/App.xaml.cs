@@ -2,7 +2,9 @@
 using App7.Data.Db;
 using App7.Data.IDataSource;
 using App7.Data.Repository;
+using App7.Data.Services;
 using App7.Domain.IRepository;
+using App7.Domain.Services;
 using App7.Domain.Usecases;
 using App7.Presentation.Activation;
 using App7.Presentation.Contracts.Services;
@@ -73,6 +75,13 @@ public partial class App : Application
             services.AddTransient<GetBorrowedDevicesUseCase>();
             services.AddTransient<ReturnDeviceUseCase>();
 
+            // InstanceSyncService — Singleton so all ViewModels share one watcher
+            services.AddSingleton<IInstanceSyncService>(sp =>
+            {
+                var folder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+                return new InstanceSyncService(folder);
+            });
+
             // Repository — Transient (matches ViewModel and UseCase lifetimes; single-user desktop app)
             services.AddTransient<IDeviceRepository, DeviceRepository>();
             services.AddTransient<IModelRepository, ModelRepository>();
@@ -128,6 +137,9 @@ public partial class App : Application
 
         var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
         await initializer.InitializeAsync();
+
+        // Start sync watcher after DB is ready
+        App.GetService<IInstanceSyncService>().Start();
 
         await App.GetService<IActivationService>().ActivateAsync(args);
     }
