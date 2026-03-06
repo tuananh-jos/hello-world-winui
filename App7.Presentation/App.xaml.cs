@@ -1,4 +1,5 @@
-﻿using App7.Data.DataSource;
+﻿using System.Diagnostics;
+using App7.Data.DataSource;
 using App7.Data.Db;
 using App7.Data.IDataSource;
 using App7.Data.Repository;
@@ -16,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Microsoft.Extensions.Logging;
 
 namespace App7.Presentation;
 
@@ -95,6 +97,8 @@ public partial class App : Application
             {
                 var dbPath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "app.db");
                 options.UseSqlite($"Data Source={dbPath}");
+
+                options.LogTo(message => { }, LogLevel.None);
             }, ServiceLifetime.Transient);
 
             // DB initializer
@@ -112,7 +116,7 @@ public partial class App : Application
             // Configuration
         }).
         Build();
-
+        
         UnhandledException += App_UnhandledException;
     }
 
@@ -136,7 +140,12 @@ public partial class App : Application
         await context.Database.EnsureCreatedAsync();
 
         var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+
+        var watch = Stopwatch.StartNew();
         await initializer.InitializeAsync();
+        watch.Stop();
+        var elapsedMs = watch.ElapsedMilliseconds;
+        Debug.WriteLine($"Import xong trong: {elapsedMs} ms");
 
         // Start sync watcher after DB is ready
         App.GetService<IInstanceSyncService>().Start();
