@@ -288,12 +288,20 @@ public sealed partial class MyDevicesPage : Page
         // 2. Header ColumnDefinition width
         var hdrColDef = GetHeaderColDef(tag);
         if (hdrColDef != null)
+        {
             hdrColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
+            hdrColDef.MinWidth = visible ? GetNaturalMinWidth(tag) : 0;
+            hdrColDef.MaxWidth = visible ? double.PositiveInfinity : 0;
+        }
 
         // 3. Filter ColumnDefinition width
         var fltColDef = GetFilterColDef(tag);
         if (fltColDef != null)
+        {
             fltColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
+            fltColDef.MinWidth = visible ? GetNaturalMinWidth(tag) : 0;
+            fltColDef.MaxWidth = visible ? double.PositiveInfinity : 0;
+        }
     }
 
     private ColumnDefinition? GetHeaderColDef(string tag) => tag switch
@@ -322,6 +330,21 @@ public sealed partial class MyDevicesPage : Page
         _                    => null
     };
 
-    private static GridLength GetNaturalWidth(string tag) =>
-        new GridLength(1, GridUnitType.Star);
+    private static GridLength GetNaturalWidth(string tag) => tag switch
+    {
+        "Function" => new GridLength(120),
+        _ => new GridLength(1, GridUnitType.Star)
+    };
+
+    private static double GetNaturalMinWidth(string tag) => tag switch
+    {
+        "Name"               => 100,
+        "ModelName"          => 120,
+        "IMEI"               => 100,
+        "SerialLab"          => 80,
+        "SerialNumber"       => 80,
+        "CircuitSerialNumber"=> 80,
+        "HWVersion"          => 70,
+        _                    => 0
+    };
 }
