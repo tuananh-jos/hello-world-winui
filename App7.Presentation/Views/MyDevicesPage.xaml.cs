@@ -68,6 +68,7 @@ public sealed partial class MyDevicesPage : Page
     {
         var icons = new (string col, TextBlock tb)[]
         {
+            ("Name",                SortIconName),
             ("ModelName",           SortIconModelName),
             ("IMEI",                SortIconIMEI),
             ("SerialLab",           SortIconSerialLab),
@@ -96,7 +97,7 @@ public sealed partial class MyDevicesPage : Page
     private void OnGridLayoutUpdated(object? sender, object e)
     {
         if (_syncingLayout) return;
-        if (DevicesGrid.Columns.Count < 7) return;
+        if (DevicesGrid.Columns.Count < 8) return;
 
         var colWidths = DevicesGrid.Columns.Select(c => c.ActualWidth).ToArray();
         if (colWidths.All(w => w <= 0)) return;
@@ -104,21 +105,23 @@ public sealed partial class MyDevicesPage : Page
         _syncingLayout = true;
         try
         {
-            ColDefModelName.Width    = new GridLength(colWidths[0]);
-            ColDefIMEI.Width         = new GridLength(colWidths[1]);
-            ColDefSerialLab.Width    = new GridLength(colWidths[2]);
-            ColDefSerialNumber.Width = new GridLength(colWidths[3]);
-            ColDefCircuitSerial.Width= new GridLength(colWidths[4]);
-            ColDefHWVersion.Width    = new GridLength(colWidths[5]);
-            ColDefFunction.Width     = new GridLength(colWidths[6]);
+            ColDefName.Width         = new GridLength(colWidths[0]);
+            ColDefModelName.Width    = new GridLength(colWidths[1]);
+            ColDefIMEI.Width         = new GridLength(colWidths[2]);
+            ColDefSerialLab.Width    = new GridLength(colWidths[3]);
+            ColDefSerialNumber.Width = new GridLength(colWidths[4]);
+            ColDefCircuitSerial.Width= new GridLength(colWidths[5]);
+            ColDefHWVersion.Width    = new GridLength(colWidths[6]);
+            ColDefFunction.Width     = new GridLength(colWidths[7]);
 
-            FilterColDefModelName.Width    = new GridLength(colWidths[0]);
-            FilterColDefIMEI.Width         = new GridLength(colWidths[1]);
-            FilterColDefSerialLab.Width    = new GridLength(colWidths[2]);
-            FilterColDefSerialNumber.Width = new GridLength(colWidths[3]);
-            FilterColDefCircuitSerial.Width= new GridLength(colWidths[4]);
-            FilterColDefHWVersion.Width    = new GridLength(colWidths[5]);
-            FilterColDefFunction.Width     = new GridLength(colWidths[6]);
+            FilterColDefName.Width         = new GridLength(colWidths[0]);
+            FilterColDefModelName.Width    = new GridLength(colWidths[1]);
+            FilterColDefIMEI.Width         = new GridLength(colWidths[2]);
+            FilterColDefSerialLab.Width    = new GridLength(colWidths[3]);
+            FilterColDefSerialNumber.Width = new GridLength(colWidths[4]);
+            FilterColDefCircuitSerial.Width= new GridLength(colWidths[5]);
+            FilterColDefHWVersion.Width    = new GridLength(colWidths[6]);
+            FilterColDefFunction.Width     = new GridLength(colWidths[7]);
         }
         finally
         {
@@ -295,6 +298,7 @@ public sealed partial class MyDevicesPage : Page
 
     private ColumnDefinition? GetHeaderColDef(string tag) => tag switch
     {
+        "Name"               => ColDefName,
         "ModelName"          => ColDefModelName,
         "IMEI"               => ColDefIMEI,
         "SerialLab"          => ColDefSerialLab,
@@ -307,6 +311,7 @@ public sealed partial class MyDevicesPage : Page
 
     private ColumnDefinition? GetFilterColDef(string tag) => tag switch
     {
+        "Name"               => FilterColDefName,
         "ModelName"          => FilterColDefModelName,
         "IMEI"               => FilterColDefIMEI,
         "SerialLab"          => FilterColDefSerialLab,

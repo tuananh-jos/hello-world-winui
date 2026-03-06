@@ -11,6 +11,7 @@ public interface IDeviceRepository
     Task<(IEnumerable<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page,
         int pageSize,
+        string? searchName,
         string? searchModelName,
         string? searchIMEI,
         string? searchSerialLab,

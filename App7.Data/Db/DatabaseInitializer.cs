@@ -62,6 +62,7 @@ public class DatabaseInitializer
         await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Models_SubCategory ON Models (SubCategory);");
 
         await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_ModelId ON Devices (ModelId);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_Name ON Devices (Name);");
         await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_IMEI ON Devices (IMEI);");
         await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_SerialLab ON Devices (SerialLab);");
         await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_SerialNumber ON Devices (SerialNumber);");

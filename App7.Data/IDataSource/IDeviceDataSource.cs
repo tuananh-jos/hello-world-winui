@@ -7,6 +7,7 @@ public interface IDeviceDataSource
     Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page,
         int pageSize,
+        string? searchName,
         string? searchModelName,
         string? searchIMEI,
         string? searchSerialLab,

@@ -7,6 +7,7 @@ public class Device
     public Guid Id { get; set; }
     public Guid ModelId { get; set; }
 
+    public string Name { get; set; } = string.Empty;
     public string IMEI { get; set; } = string.Empty;
     public string SerialLab { get; set; } = string.Empty;
     public string SerialNumber { get; set; } = string.Empty;

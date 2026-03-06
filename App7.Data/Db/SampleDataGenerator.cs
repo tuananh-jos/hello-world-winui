@@ -24,6 +24,7 @@ public static class SampleDataGenerator
         var deviceFaker = new Faker<Device>()
             .RuleFor(d => d.Id, f => Guid.NewGuid())
             .RuleFor(d => d.ModelId, f => f.PickRandom(models).Id)
+            .RuleFor(d => d.Name, f => $"SM-{f.Random.AlphaNumeric(6).ToUpper()}")
             .RuleFor(d => d.IMEI, f => f.Random.ReplaceNumbers("###############"))
             .RuleFor(d => d.SerialLab, f => f.Random.AlphaNumeric(10).ToUpper())
             .RuleFor(d => d.SerialNumber, f => f.Random.AlphaNumeric(12).ToUpper())
@@ -60,9 +61,20 @@ public static class SampleDataGenerator
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
-        var options = new JsonSerializerOptions { WriteIndented = true };
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            // Cấu hình này giúp xử lý các object lớn mượt mà hơn
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
-        var json = JsonSerializer.Serialize(data, options);
-        await File.WriteAllTextAsync(path, json);
+        // 1. Mở FileStream để ghi trực tiếp xuống ổ cứng
+        using FileStream createStream = File.Create(path);
+
+        // 2. Sử dụng SerializeAsync để đẩy dữ liệu từ RAM xuống Stream theo từng mảng nhỏ (buffer)
+        await JsonSerializer.SerializeAsync(createStream, data, options);
+
+        // 3. Đảm bảo dữ liệu được đẩy xuống đĩa hoàn toàn
+        await createStream.FlushAsync();
     }
 }

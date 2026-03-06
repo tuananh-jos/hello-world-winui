@@ -15,6 +15,7 @@ public class DeviceDataSource : IDeviceDataSource
     public async Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page,
         int pageSize,
+        string? searchName,
         string? searchModelName,
         string? searchIMEI,
         string? searchSerialLab,
@@ -31,9 +32,13 @@ public class DeviceDataSource : IDeviceDataSource
             .Join(_context.Models,
                   d => d.ModelId,
                   m => m.Id,
-                  (d, m) => new { Device = d, ModelName = m.Name });
+                  // Include Device Name and joined ModelName
+                  (d, m) => new { Device = d, ModelName = m.Name, DeviceName = d.Name });
 
         // Per-column search — each filter is independent
+        if (!string.IsNullOrWhiteSpace(searchName))
+            query = query.Where(x => x.DeviceName.ToLower().Contains(searchName.ToLower()));
+
         if (!string.IsNullOrWhiteSpace(searchModelName))
             query = query.Where(x => x.ModelName.ToLower().Contains(searchModelName.ToLower()));
 
@@ -58,6 +63,7 @@ public class DeviceDataSource : IDeviceDataSource
         // Sort
         query = (sortColumn?.ToLowerInvariant()) switch
         {
+            "name"               => ascending ? query.OrderBy(x => x.DeviceName)              : query.OrderByDescending(x => x.DeviceName),
             "modelname"          => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
             "imei"               => ascending ? query.OrderBy(x => x.Device.IMEI)             : query.OrderByDescending(x => x.Device.IMEI),
             "seriallab"          => ascending ? query.OrderBy(x => x.Device.SerialLab)        : query.OrderByDescending(x => x.Device.SerialLab),
@@ -75,6 +81,7 @@ public class DeviceDataSource : IDeviceDataSource
             {
                 Id                  = x.Device.Id,
                 ModelId             = x.Device.ModelId,
+                Name                = x.Device.Name,
                 ModelName           = x.ModelName,
                 IMEI                = x.Device.IMEI,
                 SerialLab           = x.Device.SerialLab,

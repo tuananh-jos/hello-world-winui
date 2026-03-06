@@ -16,6 +16,7 @@ public class GetBorrowedDevicesUseCase
     public async Task<(IEnumerable<Device> Items, int TotalCount)> ExecuteAsync(
         int page,
         int pageSize,
+        string? searchName       = null,
         string? searchModelName  = null,
         string? searchIMEI       = null,
         string? searchSerialLab  = null,
@@ -27,7 +28,7 @@ public class GetBorrowedDevicesUseCase
     {
         return await _deviceRepository.GetBorrowedPagedAsync(
             page, pageSize,
-            searchModelName, searchIMEI,
+            searchName, searchModelName, searchIMEI,
             searchSerialLab, searchSerialNumber,
             searchCircuitSerial, searchHWVersion,
             sortColumn, ascending);

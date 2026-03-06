@@ -13,14 +13,14 @@ public class DeviceRepository : IDeviceRepository
 
     public async Task<(IEnumerable<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page, int pageSize,
-        string? searchModelName, string? searchIMEI,
+        string? searchName, string? searchModelName, string? searchIMEI,
         string? searchSerialLab, string? searchSerialNumber,
         string? searchCircuitSerial, string? searchHWVersion,
         string? sortColumn, bool ascending)
     {
         var result = await _dataSource.GetBorrowedPagedAsync(
             page, pageSize,
-            searchModelName, searchIMEI,
+            searchName, searchModelName, searchIMEI,
             searchSerialLab, searchSerialNumber,
             searchCircuitSerial, searchHWVersion,
             sortColumn, ascending);

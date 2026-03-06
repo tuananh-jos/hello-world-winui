@@ -13,6 +13,7 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
     public ObservableCollection<Device> Devices { get; } = new();
 
     // ── Per-column search ─────────────────────────────────────────────
+    [ObservableProperty] private string _searchName         = string.Empty;
     [ObservableProperty] private string _searchModelName    = string.Empty;
     [ObservableProperty] private string _searchIMEI         = string.Empty;
     [ObservableProperty] private string _searchSerialLab    = string.Empty;
@@ -23,6 +24,7 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
     // ── Column visibility ─────────────────────────────────────────────
     public override ObservableCollection<ColumnVisibilityItem> ColumnVisibilities { get; } = new()
     {
+        new() { ColumnTag = "Name",                DisplayName = "Name",           IsVisible = true },
         new() { ColumnTag = "ModelName",           DisplayName = "Model Name",     IsVisible = true },
         new() { ColumnTag = "IMEI",                DisplayName = "IMEI",           IsVisible = true },
         new() { ColumnTag = "SerialLab",           DisplayName = "Serial Lab",     IsVisible = true },
@@ -52,6 +54,7 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
         var (items, total) = await _getDevices.ExecuteAsync(
             page:               CurrentPage,
             pageSize:           SelectedPageSize,
+            searchName:         NullIfEmpty(SearchName),
             searchModelName:    NullIfEmpty(SearchModelName),
             searchIMEI:         NullIfEmpty(SearchIMEI),
             searchSerialLab:    NullIfEmpty(SearchSerialLab),
@@ -70,6 +73,7 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
 
     protected override void ClearFilterValues()
     {
+        SearchName          = string.Empty;
         SearchModelName     = string.Empty;
         SearchIMEI          = string.Empty;
         SearchSerialLab     = string.Empty;
