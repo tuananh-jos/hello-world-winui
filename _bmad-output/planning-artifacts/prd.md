@@ -169,11 +169,11 @@ Instance B shows model X with `Available = 0`. From Instance A, the user returns
 ### Model Management
 
 - **FR1**: User can view a paginated list of device models with Name, Manufacturer, Category, and SubCategory.
-- **FR2**: User can search the model list by model Name.
-- **FR3**: User can search the model list by Manufacturer.
-- **FR4**: User can filter the model list by Category.
-- **FR5**: User can filter the model list by SubCategory.
-- **FR6**: User can sort the model list by any visible column.
+- **FR2**: User can search the model list by model Name *(filter applied in-memory — no DB query)*.
+- **FR3**: User can search the model list by Manufacturer *(filter applied in-memory — no DB query)*.
+- **FR4**: User can filter the model list by Category *(filter applied in-memory — no DB query)*.
+- **FR5**: User can filter the model list by SubCategory *(filter applied in-memory — no DB query)*.
+- **FR6**: User can sort the model list by any visible column *(sort applied in-memory — no DB query)*.
 
 ### Borrow Workflow
 
@@ -186,15 +186,15 @@ Instance B shows model X with `Available = 0`. From Instance A, the user returns
 ### My Devices
 
 - **FR12**: User can view a list of all devices currently borrowed by them.
-- **FR13**: User can search the borrowed device list by ModelId.
-- **FR14**: User can search the borrowed device list by device Name.
-- **FR15**: User can search the borrowed device list by IMEI.
-- **FR16**: User can search the borrowed device list by SerialLab.
-- **FR17**: User can search the borrowed device list by SerialNumber.
-- **FR18**: User can search the borrowed device list by CircuitSerialNumber.
-- **FR19**: User can search the borrowed device list by HWVersion.
-- **FR20**: User can filter the borrowed device list by HWVersion.
-- **FR21**: User can sort the borrowed device list by any visible column.
+- **FR13**: User can search the borrowed device list by ModelId *(in-memory — no DB query)*.
+- **FR14**: User can search the borrowed device list by device Name *(in-memory — no DB query)*.
+- **FR15**: User can search the borrowed device list by IMEI *(in-memory — no DB query)*.
+- **FR16**: User can search the borrowed device list by SerialLab *(in-memory — no DB query)*.
+- **FR17**: User can search the borrowed device list by SerialNumber *(in-memory — no DB query)*.
+- **FR18**: User can search the borrowed device list by CircuitSerialNumber *(in-memory — no DB query)*.
+- **FR19**: User can search the borrowed device list by HWVersion *(in-memory — no DB query)*.
+- **FR20**: User can filter the borrowed device list by HWVersion *(in-memory — no DB query)*.
+- **FR21**: User can sort the borrowed device list by any visible column *(sort applied in-memory — no DB query)*.
 
 ### Return Workflow
 
@@ -210,26 +210,32 @@ Instance B shows model X with `Available = 0`. From Instance A, the user returns
 - **FR28**: If the database exists but contains no data, the system imports data from a JSON file.
 - **FR29**: If no JSON import file exists, the system generates and populates sample data.
 
-### Multi-Instance Synchronization *(Post-MVP — InstanceSyncService)*
+### Data Loading
 
-- **FR30**: After a successful borrow, the system writes a change signal to `signal.txt`.
-- **FR31**: After a successful return, the system writes a change signal to `signal.txt`.
-- **FR32**: The system monitors `signal.txt` via FileWatcher and triggers a UI refresh on file change.
-- **FR33**: A FileWatcher-triggered refresh updates both the model list (available count) and My Devices list.
+- **FR34**: The app loads all Models into memory at startup in background chunks of 100k records per DB read.
+- **FR35**: The app loads all Devices into memory at startup in background chunks of 100k records per DB read.
+- **FR36**: Loading executes asynchronously in the background — the UI is displayed and responsive while data loads progressively into memory.
+
+### Multi-Instance Synchronization *(InstanceSyncService)*
+
+- **FR30**: After a successful borrow, the system appends a JSON event to `signal.txt` containing: `action`, `modelId`, affected `deviceIds`, and updated `availableCount`.
+- **FR31**: After a successful return, the system appends a JSON event to `signal.txt` containing: `action`, `modelId`, affected `deviceIds`, and updated `availableCount`.
+- **FR32**: The system monitors `signal.txt` via FileWatcher; on file change, it reads only new events since the last processed position (`lastReadPosition`).
+- **FR33**: New events from `signal.txt` are applied directly to the in-memory dataset — affected model and device records are updated without a DB read. If event parsing fails, the system falls back to a targeted DB query for the affected records only.
 
 ## Non-Functional Requirements
 
 ### Performance
 
-- **NFR1**: All database read operations complete within 1 second under ~3,000,000 records. Requires SQLite indexes on all queried columns.
-- **NFR2**: Search, sort, and filter operations return updated results within 1 second of user input at ~3,000,000 record volume.
+- **NFR1**: Each individual DB chunk read (100k records) completes within 1 second. Requires SQLite indexes on all loaded columns. Full dataset (~3M records) loads progressively in the background.
+- **NFR2**: Search, sort, and filter operations on the in-memory dataset return updated results within 200ms of user input — no DB query involved.
 - **NFR3**: All SQLite operations execute asynchronously — UI thread never blocked.
-- **NFR4**: Application startup including full DB initialization completes within 3 seconds.
+- **NFR4**: Application UI is displayed and responsive within 3 seconds of launch. Background chunk loading continues after UI is shown.
 
-> **Note for Architect**: NFR1/NFR2 at 3M records mandates indexed queries and mandatory pagination. Full table scans are not acceptable. Index all search/filter columns: Name, Manufacturer, Category, SubCategory, IMEI, SerialLab, SerialNumber, CircuitSerialNumber, HWVersion.
+> **Note for Architect**: In-memory strategy mandates loading the full dataset at startup in 100k-record chunks. Index all DB load columns: Name, Manufacturer, Category, SubCategory, IMEI, SerialLab, SerialNumber, CircuitSerialNumber, HWVersion. All pagination, search, sort, and filter are client-side (slice/LINQ on in-memory list) — no DB queries after initial load.
 
 ### Reliability
 
 - **NFR5**: The app must not crash when SQLite is temporarily locked by a concurrent instance — operations fail gracefully, process remains stable.
 - **NFR6**: Borrow and return operations are atomic — full commit or no change (transaction integrity, no partial updates).
-- **NFR7**: FileWatcher-triggered UI updates (Post-MVP) must be dispatched to the UI thread — no cross-thread exceptions.
+- **NFR7**: FileWatcher-triggered UI updates must be dispatched to the UI thread — no cross-thread exceptions.

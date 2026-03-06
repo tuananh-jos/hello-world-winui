@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using App7.Domain.Entities;
 using App7.Domain.Services;
-using App7.Domain.Usecases;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 
@@ -9,11 +8,10 @@ namespace App7.Presentation.ViewModels;
 
 public partial class ModelListViewModel : PagedListViewModelBase
 {
-
     public ObservableCollection<Model> Models { get; } = new();
 
     // ── Filters ───────────────────────────────────────────────────────
-    [ObservableProperty] private string  _searchName          = string.Empty;
+    [ObservableProperty] private string  _searchName           = string.Empty;
     [ObservableProperty] private string? _selectedManufacturer;
     [ObservableProperty] private string? _selectedCategory;
     [ObservableProperty] private string? _selectedSubCategory;
@@ -31,82 +29,142 @@ public partial class ModelListViewModel : PagedListViewModelBase
         new() { ColumnTag = "Available",    DisplayName = "Available",    IsVisible = true },
     };
 
-    private readonly GetModelsPagedUseCase  _getModelsPaged;
-    private readonly GetModelFiltersUseCase _getModelFilters;
-    private readonly IInstanceSyncService   _syncService;
-    private readonly DispatcherQueue        _dispatcher;
+    private readonly IInMemoryStore  _store;
+    private readonly IInstanceSyncService _syncService;
+    private readonly DispatcherQueue _dispatcher;
 
     public ModelListViewModel(
-        GetModelsPagedUseCase  getModelsPaged,
-        GetModelFiltersUseCase getModelFilters,
-        IInstanceSyncService   syncService)
+        IInMemoryStore       store,
+        IInstanceSyncService syncService)
     {
-        _getModelsPaged  = getModelsPaged;
-        _getModelFilters = getModelFilters;
-        _syncService     = syncService;
-        _dispatcher      = DispatcherQueue.GetForCurrentThread();
+        _store       = store;
+        _syncService = syncService;
+        _dispatcher  = DispatcherQueue.GetForCurrentThread();
 
-        _syncService.DataChanged += OnExternalDataChanged;
+        // Subscribe to store changes (fired after borrow/return or external sync event)
+        _store.StoreChanged += OnStoreChanged;
+
+        // Subscribe to sync events from other instances
+        _syncService.EventReceived += OnEventReceived;
     }
 
-    // reload subcategories when category changes
+    // reload subcategories in-memory when category changes
     partial void OnSelectedCategoryChanged(string? value)
     {
         SelectedSubCategory = null;
         SubCategories.Clear();
         if (!string.IsNullOrEmpty(value))
-            _ = LoadSubCategoriesAsync(value);
+            LoadSubCategories(value);
     }
 
     // ── PagedListViewModelBase contract ────────────────────────────────
-    protected override async Task LoadDataCoreAsync()
+    protected override Task LoadDataCoreAsync()
     {
-        var (items, total) = await _getModelsPaged.ExecuteAsync(
-            page:              CurrentPage,
-            pageSize:          SelectedPageSize,
-            searchName:        NullIfEmpty(SearchName),
-            searchManufacturer: SelectedManufacturer,   // exact match from hardcoded list
-            filterCategory:    SelectedCategory,
-            filterSubCategory: SelectedSubCategory,
-            sortColumn:        SortColumn,
-            ascending:         SortAscending);
-
-        Models.Clear();
-        foreach (var m in items) Models.Add(m);
-        TotalCount = total;
+        ApplyInMemoryFilter();
+        return Task.CompletedTask;
     }
 
-    protected override async Task LoadFilterOptionsAsync()
+    protected override Task LoadFilterOptionsAsync()
     {
-        var cats = await _getModelFilters.GetCategoriesAsync();
+        // Build category list from in-memory store
+        var cats = _store.GetAllModels()
+            .Select(m => m.Category)
+            .Where(c => !string.IsNullOrEmpty(c))
+            .Distinct()
+            .OrderBy(c => c)
+            .ToList();
+
         Categories.Clear();
         foreach (var c in cats) Categories.Add(c);
+
+        return Task.CompletedTask;
     }
 
     protected override void ClearFilterValues()
     {
-        SearchName          = string.Empty;
+        SearchName           = string.Empty;
         SelectedManufacturer = null;
-        SelectedCategory    = null;
-        SelectedSubCategory = null;
+        SelectedCategory     = null;
+        SelectedSubCategory  = null;
         SubCategories.Clear();
     }
 
-    // ── Private ───────────────────────────────────────────────────────
-    private async Task LoadSubCategoriesAsync(string category)
+    // ── In-memory filter + pagination ─────────────────────────────────
+    private void ApplyInMemoryFilter()
     {
-        var subs = await _getModelFilters.GetSubCategoriesAsync(category);
+        var all = _store.GetAllModels().AsEnumerable();
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(SearchName))
+            all = all.Where(m => m.Name.Contains(SearchName, StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(SelectedManufacturer))
+            all = all.Where(m => m.Manufacturer == SelectedManufacturer);
+
+        // Filter
+        if (!string.IsNullOrWhiteSpace(SelectedCategory))
+            all = all.Where(m => m.Category == SelectedCategory);
+
+        if (!string.IsNullOrWhiteSpace(SelectedSubCategory))
+            all = all.Where(m => m.SubCategory == SelectedSubCategory);
+
+        // Sort
+        all = (SortColumn?.ToLowerInvariant()) switch
+        {
+            "manufacturer" => SortAscending ? all.OrderBy(m => m.Manufacturer) : all.OrderByDescending(m => m.Manufacturer),
+            "category"     => SortAscending ? all.OrderBy(m => m.Category)     : all.OrderByDescending(m => m.Category),
+            "subcategory"  => SortAscending ? all.OrderBy(m => m.SubCategory)  : all.OrderByDescending(m => m.SubCategory),
+            "available"    => SortAscending ? all.OrderBy(m => m.Available)    : all.OrderByDescending(m => m.Available),
+            _              => SortAscending ? all.OrderBy(m => m.Name)         : all.OrderByDescending(m => m.Name),
+        };
+
+        var filtered = all.ToList();
+        TotalCount = filtered.Count;
+
+        // Client-side pagination
+        var page = filtered
+            .Skip((CurrentPage - 1) * SelectedPageSize)
+            .Take(SelectedPageSize)
+            .ToList();
+
+        Models.Clear();
+        foreach (var m in page) Models.Add(m);
+    }
+
+    private void LoadSubCategories(string category)
+    {
+        var subs = _store.GetAllModels()
+            .Where(m => m.Category == category)
+            .Select(m => m.SubCategory)
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Distinct()
+            .OrderBy(s => s)
+            .ToList();
+
         SubCategories.Clear();
         foreach (var s in subs) SubCategories.Add(s);
     }
 
-    private static string? NullIfEmpty(string s)
-        => string.IsNullOrWhiteSpace(s) ? null : s;
+    // ── Store / sync event handlers ───────────────────────────────────
 
-    // ── External sync ─────────────────────────────────────────────────
-    private void OnExternalDataChanged()
+    private void OnStoreChanged()
     {
-        // Raised on ThreadPool — must dispatch to UI thread
-        _dispatcher.TryEnqueue(async () => await ReloadAsync());
+        // Called after local borrow/return — store already updated, just re-filter
+        _dispatcher.TryEnqueue(() =>
+        {
+            LoadFilterOptionsAsync();
+            ApplyInMemoryFilter();
+        });
+    }
+
+    private void OnEventReceived(Domain.Services.SyncEvent evt)
+    {
+        // Called on ThreadPool from FileWatcher — apply event to store, then re-filter
+        _store.ApplyEvent(evt);
+        _dispatcher.TryEnqueue(() =>
+        {
+            LoadFilterOptionsAsync();
+            ApplyInMemoryFilter();
+        });
     }
 }

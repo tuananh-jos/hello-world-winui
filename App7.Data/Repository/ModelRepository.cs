@@ -13,6 +13,9 @@ public class ModelRepository : IModelRepository
         _dataSource = dataSource;
     }
 
+    public async Task<IReadOnlyList<Model>> GetChunkAsync(int offset, int chunkSize)
+        => await _dataSource.GetChunkAsync(offset, chunkSize);
+
     public async Task<(IEnumerable<Model> Items, int TotalCount)> GetPagedAsync(
         int page, int pageSize,
         string? searchName, string? searchManufacturer,

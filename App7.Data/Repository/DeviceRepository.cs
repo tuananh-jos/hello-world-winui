@@ -11,6 +11,12 @@ public class DeviceRepository : IDeviceRepository
     public DeviceRepository(IDeviceDataSource dataSource)
         => _dataSource = dataSource;
 
+    public async Task<IReadOnlyList<Device>> GetChunkAsync(int offset, int chunkSize)
+        => await _dataSource.GetChunkAsync(offset, chunkSize);
+
+    public async Task<IReadOnlyList<Guid>> GetAvailableDeviceIdsAsync(Guid modelId, int quantity)
+        => await _dataSource.GetAvailableDeviceIdsAsync(modelId, quantity);
+
     public async Task<(IEnumerable<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page, int pageSize,
         string? searchModelName, string? searchIMEI,

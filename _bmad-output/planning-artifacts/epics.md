@@ -74,15 +74,16 @@ NFR7 [Post-MVP]: FileWatcher-triggered UI updates must be dispatched to the UI t
 
 | FR | Epic | Description |
 |---|---|---|
-| FR1–6 | Epic 2 | Model list view, search, filter, sort |
+| FR1–6 | Epic 2 | Model list view, search, filter, sort *(in-memory)* |
 | FR7–11 | Epic 3 | Borrow modal workflow |
-| FR12–21 | Epic 4 | My Devices view, multi-field search, filter, sort |
+| FR12–21 | Epic 4 | My Devices view, multi-field search, filter, sort *(in-memory)* |
 | FR22–25 | Epic 5 | Return confirmation workflow |
 | FR26–29 | Epic 1 | DB bootstrap & initialization |
-| FR30–33 | Epic 6 | InstanceSyncService (Post-MVP) |
-| NFR1–4 | Epic 1, 2, 4 | Indexing, async ops, startup performance |
+| FR30–33 | Epic 6 | InstanceSyncService — signal.txt append-only event log *(MVP)* |
+| FR34–36 | Epic 1 | Background chunk loading (100k/chunk) |
+| NFR1–4 | Epic 1, 2, 4 | Chunk load performance, in-memory ops, startup UX |
 | NFR5–6 | Epic 3, 5 | SQLite lock safety, atomic transactions |
-| NFR7 | Epic 6 | UI thread dispatch (Post-MVP) |
+| NFR7 | Epic 6 | UI thread dispatch for FileWatcher |
 
 ## Epic List
 
@@ -106,8 +107,8 @@ User can view all currently borrowed devices and search, sort, or filter the lis
 User can return any borrowed device through a confirmation dialog, with the device status immediately reset to Available and the model's available count updated.
 **FRs covered:** FR22, FR23, FR24, FR25 | **NFRs:** NFR3 (async), NFR5 (lock safety), NFR6 (atomic)
 
-### Epic 6: Multi-Instance Synchronization *(Post-MVP)*
-When one app instance borrows or returns a device, all other running instances automatically refresh their UI to reflect the change — with no manual action required.
+### Epic 6: Multi-Instance Synchronization
+When one app instance borrows or returns a device, all other running instances instantly update their in-memory dataset via `signal.txt` event log — no DB re-read required, no manual action needed.
 **FRs covered:** FR30, FR31, FR32, FR33 | **NFRs:** NFR7 (UI thread dispatch)
 
 ---
@@ -159,6 +160,23 @@ So that the app is immediately usable on a fresh install with no data file.
 **And** the sample data is sufficient to exercise all app features (borrow, return, search, filter)
 **And** the app proceeds to launch normally after sample data generation
 
+### Story 1.4: Background Chunk Loading of Full Dataset
+
+As a user,
+I want the app to load all device and model data into memory in the background at startup,
+So that search, sort, and filter operations are instant without hitting the database.
+
+**Acceptance Criteria:**
+
+**Given** the app has launched and the database is initialized
+**When** the app starts up
+**Then** all Models are loaded into memory in chunks of 100k records per DB read (FR34)
+**And** all Devices are loaded into memory in chunks of 100k records per DB read (FR35)
+**And** loading executes asynchronously in the background — UI is displayed and responsive immediately (FR36)
+**And** each individual 100k-chunk DB read completes within 1 second (NFR1)
+**And** a loading indicator is shown while background loading is in progress
+**And** search, sort, and filter become fully responsive once all chunks are loaded
+
 ---
 
 ## Epic 2: View & Discover Device Models
@@ -188,10 +206,11 @@ So that I can quickly find a specific model without scrolling through all pages.
 
 **Acceptance Criteria:**
 
-**Given** the model list is displayed
+**Given** the model list is displayed and the full dataset is loaded in memory
 **When** the user types text into the search field
 **Then** the list filters to show only models where Name or Manufacturer contains the search text
-**And** filtered results appear within 1 second of input at ~3,000,000 record volume (NFR2)
+**And** filtering is performed entirely in-memory — no DB query is triggered (FR2, FR3)
+**And** filtered results appear within 200ms of input (NFR2)
 **And** clearing the search field restores the full paginated model list
 
 ### Story 2.3: Filter Models by Category and SubCategory
@@ -202,11 +221,12 @@ So that I can narrow down models by device type without typing.
 
 **Acceptance Criteria:**
 
-**Given** the model list is displayed
+**Given** the model list is displayed and the full dataset is loaded in memory
 **When** the user selects a Category from the filter control
 **Then** the list shows only models matching that Category
 **And** when a SubCategory is additionally selected, the list narrows further to matching SubCategory
-**And** filter results appear within 1 second (NFR2)
+**And** filtering is performed entirely in-memory — no DB query is triggered (FR4, FR5)
+**And** filter results appear within 200ms (NFR2)
 **And** clearing filters restores the full paginated list
 
 ### Story 2.4: Sort Models by Column
@@ -217,12 +237,13 @@ So that I can organize the list by the field most relevant to my current task.
 
 **Acceptance Criteria:**
 
-**Given** the model list is displayed
+**Given** the model list is displayed and the full dataset is loaded in memory
 **When** the user clicks a column header
 **Then** the list is sorted by that column in ascending order
 **And** clicking the same column header again toggles to descending order
 **And** sort can be applied simultaneously with active search or filter
-**And** sort results appear within 1 second (NFR2)
+**And** sorting is performed entirely in-memory — no DB query is triggered (FR6)
+**And** sort results appear within 200ms (NFR2)
 
 ---
 
@@ -258,7 +279,9 @@ So that the inventory accurately reflects which devices are now borrowed.
 **And** the operation completes atomically — either all selected devices are updated or none are (NFR6)
 **And** the operation executes asynchronously — UI does not freeze during the database write (NFR3)
 **And** if SQLite is temporarily locked by another instance, the app does not crash — it fails gracefully (NFR5)
-**And** the modal closes and the model list refreshes to reflect the updated available count
+**And** the in-memory dataset is updated directly: affected devices marked as `Borrowed`, model `availableCount` decremented
+**And** a JSON event is appended to `signal.txt`: `{"action":"borrow","modelId":X,"deviceIds":[...],"availableCount":N}` (FR30)
+**And** the modal closes and the UI reflects the updated state immediately from in-memory
 
 ### Story 3.3: Cancel Borrow
 
@@ -290,8 +313,8 @@ So that I can track what devices are in my possession at any time.
 **Given** the user navigates to the My Devices screen
 **When** the screen loads
 **Then** a list of all devices with status `Borrowed` is displayed with fields: ModelId, Name, IMEI, SerialLab, SerialNumber, CircuitSerialNumber, HWVersion
-**And** the list loads within 1 second at ~3,000,000 record volume (NFR1)
-**And** data loads asynchronously — UI remains responsive (NFR3)
+**And** the list is served from the in-memory dataset — no DB query on tab switch (NFR2)
+**And** the screen renders within 200ms (NFR2)
 
 ### Story 4.2: Multi-Field Search on My Devices
 
@@ -301,10 +324,11 @@ So that I can locate a specific device quickly regardless of which field I remem
 
 **Acceptance Criteria:**
 
-**Given** the My Devices list is displayed
+**Given** the My Devices list is displayed and the full dataset is loaded in memory
 **When** the user types text into the search field
 **Then** the list filters to show only devices where ModelId, Name, IMEI, SerialLab, SerialNumber, CircuitSerialNumber, or HWVersion contains the search text
-**And** filtered results appear within 1 second of input (NFR2)
+**And** filtering is performed entirely in-memory — no DB query is triggered (FR13–FR19)
+**And** filtered results appear within 200ms of input (NFR2)
 **And** clearing the search field restores the full My Devices list
 
 ### Story 4.3: Filter My Devices by HWVersion
@@ -315,10 +339,11 @@ So that I can group and identify devices by hardware revision.
 
 **Acceptance Criteria:**
 
-**Given** the My Devices list is displayed
+**Given** the My Devices list is displayed and the full dataset is loaded in memory
 **When** the user selects a HWVersion value from the filter control
 **Then** the list shows only devices matching that HWVersion
-**And** filter results appear within 1 second (NFR2)
+**And** filtering is performed entirely in-memory — no DB query is triggered (FR20)
+**And** filter results appear within 200ms (NFR2)
 **And** clearing the filter restores the full My Devices list
 
 ### Story 4.4: Sort My Devices by Column
@@ -329,12 +354,13 @@ So that I can organize the list to find what I need faster.
 
 **Acceptance Criteria:**
 
-**Given** the My Devices list is displayed
+**Given** the My Devices list is displayed and the full dataset is loaded in memory
 **When** the user clicks a column header
 **Then** the list is sorted by that column in ascending order
 **And** clicking the same column again toggles to descending order
 **And** sort can be applied simultaneously with active search or filter
-**And** sort results appear within 1 second (NFR2)
+**And** sorting is performed entirely in-memory — no DB query is triggered (FR21)
+**And** sort results appear within 200ms (NFR2)
 
 ---
 
@@ -369,8 +395,9 @@ So that the device becomes available for others to borrow again.
 **And** the operation completes atomically — full commit or no change (NFR6)
 **And** the operation executes asynchronously — UI does not freeze (NFR3)
 **And** if SQLite is temporarily locked by another instance, the app does not crash — it fails gracefully (NFR5)
-**And** the dialog closes and the device disappears from My Devices list
-**And** the model's available count increases by 1 in the model list
+**And** the in-memory dataset is updated directly: device marked as `Available`, model `availableCount` incremented
+**And** a JSON event is appended to `signal.txt`: `{"action":"return","modelId":X,"deviceIds":[...],"availableCount":N}` (FR31)
+**And** the dialog closes and the device disappears from My Devices list immediately from in-memory
 
 ### Story 5.3: Cancel Return
 
@@ -387,36 +414,40 @@ So that I can dismiss without making any changes.
 
 ---
 
-## Epic 6: Multi-Instance Synchronization *(Post-MVP)*
+## Epic 6: Multi-Instance Synchronization
 
-When one app instance borrows or returns a device, all other running instances automatically refresh their UI to reflect the change — with no manual action required.
+When one app instance borrows or returns a device, all other running instances instantly update their in-memory dataset by reading new events from `signal.txt` — no DB re-read, no manual action required.
 
-### Story 6.1: Signal File Write on Borrow or Return
+### Story 6.1: Append Event to signal.txt on Borrow or Return
 
 As a user running multiple app instances,
-I want any borrow or return action to broadcast a change signal to other instances,
-So that all open windows stay in sync without requiring manual refresh.
+I want any borrow or return action to broadcast a structured event to other instances via signal.txt,
+So that all open windows can sync their in-memory data without reloading from the database.
 
 **Acceptance Criteria:**
 
-**Given** a borrow or return operation completes successfully
-**When** the database write is confirmed
-**Then** the app writes a change signal to `signal.txt` at the configured path
-**And** the write happens after the DB transaction completes — never before
-**And** this occurs for both borrow (FR30) and return (FR31) operations
+**Given** a borrow or return operation completes successfully (DB write confirmed)
+**When** the database transaction commits
+**Then** the app appends a JSON event as a new line to `signal.txt` (FR30 / FR31)
+**And** the event contains: `seq` (monotonic integer), `action` ("borrow" or "return"), `modelId`, `deviceIds` (array), `availableCount`
+**And** the write uses append mode — existing events are never overwritten
+**And** the append happens after the DB commit — never before
+**And** example format: `{"seq":1,"action":"borrow","modelId":42,"deviceIds":[1001,1002],"availableCount":8}`
 
-### Story 6.2: FileWatcher Auto-Refresh on Signal Change
+### Story 6.2: FileWatcher Reads and Applies Events to In-Memory Dataset
 
 As a user,
-I want other open app instances to automatically refresh when signal.txt changes,
-So that the model list and My Devices list always reflect the latest inventory state.
+I want other open app instances to automatically apply changes to their in-memory data when signal.txt is updated,
+So that the model list and My Devices list always reflect the latest inventory state across all instances.
 
 **Acceptance Criteria:**
 
-**Given** two or more instances of the app are running
-**When** `signal.txt` is modified by one instance
-**Then** all other instances' FileWatcher detects the change
-**And** the model list refreshes to reflect updated available counts (FR33)
-**And** the My Devices list refreshes to reflect updated borrow state (FR33)
-**And** the UI update is dispatched to the UI thread — no cross-thread exceptions (NFR7)
-**And** no user action is required on the other instances
+**Given** two or more instances of the app are running with full datasets loaded in memory
+**When** Instance A appends a new event to `signal.txt`
+**Then** all other instances' FileWatcher detects the file change (FR32)
+**And** each instance reads only the new lines since its `lastReadPosition` (FR32)
+**And** each event is parsed and applied to the in-memory dataset: affected device records updated, model `availableCount` updated (FR33)
+**And** no DB query is performed during this sync — only `signal.txt` is read (FR33)
+**And** if a line fails to parse, the instance falls back to a targeted DB query for the affected `modelId` only
+**And** the UI update (model list + My Devices list refresh) is dispatched to the UI thread — no cross-thread exceptions (NFR7)
+**And** no user action is required on any instance

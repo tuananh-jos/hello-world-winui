@@ -14,6 +14,16 @@ public class ModelDataSource : IModelDataSource
         _context = context;
     }
 
+    public async Task<List<Model>> GetChunkAsync(int offset, int chunkSize)
+    {
+        return await _context.Models
+            .AsNoTracking()
+            .OrderBy(m => m.Id)
+            .Skip(offset)
+            .Take(chunkSize)
+            .ToListAsync();
+    }
+
     public async Task<(List<Model> Items, int TotalCount)> GetPagedAsync(
         int page,
         int pageSize,
