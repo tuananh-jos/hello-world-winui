@@ -14,6 +14,8 @@ public interface IModelDataSource
         string? sortColumn,
         bool ascending);
 
+    Task<List<string>> GetManufacturersAsync();
+
     Task<List<string>> GetCategoriesAsync();
 
     Task<List<string>> GetSubCategoriesAsync(string category);

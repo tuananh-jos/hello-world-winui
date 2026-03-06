@@ -217,7 +217,15 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     {
         if (resetPage) CurrentPage = 1;
         IsOverlayVisible = true;
-        try   { await LoadDataCoreAsync(); }
+        try
+        {
+            await LoadDataCoreAsync();
+            if (CurrentPage > TotalPages && TotalPages > 0)
+            {
+                CurrentPage = TotalPages;
+                await LoadDataCoreAsync();
+            }
+        }
         finally { IsOverlayVisible = false; }
     }
 

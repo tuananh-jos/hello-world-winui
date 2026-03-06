@@ -16,7 +16,7 @@ public partial class BorrowDialogViewModel : ObservableObject
     public string Address   { get; } = "2F phòng Device";
 
     // ── Number combobox ───────────────────────────────────────────────
-    public IReadOnlyList<int> QuantityOptions { get; } = new[] { 1, 2, 3, 4, 5 };
+    public System.Collections.ObjectModel.ObservableCollection<int> QuantityOptions { get; } = new();
 
     [ObservableProperty]
     private int _selectedQuantity = 1;
@@ -31,6 +31,13 @@ public partial class BorrowDialogViewModel : ObservableObject
         ModelId   = model.Id;
         ModelName = model.Name;
         Confirmed = false;
+        QuantityOptions.Clear();
+        int maxQuantity = Math.Min(5, model.Available);
+        for (int i = 1; i <= maxQuantity; i++)
+        {
+            QuantityOptions.Add(i);
+        }
+
         SelectedQuantity = 1;
     }
 

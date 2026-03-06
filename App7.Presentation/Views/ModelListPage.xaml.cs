@@ -24,12 +24,7 @@ public sealed partial class ModelListPage : Page
     private static readonly SolidColorBrush InactivePageBrush = new(Colors.Transparent);
     private static readonly SolidColorBrush InactiveTextBrush = new(Color.FromArgb(255, 0x33, 0x33, 0x33));
 
-    // Hardcoded manufacturer list
-    private static readonly string[] AllManufacturers =
-    {
-        "Alcatel", "Apple", "ASUS", "BBK", "Bkav",
-        "BlackBerry", "Canon", "Chary mobile", "Circuit", "Company", "Samsung"
-    };
+
 
     private string? _selectedManufacturer;
     private string? _selectedCategory;
@@ -222,8 +217,8 @@ public sealed partial class ModelListPage : Page
 
         // Filtered list
         var matches = string.IsNullOrEmpty(filter)
-            ? AllManufacturers
-            : AllManufacturers.Where(m => m.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray();
+            ? (IEnumerable<string>)ViewModel.Manufacturers
+            : ViewModel.Manufacturers.Where(m => m.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray();
 
         foreach (var name in matches)
         {

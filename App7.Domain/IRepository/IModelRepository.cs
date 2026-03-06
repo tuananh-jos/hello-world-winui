@@ -19,6 +19,11 @@ public interface IModelRepository
         bool ascending);
 
     /// <summary>
+    /// Returns all distinct Manufacturer values.
+    /// </summary>
+    Task<IEnumerable<string>> GetManufacturersAsync();
+
+    /// <summary>
     /// Returns all distinct Category values (for filter dropdown).
     /// </summary>
     Task<IEnumerable<string>> GetCategoriesAsync();

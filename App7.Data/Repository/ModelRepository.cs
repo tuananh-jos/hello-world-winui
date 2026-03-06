@@ -27,6 +27,9 @@ public class ModelRepository : IModelRepository
         return (result.Items, result.TotalCount);
     }
 
+    public async Task<IEnumerable<string>> GetManufacturersAsync()
+        => await _dataSource.GetManufacturersAsync();
+
     public async Task<IEnumerable<string>> GetCategoriesAsync()
         => await _dataSource.GetCategoriesAsync();
 

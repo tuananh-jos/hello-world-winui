@@ -14,6 +14,9 @@ public class GetModelFiltersUseCase
         _modelRepository = modelRepository;
     }
 
+    public async Task<IEnumerable<string>> GetManufacturersAsync()
+        => await _modelRepository.GetManufacturersAsync();
+
     public async Task<IEnumerable<string>> GetCategoriesAsync()
         => await _modelRepository.GetCategoriesAsync();
 

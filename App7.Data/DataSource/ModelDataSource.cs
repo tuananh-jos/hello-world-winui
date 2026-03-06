@@ -62,6 +62,16 @@ public class ModelDataSource : IModelDataSource
         return (items, totalCount);
     }
 
+    public async Task<List<string>> GetManufacturersAsync()
+    {
+        return await _context.Models
+            .AsNoTracking()
+            .Select(m => m.Manufacturer)
+            .Distinct()
+            .OrderBy(m => m)
+            .ToListAsync();
+    }
+
     public async Task<List<string>> GetCategoriesAsync()
     {
         return await _context.Models

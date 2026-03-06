@@ -17,7 +17,7 @@ public partial class ModelListViewModel : PagedListViewModelBase
     [ObservableProperty] private string? _selectedManufacturer;
     [ObservableProperty] private string? _selectedCategory;
     [ObservableProperty] private string? _selectedSubCategory;
-
+    public ObservableCollection<string> Manufacturers { get; } = new();
     public ObservableCollection<string> Categories    { get; } = new();
     public ObservableCollection<string> SubCategories { get; } = new();
 
@@ -78,6 +78,10 @@ public partial class ModelListViewModel : PagedListViewModelBase
 
     protected override async Task LoadFilterOptionsAsync()
     {
+        var mfrs = await _getModelFilters.GetManufacturersAsync();
+        Manufacturers.Clear();
+        foreach (var m in mfrs) Manufacturers.Add(m);
+
         var cats = await _getModelFilters.GetCategoriesAsync();
         Categories.Clear();
         foreach (var c in cats) Categories.Add(c);
