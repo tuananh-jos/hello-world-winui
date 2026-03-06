@@ -19,99 +19,84 @@ using Microsoft.UI.Xaml;
 
 namespace App7.Presentation;
 
-// To learn more about WinUI 3, see https://docs.microsoft.com/windows/apps/winui/winui3/.
 public partial class App : Application
 {
-    // The .NET Generic Host provides dependency injection, configuration, logging, and other services.
-    // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-    // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-    // https://docs.microsoft.com/dotnet/core/extensions/configuration
-    // https://docs.microsoft.com/dotnet/core/extensions/logging
-    public IHost Host
-    {
-        get;
-    }
+    public IHost Host { get; }
 
-    public static T GetService<T>()
-        where T : class
+    public static T GetService<T>() where T : class
     {
         if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
-        {
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
-        }
-
         return service;
     }
 
     public static WindowEx MainWindow { get; } = new MainWindow();
-
     public static UIElement? AppTitlebar { get; set; }
 
     public App()
     {
         InitializeComponent();
 
-        Host = Microsoft.Extensions.Hosting.Host.
-        CreateDefaultBuilder().
-        UseContentRoot(AppContext.BaseDirectory).
-        ConfigureServices((context, services) =>
-        {
-            // Default Activation Handler
-            services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
-
-            // Other Activation Handlers
-
-            // Services
-            services.AddTransient<INavigationViewService, NavigationViewService>();
-
-            services.AddSingleton<IActivationService, ActivationService>();
-            services.AddSingleton<IPageService, PageService>();
-            services.AddSingleton<INavigationService, NavigationService>();
-
-            // UseCases
-            services.AddTransient<GetModelsPagedUseCase>();
-            services.AddTransient<GetModelFiltersUseCase>();
-            services.AddTransient<BorrowDeviceUseCase>();
-            services.AddTransient<GetBorrowedDevicesUseCase>();
-            services.AddTransient<ReturnDeviceUseCase>();
-
-            // InstanceSyncService — Singleton so all ViewModels share one watcher
-            services.AddSingleton<IInstanceSyncService>(sp =>
+        Host = Microsoft.Extensions.Hosting.Host
+            .CreateDefaultBuilder()
+            .UseContentRoot(AppContext.BaseDirectory)
+            .ConfigureServices((context, services) =>
             {
-                var folder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-                return new InstanceSyncService(folder);
-            });
+                // Activation
+                services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
 
-            // Repository — Transient (matches ViewModel and UseCase lifetimes; single-user desktop app)
-            services.AddTransient<IDeviceRepository, DeviceRepository>();
-            services.AddTransient<IModelRepository, ModelRepository>();
+                // Services
+                services.AddTransient<INavigationViewService, NavigationViewService>();
+                services.AddSingleton<IActivationService, ActivationService>();
+                services.AddSingleton<IPageService, PageService>();
+                services.AddSingleton<INavigationService, NavigationService>();
 
-            // DataSource — Transient
-            services.AddTransient<IDeviceDataSource, DeviceDataSource>();
-            services.AddTransient<IModelDataSource, ModelDataSource>();
+                // ── In-Memory Store (Singleton) ─────────────────────────────
+                services.AddSingleton<IInMemoryStore, InMemoryStore>();
 
-            // DbContext — Transient (each operation gets a fresh context; safe for single-user desktop)
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                var dbPath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "app.db");
-                options.UseSqlite($"Data Source={dbPath}");
-            }, ServiceLifetime.Transient);
+                // ── InstanceSyncService (Singleton) ─────────────────────────
+                services.AddSingleton<IInstanceSyncService>(sp =>
+                {
+                    var folder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+                    return new InstanceSyncService(folder);
+                });
 
-            // DB initializer
-            services.AddTransient<DatabaseInitializer>();
+                // ── UseCases ────────────────────────────────────────────────
+                services.AddTransient<LoadAllModelsUseCase>();
+                services.AddTransient<LoadAllDevicesUseCase>();
+                services.AddTransient<BorrowDeviceUseCase>();
+                services.AddTransient<ReturnDeviceUseCase>();
+                // Legacy — kept in case needed by future features
+                services.AddTransient<GetModelsPagedUseCase>();
+                services.AddTransient<GetModelFiltersUseCase>();
+                services.AddTransient<GetBorrowedDevicesUseCase>();
 
+                // ── Repositories ────────────────────────────────────────────
+                services.AddTransient<IDeviceRepository, DeviceRepository>();
+                services.AddTransient<IModelRepository, ModelRepository>();
 
-            // Views and ViewModels
-            services.AddTransient<ModelListViewModel>();
-            services.AddTransient<ModelListPage>();
-            services.AddTransient<MyDevicesViewModel>();
-            services.AddTransient<MyDevicesPage>();
-            services.AddTransient<ShellPage>();
-            services.AddTransient<ShellViewModel>();
+                // ── DataSources ─────────────────────────────────────────────
+                services.AddTransient<IDeviceDataSource, DeviceDataSource>();
+                services.AddTransient<IModelDataSource, ModelDataSource>();
 
-            // Configuration
-        }).
-        Build();
+                // ── DbContext (Transient) ────────────────────────────────────
+                services.AddDbContext<AppDbContext>(options =>
+                {
+                    var dbPath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "app.db");
+                    options.UseSqlite($"Data Source={dbPath}");
+                }, ServiceLifetime.Transient);
+
+                services.AddTransient<DatabaseInitializer>();
+
+                // ── Views and ViewModels ─────────────────────────────────────
+                services.AddTransient<ModelListViewModel>();
+                services.AddTransient<ModelListPage>();
+                services.AddTransient<MyDevicesViewModel>();
+                services.AddTransient<MyDevicesPage>();
+                services.AddTransient<ShellPage>();
+                services.AddTransient<ShellViewModel>();
+            })
+            .Build();
 
         UnhandledException += App_UnhandledException;
     }
@@ -119,17 +104,16 @@ public partial class App : Application
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         // TODO: Log and handle exceptions as appropriate.
-        // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
     }
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
 
+        // ── 1. DB init ─────────────────────────────────────────────────
         using var scope = Host.Services.CreateScope();
 
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
+        var context  = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var fullPath = Path.GetFullPath(context.Database.GetDbConnection().DataSource);
         System.Diagnostics.Debug.WriteLine("FULL DB PATH: " + fullPath);
 
@@ -138,9 +122,56 @@ public partial class App : Application
         var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
         await initializer.InitializeAsync();
 
-        // Start sync watcher after DB is ready
+        // ── 2. Start FileWatcher ───────────────────────────────────────
         App.GetService<IInstanceSyncService>().Start();
 
+        // ── 3. Activate UI (show window immediately — FR36) ───────────
         await App.GetService<IActivationService>().ActivateAsync(args);
+
+        // ── 4. Background chunk loading into IInMemoryStore ───────────
+        // Fire-and-forget: loads data while user sees the UI.
+        // ViewModels will re-render when StoreChanged fires after MarkLoaded().
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await LoadAllDataIntoStoreAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Background load error: " + ex.Message);
+            }
+        });
+    }
+
+    /// <summary>
+    /// Loads all Models then all Devices into IInMemoryStore in 100k-record chunks (FR34, FR35).
+    /// Runs on a background thread — UI stays responsive throughout (FR36).
+    /// </summary>
+    private async Task LoadAllDataIntoStoreAsync()
+    {
+        var store = App.GetService<IInMemoryStore>();
+
+        // Load Models
+        using (var scope = Host.Services.CreateScope())
+        {
+            var useCase = scope.ServiceProvider.GetRequiredService<LoadAllModelsUseCase>();
+            await foreach (var chunk in useCase.ExecuteAsync(chunkSize: 100_000))
+            {
+                store.AddModelChunk(chunk);
+            }
+        }
+
+        // Load Devices
+        using (var scope = Host.Services.CreateScope())
+        {
+            var useCase = scope.ServiceProvider.GetRequiredService<LoadAllDevicesUseCase>();
+            await foreach (var chunk in useCase.ExecuteAsync(chunkSize: 100_000))
+            {
+                store.AddDeviceChunk(chunk);
+            }
+        }
+
+        store.MarkLoaded(); // fires StoreChanged → ViewModels re-render
     }
 }

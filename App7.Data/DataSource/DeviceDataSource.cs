@@ -12,6 +12,43 @@ public class DeviceDataSource : IDeviceDataSource
     public DeviceDataSource(AppDbContext context)
         => _context = context;
 
+    public async Task<List<Device>> GetChunkAsync(int offset, int chunkSize)
+    {
+        // Join with Models so ModelName is populated in the in-memory snapshot
+        return await _context.Devices
+            .AsNoTracking()
+            .OrderBy(d => d.Id)
+            .Skip(offset)
+            .Take(chunkSize)
+            .Join(_context.Models,
+                  d => d.ModelId,
+                  m => m.Id,
+                  (d, m) => new Device
+                  {
+                      Id                  = d.Id,
+                      ModelId             = d.ModelId,
+                      ModelName           = m.Name,
+                      IMEI                = d.IMEI,
+                      SerialLab           = d.SerialLab,
+                      SerialNumber        = d.SerialNumber,
+                      CircuitSerialNumber = d.CircuitSerialNumber,
+                      HWVersion           = d.HWVersion,
+                      Status              = d.Status,
+                  })
+            .ToListAsync();
+    }
+
+    public async Task<List<Guid>> GetAvailableDeviceIdsAsync(Guid modelId, int quantity)
+    {
+        return await _context.Devices
+            .AsNoTracking()
+            .Where(d => d.ModelId == modelId && d.Status == "Available")
+            .OrderBy(d => d.Id)
+            .Take(quantity)
+            .Select(d => d.Id)
+            .ToListAsync();
+    }
+
     public async Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
         int page,
         int pageSize,

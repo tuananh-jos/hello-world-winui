@@ -23,19 +23,16 @@ public interface IModelRepository
     /// </summary>
     Task<IEnumerable<string>> GetCategoriesAsync();
 
-    /// <summary>
-    /// Returns all distinct SubCategory values for a given category.
-    /// </summary>
+    /// <summary>Returns all distinct SubCategory values for a given category.</summary>
     Task<IEnumerable<string>> GetSubCategoriesAsync(string category);
 
-    /// <summary>
-    /// Increments the Available count for a model (called after a device is returned).
-    /// </summary>
+    /// <summary>Returns a chunk of all models ordered by Id for initial in-memory load (FR34).</summary>
+    Task<IReadOnlyList<Model>> GetChunkAsync(int offset, int chunkSize);
+
+    /// <summary>Increments the Available count for a model (called after a device is returned).</summary>
     Task IncrementAvailableAsync(Guid modelId);
 
-    /// <summary>
-    /// Decrements the Available count for a model (called after a device is borrowed).
-    /// </summary>
+    /// <summary>Decrements the Available count for a model (called after a device is borrowed).</summary>
     Task DecrementAvailableAsync(Guid modelId, int quantity);
 
     // Legacy — kept for compatibility if needed
