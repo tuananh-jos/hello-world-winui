@@ -9,7 +9,7 @@ database Database
 
 User -> UI : Click Return button
 UI -> User : Show confirmation popup
-User -> UI : Confirm return
+User -> UI : OK
 UI -> System : Send return request
 System -> Database : Update device quantity
 Database --> System : Update success
