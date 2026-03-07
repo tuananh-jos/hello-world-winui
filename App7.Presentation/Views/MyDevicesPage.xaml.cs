@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
+using App7.Domain.Constants;
 
 namespace App7.Presentation.Views;
 
@@ -64,13 +65,13 @@ public sealed partial class MyDevicesPage : Page
     {
         var icons = new (string col, TextBlock tb)[]
         {
-            ("Name",                SortIconName),
-            ("ModelName",           SortIconModelName),
-            ("IMEI",                SortIconIMEI),
-            ("SerialLab",           SortIconSerialLab),
-            ("SerialNumber",        SortIconSerialNumber),
-            ("CircuitSerialNumber", SortIconCircuitSerial),
-            ("HWVersion",           SortIconHWVersion),
+            (ColumnTags.NAME,                SortIconName),
+            (ColumnTags.MODEL_NAME,           SortIconModelName),
+            (ColumnTags.IMEI,                SortIconIMEI),
+            (ColumnTags.SERIAL_LAB,           SortIconSerialLab),
+            (ColumnTags.SERIAL_NUMBER,        SortIconSerialNumber),
+            (ColumnTags.CIRCUIT_SERIAL_NUMBER, SortIconCircuitSerial),
+            (ColumnTags.HW_VERSION,           SortIconHWVersion),
         };
 
         foreach (var (col, tb) in icons)
@@ -211,45 +212,45 @@ public sealed partial class MyDevicesPage : Page
 
     private ColumnDefinition? GetHeaderColDef(string tag) => tag switch
     {
-        "Name"               => ColDefName,
-        "ModelName"          => ColDefModelName,
-        "IMEI"               => ColDefIMEI,
-        "SerialLab"          => ColDefSerialLab,
-        "SerialNumber"       => ColDefSerialNumber,
-        "CircuitSerialNumber"=> ColDefCircuitSerial,
-        "HWVersion"          => ColDefHWVersion,
-        "Function"           => ColDefFunction,
-        _                    => null
+        ColumnTags.NAME               => ColDefName,
+        ColumnTags.MODEL_NAME          => ColDefModelName,
+        ColumnTags.IMEI               => ColDefIMEI,
+        ColumnTags.SERIAL_LAB          => ColDefSerialLab,
+        ColumnTags.SERIAL_NUMBER       => ColDefSerialNumber,
+        ColumnTags.CIRCUIT_SERIAL_NUMBER=> ColDefCircuitSerial,
+        ColumnTags.HW_VERSION          => ColDefHWVersion,
+        ColumnTags.FUNCTION           => ColDefFunction,
+        _                             => null
     };
 
     private ColumnDefinition? GetFilterColDef(string tag) => tag switch
     {
-        "Name"               => FilterColDefName,
-        "ModelName"          => FilterColDefModelName,
-        "IMEI"               => FilterColDefIMEI,
-        "SerialLab"          => FilterColDefSerialLab,
-        "SerialNumber"       => FilterColDefSerialNumber,
-        "CircuitSerialNumber"=> FilterColDefCircuitSerial,
-        "HWVersion"          => FilterColDefHWVersion,
-        "Function"           => FilterColDefFunction,
-        _                    => null
+        ColumnTags.NAME               => FilterColDefName,
+        ColumnTags.MODEL_NAME          => FilterColDefModelName,
+        ColumnTags.IMEI               => FilterColDefIMEI,
+        ColumnTags.SERIAL_LAB          => FilterColDefSerialLab,
+        ColumnTags.SERIAL_NUMBER       => FilterColDefSerialNumber,
+        ColumnTags.CIRCUIT_SERIAL_NUMBER=> FilterColDefCircuitSerial,
+        ColumnTags.HW_VERSION          => FilterColDefHWVersion,
+        ColumnTags.FUNCTION           => FilterColDefFunction,
+        _                             => null
     };
 
     private static GridLength GetNaturalWidth(string tag) => tag switch
     {
-        "Function" => new GridLength(120),
+        ColumnTags.FUNCTION => new GridLength(120),
         _ => new GridLength(1, GridUnitType.Star)
     };
 
     private static double GetNaturalMinWidth(string tag) => tag switch
     {
-        "Name"               => 100,
-        "ModelName"          => 120,
-        "IMEI"               => 100,
-        "SerialLab"          => 80,
-        "SerialNumber"       => 80,
-        "CircuitSerialNumber"=> 80,
-        "HWVersion"          => 70,
-        _                    => 0
+        ColumnTags.NAME               => 100,
+        ColumnTags.MODEL_NAME          => 120,
+        ColumnTags.IMEI               => 100,
+        ColumnTags.SERIAL_LAB          => 80,
+        ColumnTags.SERIAL_NUMBER       => 80,
+        ColumnTags.CIRCUIT_SERIAL_NUMBER=> 80,
+        ColumnTags.HW_VERSION          => 70,
+        _                             => 0
     };
 }

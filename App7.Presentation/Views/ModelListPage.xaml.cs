@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Media;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
+using App7.Domain.Constants;
 
 namespace App7.Presentation.Views;
 
@@ -111,11 +112,11 @@ public sealed partial class ModelListPage : Page
     {
         var icons = new (string col, TextBlock tb)[]
         {
-            ("Name",         SortIconName),
-            ("Manufacturer", SortIconManufacturer),
-            ("Category",     SortIconCategory),
-            ("SubCategory",  SortIconSubCategory),
-            ("Available",    SortIconAvailable),
+            (ColumnTags.NAME,         SortIconName),
+            (ColumnTags.MANUFACTURER, SortIconManufacturer),
+            (ColumnTags.CATEGORY,     SortIconCategory),
+            (ColumnTags.SUB_CATEGORY,  SortIconSubCategory),
+            (ColumnTags.AVAILABLE,    SortIconAvailable),
         };
 
         foreach (var (col, tb) in icons)
@@ -429,39 +430,39 @@ public sealed partial class ModelListPage : Page
 
     private ColumnDefinition? GetHeaderColDef(string tag) => tag switch
     {
-        "Name"        => HdrColName,
-        "Manufacturer"=> HdrColManufacturer,
-        "Category"    => HdrColCategory,
-        "SubCategory" => HdrColSubCategory,
-        "Available"   => HdrColAvailable,
-        "Function"    => HdrColFunction,
-        _             => null
+        ColumnTags.NAME        => HdrColName,
+        ColumnTags.MANUFACTURER=> HdrColManufacturer,
+        ColumnTags.CATEGORY    => HdrColCategory,
+        ColumnTags.SUB_CATEGORY => HdrColSubCategory,
+        ColumnTags.AVAILABLE   => HdrColAvailable,
+        ColumnTags.FUNCTION    => HdrColFunction,
+        _                      => null
     };
 
     private ColumnDefinition? GetFilterColDef(string tag) => tag switch
     {
-        "Name"        => FltColName,
-        "Manufacturer"=> FltColManufacturer,
-        "Category"    => FltColCategory,
-        "SubCategory" => FltColSubCategory,
-        "Available"   => FltColAvailable,
-        "Function"    => FltColFunction,
-        _             => null
+        ColumnTags.NAME        => FltColName,
+        ColumnTags.MANUFACTURER=> FltColManufacturer,
+        ColumnTags.CATEGORY    => FltColCategory,
+        ColumnTags.SUB_CATEGORY => FltColSubCategory,
+        ColumnTags.AVAILABLE   => FltColAvailable,
+        ColumnTags.FUNCTION    => FltColFunction,
+        _                      => null
     };
 
     private static GridLength GetNaturalWidth(string tag) => tag switch
     {
-        "Available"   => new GridLength(100),
-        "Function"    => new GridLength(120),
-        _             => new GridLength(1, GridUnitType.Star)
+        ColumnTags.AVAILABLE   => new GridLength(100),
+        ColumnTags.FUNCTION    => new GridLength(120),
+        _                      => new GridLength(1, GridUnitType.Star)
     };
 
     private static double GetNaturalMinWidth(string tag) => tag switch
     {
-        "Name"        => 120,
-        "Manufacturer"=> 100,
-        "Category"    => 90,
-        "SubCategory" => 90,
-        _             => 0
+        ColumnTags.NAME        => 120,
+        ColumnTags.MANUFACTURER=> 100,
+        ColumnTags.CATEGORY    => 90,
+        ColumnTags.SUB_CATEGORY => 90,
+        _                      => 0
     };
 }

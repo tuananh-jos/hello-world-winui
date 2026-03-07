@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using App7.Domain.Constants;
 using App7.Domain.Entities;
 using App7.Domain.Services;
 using App7.Domain.Usecases;
@@ -26,11 +27,11 @@ public partial class ModelListViewModel : PagedListViewModelBase
     // ── Column visibility ─────────────────────────────────────────────
     public override ObservableCollection<ColumnVisibilityItem> ColumnVisibilities { get; } = new()
     {
-        new() { ColumnTag = "Name",         DisplayName = "Name",         IsVisible = true },
-        new() { ColumnTag = "Manufacturer", DisplayName = "Manufacturer", IsVisible = true },
-        new() { ColumnTag = "Category",     DisplayName = "Category",     IsVisible = true },
-        new() { ColumnTag = "SubCategory",  DisplayName = "Sub Category", IsVisible = true },
-        new() { ColumnTag = "Available",    DisplayName = "Available",    IsVisible = true },
+        new() { ColumnTag = ColumnTags.NAME,         DisplayName = ColumnTags.NAME_LABEL,         IsVisible = true },
+        new() { ColumnTag = ColumnTags.MANUFACTURER, DisplayName = ColumnTags.MANUFACTURER_LABEL, IsVisible = true },
+        new() { ColumnTag = ColumnTags.CATEGORY,     DisplayName = ColumnTags.CATEGORY_LABEL,     IsVisible = true },
+        new() { ColumnTag = ColumnTags.SUB_CATEGORY, DisplayName = ColumnTags.SUB_CATEGORY_LABEL, IsVisible = true },
+        new() { ColumnTag = ColumnTags.AVAILABLE,    DisplayName = ColumnTags.AVAILABLE_LABEL,    IsVisible = true },
     };
 
     private readonly GetModelsPagedUseCase  _getModelsPaged;

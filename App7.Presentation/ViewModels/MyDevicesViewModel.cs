@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using App7.Domain.Constants;
 using App7.Domain.Entities;
 using App7.Domain.Services;
 using App7.Domain.Usecases;
@@ -32,13 +33,13 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
     // ── Column visibility ─────────────────────────────────────────────
     public override ObservableCollection<ColumnVisibilityItem> ColumnVisibilities { get; } = new()
     {
-        new() { ColumnTag = "Name",                DisplayName = "Name",           IsVisible = true },
-        new() { ColumnTag = "ModelName",           DisplayName = "Model Name",     IsVisible = true },
-        new() { ColumnTag = "IMEI",                DisplayName = "IMEI",           IsVisible = true },
-        new() { ColumnTag = "SerialLab",           DisplayName = "Serial Lab",     IsVisible = true },
-        new() { ColumnTag = "SerialNumber",        DisplayName = "Serial No.",     IsVisible = true },
-        new() { ColumnTag = "CircuitSerialNumber", DisplayName = "Circuit Serial", IsVisible = true },
-        new() { ColumnTag = "HWVersion",           DisplayName = "HW Version",     IsVisible = true },
+        new() { ColumnTag = ColumnTags.NAME,                  DisplayName = ColumnTags.NAME_LABEL,                  IsVisible = true },
+        new() { ColumnTag = ColumnTags.MODEL_NAME,            DisplayName = ColumnTags.MODEL_NAME_LABEL,            IsVisible = true },
+        new() { ColumnTag = ColumnTags.IMEI,                  DisplayName = ColumnTags.IMEI_LABEL,                  IsVisible = true },
+        new() { ColumnTag = ColumnTags.SERIAL_LAB,            DisplayName = ColumnTags.SERIAL_LAB_LABEL,            IsVisible = true },
+        new() { ColumnTag = ColumnTags.SERIAL_NUMBER,         DisplayName = ColumnTags.SERIAL_NUMBER_LABEL,         IsVisible = true },
+        new() { ColumnTag = ColumnTags.CIRCUIT_SERIAL_NUMBER, DisplayName = ColumnTags.CIRCUIT_SERIAL_NUMBER_LABEL, IsVisible = true },
+        new() { ColumnTag = ColumnTags.HW_VERSION,            DisplayName = ColumnTags.HW_VERSION_LABEL,            IsVisible = true },
     };
 
     private readonly GetBorrowedDevicesUseCase _getDevices;

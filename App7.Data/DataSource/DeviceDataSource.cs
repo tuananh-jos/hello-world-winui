@@ -1,5 +1,6 @@
-﻿using App7.Data.Db;
+using App7.Data.Db;
 using App7.Data.IDataSource;
+using App7.Domain.Constants;
 using App7.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,16 +62,16 @@ public class DeviceDataSource : IDeviceDataSource
         var totalCount = await query.CountAsync();
 
         // Sort
-        query = (sortColumn?.ToLowerInvariant()) switch
+        query = sortColumn switch
         {
-            "name"               => ascending ? query.OrderBy(x => x.DeviceName)              : query.OrderByDescending(x => x.DeviceName),
-            "modelname"          => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
-            "imei"               => ascending ? query.OrderBy(x => x.Device.IMEI)             : query.OrderByDescending(x => x.Device.IMEI),
-            "seriallab"          => ascending ? query.OrderBy(x => x.Device.SerialLab)        : query.OrderByDescending(x => x.Device.SerialLab),
-            "serialnumber"       => ascending ? query.OrderBy(x => x.Device.SerialNumber)     : query.OrderByDescending(x => x.Device.SerialNumber),
-            "circuitserialnumber"=> ascending ? query.OrderBy(x => x.Device.CircuitSerialNumber) : query.OrderByDescending(x => x.Device.CircuitSerialNumber),
-            "hwversion"          => ascending ? query.OrderBy(x => x.Device.HWVersion)        : query.OrderByDescending(x => x.Device.HWVersion),
-            _                    => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
+            ColumnTags.NAME                => ascending ? query.OrderBy(x => x.DeviceName)              : query.OrderByDescending(x => x.DeviceName),
+            ColumnTags.MODEL_NAME           => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
+            ColumnTags.IMEI                => ascending ? query.OrderBy(x => x.Device.IMEI)             : query.OrderByDescending(x => x.Device.IMEI),
+            ColumnTags.SERIAL_LAB           => ascending ? query.OrderBy(x => x.Device.SerialLab)        : query.OrderByDescending(x => x.Device.SerialLab),
+            ColumnTags.SERIAL_NUMBER        => ascending ? query.OrderBy(x => x.Device.SerialNumber)     : query.OrderByDescending(x => x.Device.SerialNumber),
+            ColumnTags.CIRCUIT_SERIAL_NUMBER => ascending ? query.OrderBy(x => x.Device.CircuitSerialNumber) : query.OrderByDescending(x => x.Device.CircuitSerialNumber),
+            ColumnTags.HW_VERSION           => ascending ? query.OrderBy(x => x.Device.HWVersion)        : query.OrderByDescending(x => x.Device.HWVersion),
+            _                              => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
         };
 
         // Pagination + project into Device with ModelName populated

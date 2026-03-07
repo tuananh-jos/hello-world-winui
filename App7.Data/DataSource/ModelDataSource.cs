@@ -1,5 +1,6 @@
 using App7.Data.Db;
 using App7.Data.IDataSource;
+using App7.Domain.Constants;
 using App7.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,13 +45,13 @@ public class ModelDataSource : IModelDataSource
         var totalCount = await query.CountAsync();
 
         // Sort
-        query = (sortColumn?.ToLowerInvariant()) switch
+        query = sortColumn switch
         {
-            "manufacturer" => ascending ? query.OrderBy(m => m.Manufacturer) : query.OrderByDescending(m => m.Manufacturer),
-            "category"     => ascending ? query.OrderBy(m => m.Category)     : query.OrderByDescending(m => m.Category),
-            "subcategory"  => ascending ? query.OrderBy(m => m.SubCategory)  : query.OrderByDescending(m => m.SubCategory),
-            "available"    => ascending ? query.OrderBy(m => m.Available)    : query.OrderByDescending(m => m.Available),
-            _              => ascending ? query.OrderBy(m => m.Name)          : query.OrderByDescending(m => m.Name),
+            ColumnTags.MANUFACTURER => ascending ? query.OrderBy(m => m.Manufacturer) : query.OrderByDescending(m => m.Manufacturer),
+            ColumnTags.CATEGORY     => ascending ? query.OrderBy(m => m.Category)     : query.OrderByDescending(m => m.Category),
+            ColumnTags.SUB_CATEGORY  => ascending ? query.OrderBy(m => m.SubCategory)  : query.OrderByDescending(m => m.SubCategory),
+            ColumnTags.AVAILABLE    => ascending ? query.OrderBy(m => m.Available)    : query.OrderByDescending(m => m.Available),
+            _                       => ascending ? query.OrderBy(m => m.Name)         : query.OrderByDescending(m => m.Name),
         };
 
         // Pagination
