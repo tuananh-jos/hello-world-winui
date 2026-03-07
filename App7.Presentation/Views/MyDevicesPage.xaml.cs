@@ -36,9 +36,6 @@ public sealed partial class MyDevicesPage : Page
                 case nameof(ViewModel.SortColumn) or nameof(ViewModel.SortAscending):
                     UpdateSortIcons();
                     break;
-                case nameof(ViewModel.PageNumbers) or nameof(ViewModel.CurrentPage):
-                    RebuildPageNumberButtons();
-                    break;
             }
         };
 
@@ -234,31 +231,6 @@ public sealed partial class MyDevicesPage : Page
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         timer.Tick += (_, _) => { ReturnInfoBar.IsOpen = false; timer.Stop(); };
         timer.Start();
-    }
-
-    // ── Page-number buttons ───────────────────────────────────────────
-    private void RebuildPageNumberButtons()
-    {
-        PageNumbersPanel.Children.Clear();
-        foreach (var pageNum in ViewModel.PageNumbers)
-        {
-            var isActive = pageNum == ViewModel.CurrentPage;
-            var btn = new Button
-            {
-                Content = pageNum.ToString(),
-                MinWidth = 32, Height = 32,
-                CornerRadius = new CornerRadius(16),
-                Padding = new Thickness(8, 0, 8, 0),
-                Margin = new Thickness(2, 0, 2, 0),
-                Background = isActive ? ActivePageBrush : InactivePageBrush,
-                Foreground = isActive ? new SolidColorBrush(Colors.White) : InactiveTextBrush,
-                BorderThickness = new Thickness(isActive ? 0 : 1),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(255, 0xDD, 0xDD, 0xDD)),
-            };
-            var captured = pageNum;
-            btn.Click += async (_, _) => await ViewModel.GoToPageCommand.ExecuteAsync(captured);
-            PageNumbersPanel.Children.Add(btn);
-        }
     }
 
     // ── Columns popup ─────────────────────────────────────────────────

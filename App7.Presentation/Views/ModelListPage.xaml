@@ -5,8 +5,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:vm="using:App7.Presentation.ViewModels"
-    mc:Ignorable="d"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:localc="using:App7.Presentation.Controls"
     x:Name="PageRoot">
 
     <Page.Resources>
@@ -253,13 +253,7 @@
                               Visibility="{x:Bind ViewModel.ShowingTextVisibility, Mode=OneWay}">
                             <TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="280"
                                        Text="{x:Bind ViewModel.ShowingText, Mode=OneWay}" FontSize="13" Foreground="#555555" />
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                <Button Content="First"    Command="{x:Bind ViewModel.FirstPageCommand}"    Style="{StaticResource AppNavButtonStyle}" />
-                                <Button Content="Previous" Command="{x:Bind ViewModel.PreviousPageCommand}" Style="{StaticResource AppNavButtonStyle}" />
-                                <StackPanel x:Name="PageNumbersPanel" Orientation="Horizontal" Spacing="4" />
-                                <Button Content="Next" Command="{x:Bind ViewModel.NextPageCommand}" Style="{StaticResource AppNavButtonStyle}" />
-                                <Button Content="Last" Command="{x:Bind ViewModel.LastPageCommand}" Style="{StaticResource AppNavButtonStyle}" />
-                            </StackPanel>
+                            <localc:PaginationControl Grid.Column="2" ViewModel="{x:Bind ViewModel}" />
                         </Grid>
 
                     </Grid>
