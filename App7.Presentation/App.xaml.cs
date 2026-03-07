@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using App7.Data.DataSource;
 using App7.Data.Db;
 using App7.Data.IDataSource;
@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.Extensions.Logging;
+using App7.Presentation.Extensions;
 
 namespace App7.Presentation;
 
@@ -58,62 +59,7 @@ public partial class App : Application
         UseContentRoot(AppContext.BaseDirectory).
         ConfigureServices((context, services) =>
         {
-            // Default Activation Handler
-            services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
-
-            // Other Activation Handlers
-
-            // Services
-            services.AddTransient<INavigationViewService, NavigationViewService>();
-
-            services.AddSingleton<IActivationService, ActivationService>();
-            services.AddSingleton<IPageService, PageService>();
-            services.AddSingleton<INavigationService, NavigationService>();
-
-            // UseCases
-            services.AddTransient<GetModelsPagedUseCase>();
-            services.AddTransient<GetModelFiltersUseCase>();
-            services.AddTransient<BorrowDeviceUseCase>();
-            services.AddTransient<GetBorrowedDevicesUseCase>();
-            services.AddTransient<ReturnDeviceUseCase>();
-
-            // InstanceSyncService — Singleton so all ViewModels share one watcher
-            services.AddSingleton<IInstanceSyncService>(sp =>
-            {
-                var folder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-                return new InstanceSyncService(folder);
-            });
-
-            // Repository — Transient (matches ViewModel and UseCase lifetimes; single-user desktop app)
-            services.AddTransient<IDeviceRepository, DeviceRepository>();
-            services.AddTransient<IModelRepository, ModelRepository>();
-
-            // DataSource — Transient
-            services.AddTransient<IDeviceDataSource, DeviceDataSource>();
-            services.AddTransient<IModelDataSource, ModelDataSource>();
-
-            // DbContext — Transient (each operation gets a fresh context; safe for single-user desktop)
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                var dbPath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "app.db");
-                options.UseSqlite($"Data Source={dbPath}");
-
-                options.LogTo(message => { }, LogLevel.None);
-            }, ServiceLifetime.Transient);
-
-            // DB initializer
-            services.AddTransient<DatabaseInitializer>();
-
-
-            // Views and ViewModels
-            services.AddTransient<ModelListViewModel>();
-            services.AddTransient<ModelListPage>();
-            services.AddTransient<MyDevicesViewModel>();
-            services.AddTransient<MyDevicesPage>();
-            services.AddTransient<ShellPage>();
-            services.AddTransient<ShellViewModel>();
-
-            // Configuration
+            services.AddAppServices();
         }).
         Build();
         
@@ -131,17 +77,17 @@ public partial class App : Application
         base.OnLaunched(args);
 
         using var scope = Host.Services.CreateScope();
-
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+        // print db path
         var fullPath = Path.GetFullPath(context.Database.GetDbConnection().DataSource);
         System.Diagnostics.Debug.WriteLine("FULL DB PATH: " + fullPath);
 
         await context.Database.EnsureCreatedAsync();
 
-        var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
-
+        // import data if required
         var watch = Stopwatch.StartNew();
+        var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
         await initializer.InitializeAsync();
         watch.Stop();
         var elapsedMs = watch.ElapsedMilliseconds;
