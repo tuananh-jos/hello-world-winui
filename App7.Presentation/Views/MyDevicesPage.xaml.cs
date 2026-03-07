@@ -46,7 +46,6 @@ public sealed partial class MyDevicesPage : Page
         {
             ContentGrid.MinHeight = MainScroller.ActualHeight;
             MainScroller.SizeChanged += (_, e) => ContentGrid.MinHeight = e.NewSize.Height;
-            PopulatePageSizeList();
         };
 
         // Hover effect on DataGrid rows
@@ -126,47 +125,7 @@ public sealed partial class MyDevicesPage : Page
         }
     }
 
-    // ── PageSize popup ────────────────────────────────────────────────
-    private void OnPageSizeFilterClicked(object sender, RoutedEventArgs e)
-    {
-        PopulatePageSizeList();
-        var transform = PageSizeFilterBtn.TransformToVisual(PageRoot);
-        var pt = transform.TransformPoint(new Point(0, PageSizeFilterBtn.ActualHeight + 2));
-        PageSizePopup.HorizontalOffset = pt.X;
-        PageSizePopup.VerticalOffset   = pt.Y;
-        PageSizePopup.IsOpen = true;
-    }
 
-    private void PopulatePageSizeList()
-    {
-        PageSizeListPanel.Children.Clear();
-        foreach (var size in ViewModel.PageSizeOptions)
-        {
-            var captured = size;
-            var btn = MakeFilterItem(size.ToString(), ViewModel.SelectedPageSize == captured);
-            btn.Click += async (_, _) =>
-            {
-                ViewModel.SelectedPageSize = captured;
-                PageSizeFilterLabel.Text = captured.ToString();
-                PageSizePopup.IsOpen = false;
-                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
-            };
-            PageSizeListPanel.Children.Add(btn);
-        }
-    }
-
-    private static Button MakeFilterItem(string text, bool isSelected) => new()
-    {
-        Content = text,
-        HorizontalAlignment = HorizontalAlignment.Stretch,
-        HorizontalContentAlignment = HorizontalAlignment.Left,
-        Background = isSelected
-            ? new SolidColorBrush(Color.FromArgb(255, 0xE8, 0xF4, 0xF8))
-            : new SolidColorBrush(Colors.Transparent),
-        BorderThickness = new Thickness(0),
-        Padding = new Thickness(8, 4, 8, 4),
-        FontSize = 12,
-    };
 
     // ── Shared search handlers ──────────────────────────────────────
     private DispatcherTimer? _searchDebounceTimer;

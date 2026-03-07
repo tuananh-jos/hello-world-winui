@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="App7.Presentation.Controls.LoadingOverlayControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:App7.Presentation.ViewModels">
+
+    <Grid Background="#60000000" Visibility="{x:Bind ViewModel.IsOverlayVisible, Mode=OneWay}">
+        <ProgressRing IsActive="True" Width="48" Height="48" />
+    </Grid>
+</UserControl>

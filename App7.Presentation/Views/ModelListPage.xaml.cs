@@ -56,7 +56,6 @@ public sealed partial class ModelListPage : Page
             PopulateManufacturerList(string.Empty);
             PopulateCategoryList(string.Empty);
             PopulateSubCategoryList(string.Empty);
-            PopulatePageSizeList();
         };
 
         // Hover effect on DataGrid rows
@@ -367,34 +366,7 @@ public sealed partial class ModelListPage : Page
         }
     }
 
-    // ── PageSize popup ────────────────────────────────────────────────
-    private void OnPageSizeFilterClicked(object sender, RoutedEventArgs e)
-    {
-        PopulatePageSizeList();
-        var transform = PageSizeFilterBtn.TransformToVisual(PageRoot);
-        var pt = transform.TransformPoint(new Point(0, PageSizeFilterBtn.ActualHeight + 2));
-        PageSizePopup.HorizontalOffset = pt.X;
-        PageSizePopup.VerticalOffset   = pt.Y;
-        PageSizePopup.IsOpen = true;
-    }
 
-    private void PopulatePageSizeList()
-    {
-        PageSizeListPanel.Children.Clear();
-        foreach (var size in ViewModel.PageSizeOptions)
-        {
-            var captured = size;
-            var btn = MakeFilterItem(size.ToString(), ViewModel.SelectedPageSize == captured);
-            btn.Click += async (_, _) =>
-            {
-                ViewModel.SelectedPageSize = captured;
-                PageSizeFilterLabel.Text = captured.ToString();
-                PageSizePopup.IsOpen = false;
-                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
-            };
-            PageSizeListPanel.Children.Add(btn);
-        }
-    }
 
     // ── Borrow ────────────────────────────────────────────────────────
     private async void OnBorrowClicked(object sender, RoutedEventArgs e)

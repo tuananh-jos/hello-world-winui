@@ -36,17 +36,7 @@
                         <Grid Grid.Row="1" Padding="16,0,16,8">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
                                 <Button x:Name="ColumnsBtn" Content="Columns" Click="OnColumnsButtonClicked" />
-                                <Button x:Name="PageSizeFilterBtn"
-                                        Click="OnPageSizeFilterClicked"
-                                        Background="White" BorderBrush="#CCCCCC" BorderThickness="1"
-                                        Width="56" Height="32" Padding="8,0" FontSize="12">
-                                    <Grid>
-                                        <TextBlock x:Name="PageSizeFilterLabel" Text="10"
-                                                   VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="12" />
-                                        <!-- <TextBlock Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                   FontSize="10" Opacity="0.5" VerticalAlignment="Center" HorizontalAlignment="Right" /> -->
-                                    </Grid>
-                                </Button>
+                                <localc:PageSizeControl ViewModel="{x:Bind ViewModel}" />
                             </StackPanel>
                         </Grid>
 
@@ -256,9 +246,7 @@
         </ScrollViewer>
 
         <!-- Loading overlay -->
-        <Grid Background="#60000000" Visibility="{x:Bind ViewModel.IsOverlayVisible, Mode=OneWay}">
-            <ProgressRing IsActive="True" Width="48" Height="48" />
-        </Grid>
+        <localc:LoadingOverlayControl ViewModel="{x:Bind ViewModel}" />
 
         <!-- Columns popup -->
         <Grid x:Name="ColumnsOverlay" Background="#40000000"
@@ -277,12 +265,7 @@
             </Border>
         </Grid>
 
-        <!-- PageSize popup -->
-        <Popup x:Name="PageSizePopup" IsLightDismissEnabled="True">
-            <Border Background="White" CornerRadius="6" BorderBrush="#CCCCCC" BorderThickness="1" Width="56" Padding="8">
-                <StackPanel x:Name="PageSizeListPanel" Spacing="2" />
-            </Border>
-        </Popup>
+
 
         <InfoBar x:Name="ReturnInfoBar" IsOpen="False" IsClosable="True" VerticalAlignment="Top" Margin="20,8,20,0" />
 
