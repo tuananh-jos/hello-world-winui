@@ -50,17 +50,17 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Table area: border wrap → header | filter | DataGrid -->
                         <Border Grid.Row="2" Margin="16,0,16,0"
                                 BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="2">
-                            <Grid RowDefinitions="Auto,Auto,Auto">
+                            <ScrollViewer x:Name="TableScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                                <Grid RowDefinitions="Auto,Auto,Auto" MinWidth="710" Width="{Binding ElementName=TableScroller, Path=ViewportWidth}">
 
                                 <!-- Custom column header row -->
                                 <Border Grid.Row="0" Background="#2D8A8888">
                                     <Grid x:Name="HeaderGrid" Height="40">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition x:Name="HdrColName"         Width="*" MinWidth="120" />
-                                            <ColumnDefinition x:Name="HdrColManufacturer" Width="*" MinWidth="100" />
+                                            <ColumnDefinition x:Name="HdrColManufacturer" Width="*" MinWidth="120" />
                                             <ColumnDefinition x:Name="HdrColCategory"     Width="*" MinWidth="90" />
                                             <ColumnDefinition x:Name="HdrColSubCategory"  Width="*" MinWidth="90" />
                                             <ColumnDefinition x:Name="HdrColAvailable"    Width="*" MinWidth="70" />
@@ -118,7 +118,7 @@
                                     <Grid x:Name="FilterGrid">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition x:Name="FltColName"         Width="*" MinWidth="120" />
-                                            <ColumnDefinition x:Name="FltColManufacturer" Width="*" MinWidth="100" />
+                                            <ColumnDefinition x:Name="FltColManufacturer" Width="*" MinWidth="120" />
                                             <ColumnDefinition x:Name="FltColCategory"     Width="*" MinWidth="90" />
                                             <ColumnDefinition x:Name="FltColSubCategory"  Width="*" MinWidth="90" />
                                             <ColumnDefinition x:Name="FltColAvailable"    Width="100" />
@@ -200,6 +200,7 @@
                                 <!-- DataGrid -->
                                 <Grid Grid.Row="2">
                                     <controls:DataGrid x:Name="ModelsGrid"
+                                                   HorizontalScrollBarVisibility="Disabled"
                                                    AutoGenerateColumns="False"
                                                    GridLinesVisibility="All"
                                                    CanUserSortColumns="False"
@@ -213,11 +214,11 @@
                                                    LayoutUpdated="OnGridLayoutUpdated">
                                         <controls:DataGrid.Columns>
                                             <controls:DataGridTextColumn Binding="{Binding Name}"         Tag="Name"         Width="*" MinWidth="120" />
-                                            <controls:DataGridTextColumn Binding="{Binding Manufacturer}" Tag="Manufacturer" Width="*" MinWidth="100" />
+                                            <controls:DataGridTextColumn Binding="{Binding Manufacturer}" Tag="Manufacturer" Width="*" MinWidth="120" />
                                             <controls:DataGridTextColumn Binding="{Binding Category}"     Tag="Category"     Width="*" MinWidth="90" />
                                             <controls:DataGridTextColumn Binding="{Binding SubCategory}"  Tag="SubCategory"  Width="*" MinWidth="90" />
                                             <controls:DataGridTextColumn Binding="{Binding Available}"    Tag="Available"    Width="*" MinWidth="70" />
-                                            <controls:DataGridTemplateColumn Tag="Function" Width="120" IsReadOnly="True">
+                                            <controls:DataGridTemplateColumn Tag="Function" Width="120" MinWidth="100" IsReadOnly="True">
                                                 <controls:DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <Button Tag="{Binding}" Click="OnBorrowClicked"
@@ -234,15 +235,16 @@
                                         </controls:DataGrid.Columns>
                                     </controls:DataGrid>
 
-                                    <!-- Empty state: inside grid area -->
-                                    <TextBlock Text="&#xE7BA;  No matching records found"
-                                           FontSize="14" Foreground="#888888"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Padding="0,40"
-                                           Visibility="{x:Bind ViewModel.EmptyVisibility, Mode=OneWay}" />
-                                </Grid>
+                                     <!-- Empty state: inside grid area -->
+                                     <TextBlock Text="&#xE7BA;  No matching records found"
+                                            FontSize="14" Foreground="#888888"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Padding="0,40"
+                                            Visibility="{x:Bind ViewModel.EmptyVisibility, Mode=OneWay}" />
+                                 </Grid>
 
-                            </Grid>
+                                </Grid>
+                            </ScrollViewer>
                         </Border>
 
                         <!-- Table footer -->

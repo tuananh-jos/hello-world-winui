@@ -53,18 +53,19 @@
                         <!-- Table area: border wrap → header | filter | DataGrid -->
                         <Border Grid.Row="2" Margin="16,0,16,0"
                                 BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="2">
-                            <Grid RowDefinitions="Auto,Auto,Auto">
+                            <ScrollViewer x:Name="TableScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                                <Grid RowDefinitions="Auto,Auto,Auto" MinWidth="1000" Width="{Binding ElementName=TableScroller, Path=ViewportWidth}">
 
                                 <!-- Custom column header row -->
                                 <Border Grid.Row="0" Background="#2D8A8888">
                                     <Grid x:Name="HeaderGrid" Height="40">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition x:Name="ColDefName"               Width="*" MinWidth="100" />
+                                            <ColumnDefinition x:Name="ColDefName"               Width="*" MinWidth="120" />
                                             <ColumnDefinition x:Name="ColDefModelName"          Width="*" MinWidth="120" />
-                                            <ColumnDefinition x:Name="ColDefIMEI"               Width="*" MinWidth="100" />
-                                            <ColumnDefinition x:Name="ColDefSerialLab"          Width="*" MinWidth="80" />
-                                            <ColumnDefinition x:Name="ColDefSerialNumber"       Width="*" MinWidth="80" />
-                                            <ColumnDefinition x:Name="ColDefCircuitSerial"      Width="*" MinWidth="80" />
+                                            <ColumnDefinition x:Name="ColDefIMEI"               Width="*" MinWidth="150" />
+                                            <ColumnDefinition x:Name="ColDefSerialLab"          Width="*" MinWidth="130" />
+                                            <ColumnDefinition x:Name="ColDefSerialNumber"       Width="*" MinWidth="130" />
+                                            <ColumnDefinition x:Name="ColDefCircuitSerial"      Width="*" MinWidth="130" />
                                             <ColumnDefinition x:Name="ColDefHWVersion"          Width="*" MinWidth="70" />
                                             <ColumnDefinition x:Name="ColDefFunction"           Width="120" />
                                         </Grid.ColumnDefinitions>
@@ -135,12 +136,12 @@
                                 <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,1,0,1" Padding="0,4">
                                     <Grid x:Name="FilterGrid">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition x:Name="FilterColDefName"               Width="*" MinWidth="100" />
+                                            <ColumnDefinition x:Name="FilterColDefName"               Width="*" MinWidth="120" />
                                             <ColumnDefinition x:Name="FilterColDefModelName"          Width="*" MinWidth="120" />
-                                            <ColumnDefinition x:Name="FilterColDefIMEI"               Width="*" MinWidth="100" />
-                                            <ColumnDefinition x:Name="FilterColDefSerialLab"          Width="*" MinWidth="80" />
-                                            <ColumnDefinition x:Name="FilterColDefSerialNumber"       Width="*" MinWidth="80" />
-                                            <ColumnDefinition x:Name="FilterColDefCircuitSerial"      Width="*" MinWidth="80" />
+                                            <ColumnDefinition x:Name="FilterColDefIMEI"               Width="*" MinWidth="150" />
+                                            <ColumnDefinition x:Name="FilterColDefSerialLab"          Width="*" MinWidth="130" />
+                                            <ColumnDefinition x:Name="FilterColDefSerialNumber"       Width="*" MinWidth="130" />
+                                            <ColumnDefinition x:Name="FilterColDefCircuitSerial"      Width="*" MinWidth="130" />
                                             <ColumnDefinition x:Name="FilterColDefHWVersion"          Width="*" MinWidth="70" />
                                             <ColumnDefinition x:Name="FilterColDefFunction"           Width="120" />
                                         </Grid.ColumnDefinitions>
@@ -183,6 +184,7 @@
                                 <!-- DataGrid -->
                                 <Grid Grid.Row="2">
                                 <controls:DataGrid x:Name="DevicesGrid"
+                                                   HorizontalScrollBarVisibility="Disabled"
                                                    AutoGenerateColumns="False"
                                                    GridLinesVisibility="All"
                                                    CanUserSortColumns="False"
@@ -195,14 +197,14 @@
                                                    SelectionChanged="OnGridSelectionChanged"
                                                    LayoutUpdated="OnGridLayoutUpdated">
                                     <controls:DataGrid.Columns>
-                                        <controls:DataGridTextColumn Binding="{Binding Name}"               Tag="Name"               Width="*" MinWidth="100" />
+                                        <controls:DataGridTextColumn Binding="{Binding Name}"               Tag="Name"               Width="*" MinWidth="120" />
                                         <controls:DataGridTextColumn Binding="{Binding ModelName}"          Tag="ModelName"          Width="*" MinWidth="120" />
-                                        <controls:DataGridTextColumn Binding="{Binding IMEI}"               Tag="IMEI"               Width="*" MinWidth="100" />
-                                        <controls:DataGridTextColumn Binding="{Binding SerialLab}"          Tag="SerialLab"          Width="*" MinWidth="80" />
-                                        <controls:DataGridTextColumn Binding="{Binding SerialNumber}"       Tag="SerialNumber"       Width="*" MinWidth="80" />
-                                        <controls:DataGridTextColumn Binding="{Binding CircuitSerialNumber}" Tag="CircuitSerialNumber" Width="*" MinWidth="80" />
+                                        <controls:DataGridTextColumn Binding="{Binding IMEI}"               Tag="IMEI"               Width="*" MinWidth="150" />
+                                        <controls:DataGridTextColumn Binding="{Binding SerialLab}"          Tag="SerialLab"          Width="*" MinWidth="130" />
+                                        <controls:DataGridTextColumn Binding="{Binding SerialNumber}"       Tag="SerialNumber"       Width="*" MinWidth="130" />
+                                        <controls:DataGridTextColumn Binding="{Binding CircuitSerialNumber}" Tag="CircuitSerialNumber" Width="*" MinWidth="130" />
                                         <controls:DataGridTextColumn Binding="{Binding HWVersion}"          Tag="HWVersion"          Width="*" MinWidth="70" />
-                                        <controls:DataGridTemplateColumn Tag="Function" Width="120" IsReadOnly="True">
+                                        <controls:DataGridTemplateColumn Tag="Function" Width="120" MinWidth="100" IsReadOnly="True">
                                             <controls:DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Button Tag="{Binding}" Click="OnReturnClicked"
@@ -226,7 +228,8 @@
                                            Visibility="{x:Bind ViewModel.EmptyVisibility, Mode=OneWay}" />
                                 </Grid>
 
-                            </Grid>
+                                </Grid>
+                            </ScrollViewer>
                         </Border>
 
                         <!-- Table footer -->
