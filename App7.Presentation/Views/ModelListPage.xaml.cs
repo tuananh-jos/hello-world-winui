@@ -134,24 +134,6 @@ public sealed partial class ModelListPage : Page
     }
 
     // ── Filter handlers ───────────────────────────────────────────────
-    private DispatcherTimer? _searchDebounceTimer;
-
-    private void OnSearchNameChanged(object sender, TextChangedEventArgs e)
-    {
-        ViewModel.SearchName = SearchNameBox.Text;
-
-        if (_searchDebounceTimer == null)
-        {
-            _searchDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-            _searchDebounceTimer.Tick += async (_, _) =>
-            {
-                _searchDebounceTimer.Stop();
-                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
-            };
-        }
-        _searchDebounceTimer.Stop();
-        _searchDebounceTimer.Start();
-    }
 
     private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
         => ModelsGrid.SelectedItem = null;

@@ -128,36 +128,6 @@ public sealed partial class MyDevicesPage : Page
 
 
     // ── Shared search handlers ──────────────────────────────────────
-    private DispatcherTimer? _searchDebounceTimer;
-
-    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (sender is not TextBox tb) return;
-        var text = tb.Text;
-
-        switch (tb.Tag?.ToString())
-        {
-            case "Name":             ViewModel.SearchName        = text; break;
-            case "ModelName":        ViewModel.SearchModelName   = text; break;
-            case "IMEI":             ViewModel.SearchIMEI        = text; break;
-            case "SerialLab":        ViewModel.SearchSerialLab   = text; break;
-            case "SerialNumber":     ViewModel.SearchSerialNumber= text; break;
-            case "CircuitSerialNumber": ViewModel.SearchCircuitSerial= text; break;
-            case "HWVersion":        ViewModel.SearchHWVersion   = text; break;
-        }
-
-        if (_searchDebounceTimer == null)
-        {
-            _searchDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-            _searchDebounceTimer.Tick += async (_, _) =>
-            {
-                _searchDebounceTimer.Stop();
-                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
-            };
-        }
-        _searchDebounceTimer.Stop();
-        _searchDebounceTimer.Start();
-    }
 
     private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
         => DevicesGrid.SelectedItem = null;

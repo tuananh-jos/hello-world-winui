@@ -21,6 +21,14 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
     [ObservableProperty] private string _searchCircuitSerial= string.Empty;
     [ObservableProperty] private string _searchHWVersion    = string.Empty;
 
+    partial void OnSearchNameChanged(string value)         => DebounceSearch();
+    partial void OnSearchModelNameChanged(string value)    => DebounceSearch();
+    partial void OnSearchIMEIChanged(string value)         => DebounceSearch();
+    partial void OnSearchSerialLabChanged(string value)    => DebounceSearch();
+    partial void OnSearchSerialNumberChanged(string value) => DebounceSearch();
+    partial void OnSearchCircuitSerialChanged(string value)=> DebounceSearch();
+    partial void OnSearchHWVersionChanged(string value)    => DebounceSearch();
+
     // ── Column visibility ─────────────────────────────────────────────
     public override ObservableCollection<ColumnVisibilityItem> ColumnVisibilities { get; } = new()
     {

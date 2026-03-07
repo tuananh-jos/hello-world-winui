@@ -229,6 +229,24 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
         finally { IsOverlayVisible = false; }
     }
 
+    private DispatcherTimer? _searchDebounceTimer;
+
+    /// <summary>Call this from property setters to debounce the search by 500ms.</summary>
+    protected void DebounceSearch()
+    {
+        if (_searchDebounceTimer == null)
+        {
+            _searchDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _searchDebounceTimer.Tick += async (_, _) =>
+            {
+                _searchDebounceTimer.Stop();
+                await ApplyFiltersCommand.ExecuteAsync(null);
+            };
+        }
+        _searchDebounceTimer.Stop();
+        _searchDebounceTimer.Start();
+    }
+
     /// <summary>Called by MyDevicesPage after return — public so code-behind can invoke.</summary>
     public async Task ReloadAsync() => await OverlayLoadAsync();
 }

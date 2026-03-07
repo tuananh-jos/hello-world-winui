@@ -14,6 +14,8 @@ public partial class ModelListViewModel : PagedListViewModelBase
 
     // ── Filters ───────────────────────────────────────────────────────
     [ObservableProperty] private string  _searchName          = string.Empty;
+    partial void OnSearchNameChanged(string value) => DebounceSearch();
+
     [ObservableProperty] private string? _selectedManufacturer;
     [ObservableProperty] private string? _selectedCategory;
     [ObservableProperty] private string? _selectedSubCategory;

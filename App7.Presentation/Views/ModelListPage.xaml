@@ -119,8 +119,7 @@
                                         <TextBox Grid.Column="0"
                                                  x:Name="SearchNameBox"
                                                  PlaceholderText="Search name…"
-                                                 Text="{x:Bind ViewModel.SearchName, Mode=TwoWay}"
-                                                 TextChanged="OnSearchNameChanged"
+                                                 Text="{x:Bind ViewModel.SearchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  Margin="4,0" FontSize="12" />
 
                                         <!-- Manufacturer: filter button that opens popup -->
