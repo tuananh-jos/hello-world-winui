@@ -246,9 +246,9 @@ public sealed partial class MyDevicesPage : Page
             var btn = new Button
             {
                 Content = pageNum.ToString(),
-                Width = 32, Height = 32,
+                MinWidth = 32, Height = 32,
                 CornerRadius = new CornerRadius(16),
-                Padding = new Thickness(0),
+                Padding = new Thickness(8, 0, 8, 0),
                 Margin = new Thickness(2, 0, 2, 0),
                 Background = isActive ? ActivePageBrush : InactivePageBrush,
                 Foreground = isActive ? new SolidColorBrush(Colors.White) : InactiveTextBrush,
