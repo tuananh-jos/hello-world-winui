@@ -147,38 +147,31 @@
 
                                         <TextBox Grid.Column="0" PlaceholderText="Search name…"
                                                  Text="{x:Bind ViewModel.SearchName, Mode=TwoWay}"
-                                                 KeyDown="OnSearchKeyDown" TextChanged="OnSearchTextChanged"
-                                                 LostFocus="OnSearchLostFocus"
+                                                 TextChanged="OnSearchTextChanged"
                                                  Tag="Name" Margin="4,0" FontSize="12" />
                                         <TextBox Grid.Column="1" PlaceholderText="Search model…"
                                                  Text="{x:Bind ViewModel.SearchModelName, Mode=TwoWay}"
-                                                 KeyDown="OnSearchKeyDown" TextChanged="OnSearchTextChanged"
-                                                 LostFocus="OnSearchLostFocus"
+                                                 TextChanged="OnSearchTextChanged"
                                                  Tag="ModelName" Margin="4,0" FontSize="12" />
                                         <TextBox Grid.Column="2" PlaceholderText="Search IMEI…"
                                                  Text="{x:Bind ViewModel.SearchIMEI, Mode=TwoWay}"
-                                                 KeyDown="OnSearchKeyDown" TextChanged="OnSearchTextChanged"
-                                                 LostFocus="OnSearchLostFocus"
+                                                 TextChanged="OnSearchTextChanged"
                                                  Tag="IMEI" Margin="4,0" FontSize="12" />
                                         <TextBox Grid.Column="3" PlaceholderText="Search lab…"
                                                  Text="{x:Bind ViewModel.SearchSerialLab, Mode=TwoWay}"
-                                                 KeyDown="OnSearchKeyDown" TextChanged="OnSearchTextChanged"
-                                                 LostFocus="OnSearchLostFocus"
+                                                 TextChanged="OnSearchTextChanged"
                                                  Tag="SerialLab" Margin="4,0" FontSize="12" />
                                         <TextBox Grid.Column="4" PlaceholderText="Search serial…"
                                                  Text="{x:Bind ViewModel.SearchSerialNumber, Mode=TwoWay}"
-                                                 KeyDown="OnSearchKeyDown" TextChanged="OnSearchTextChanged"
-                                                 LostFocus="OnSearchLostFocus"
+                                                 TextChanged="OnSearchTextChanged"
                                                  Tag="SerialNumber" Margin="4,0" FontSize="12" />
                                         <TextBox Grid.Column="5" PlaceholderText="Search circuit…"
                                                  Text="{x:Bind ViewModel.SearchCircuitSerial, Mode=TwoWay}"
-                                                 KeyDown="OnSearchKeyDown" TextChanged="OnSearchTextChanged"
-                                                 LostFocus="OnSearchLostFocus"
+                                                 TextChanged="OnSearchTextChanged"
                                                  Tag="CircuitSerialNumber" Margin="4,0" FontSize="12" />
                                         <TextBox Grid.Column="6" PlaceholderText="Search HW ver…"
                                                  Text="{x:Bind ViewModel.SearchHWVersion, Mode=TwoWay}"
-                                                 KeyDown="OnSearchKeyDown" TextChanged="OnSearchTextChanged"
-                                                 LostFocus="OnSearchLostFocus"
+                                                 TextChanged="OnSearchTextChanged"
                                                  Tag="HWVersion" Margin="4,0" FontSize="12" />
                                         <Button Grid.Column="7" Content="Clear Filter"
                                                 Command="{x:Bind ViewModel.ClearFiltersCommand}"

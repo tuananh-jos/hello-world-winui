@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="App7.Presentation.Views.ModelListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -131,8 +131,6 @@
                                                  PlaceholderText="Search name…"
                                                  Text="{x:Bind ViewModel.SearchName, Mode=TwoWay}"
                                                  TextChanged="OnSearchNameChanged"
-                                                 KeyDown="OnSearchKeyDown"
-                                                 LostFocus="OnSearchLostFocus"
                                                  Margin="4,0" FontSize="12" />
 
                                         <!-- Manufacturer: filter button that opens popup -->

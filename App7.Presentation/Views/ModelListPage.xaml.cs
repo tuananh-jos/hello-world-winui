@@ -1,4 +1,4 @@
-﻿using App7.Domain.Entities;
+using App7.Domain.Entities;
 using App7.Domain.Usecases;
 using App7.Presentation.ViewModels;
 using App7.Presentation.Views.Dialogs;
@@ -57,6 +57,8 @@ public sealed partial class ModelListPage : Page
             ContentGrid.MinHeight = MainScroller.ActualHeight;
             MainScroller.SizeChanged += (_, e) => ContentGrid.MinHeight = e.NewSize.Height;
             PopulateManufacturerList(string.Empty);
+            PopulateCategoryList(string.Empty);
+            PopulateSubCategoryList(string.Empty);
             PopulatePageSizeList();
         };
 
@@ -76,14 +78,18 @@ public sealed partial class ModelListPage : Page
             switch (e.PropertyName)
             {
                 case nameof(ViewModel.SelectedCategory):
-                    RefreshSubCategoryList(string.Empty);
                     // If category was cleared (by ClearFilters), reset label too
                     if (ViewModel.SelectedCategory == null)
                     {
                         _selectedCategory = null;
-                        _selectedSubCategory = null;
                         CategoryFilterLabel.Text = "All categories";
                         CategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
+                    }
+                    break;
+                case nameof(ViewModel.SelectedSubCategory):
+                    if (ViewModel.SelectedSubCategory == null)
+                    {
+                        _selectedSubCategory = null;
                         SubCategoryFilterLabel.Text = "All sub-categories";
                         SubCategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
                     }
@@ -132,17 +138,24 @@ public sealed partial class ModelListPage : Page
     }
 
     // ── Filter handlers ───────────────────────────────────────────────
+    private DispatcherTimer? _searchDebounceTimer;
+
     private void OnSearchNameChanged(object sender, TextChangedEventArgs e)
-        => ViewModel.SearchName = SearchNameBox.Text;
-
-    private async void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key == Windows.System.VirtualKey.Enter)
-            await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
-    }
+        ViewModel.SearchName = SearchNameBox.Text;
 
-    private async void OnSearchLostFocus(object sender, RoutedEventArgs e)
-        => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+        if (_searchDebounceTimer == null)
+        {
+            _searchDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _searchDebounceTimer.Tick += async (_, _) =>
+            {
+                _searchDebounceTimer.Stop();
+                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+            };
+        }
+        _searchDebounceTimer.Stop();
+        _searchDebounceTimer.Start();
+    }
 
     private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
         => ModelsGrid.SelectedItem = null;
@@ -276,12 +289,9 @@ public sealed partial class ModelListPage : Page
         allBtn.Click += async (_, _) =>
         {
             _selectedCategory = null;
-            _selectedSubCategory = null;
             ViewModel.SelectedCategory = null;
             CategoryFilterLabel.Text = "All categories";
             CategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
-            SubCategoryFilterLabel.Text = "All sub-categories";
-            SubCategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
             CategoryPopup.IsOpen = false;
             await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
         };
@@ -298,12 +308,9 @@ public sealed partial class ModelListPage : Page
             btn.Click += async (_, _) =>
             {
                 _selectedCategory = captured;
-                _selectedSubCategory = null;
                 ViewModel.SelectedCategory = captured;
                 CategoryFilterLabel.Text = captured;
                 CategoryFilterLabel.Foreground = new SolidColorBrush(Colors.Black);
-                SubCategoryFilterLabel.Text = "All sub-categories";
-                SubCategoryFilterLabel.Foreground = new SolidColorBrush(Color.FromArgb(255, 0x88, 0x88, 0x88));
                 CategoryPopup.IsOpen = false;
                 await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
             };
@@ -315,7 +322,7 @@ public sealed partial class ModelListPage : Page
     private void OnSubCategoryFilterClicked(object sender, RoutedEventArgs e)
     {
         SubCategorySearchBox.Text = string.Empty;
-        RefreshSubCategoryList(string.Empty);
+        PopulateSubCategoryList(string.Empty);
         var transform = SubCategoryFilterBtn.TransformToVisual(PageRoot);
         var pt = transform.TransformPoint(new Point(0, SubCategoryFilterBtn.ActualHeight + 2));
         SubCategoryPopup.HorizontalOffset = pt.X;
@@ -324,9 +331,9 @@ public sealed partial class ModelListPage : Page
     }
 
     private void OnSubCategorySearchChanged(object sender, TextChangedEventArgs e)
-        => RefreshSubCategoryList(SubCategorySearchBox.Text.Trim());
+        => PopulateSubCategoryList(SubCategorySearchBox.Text.Trim());
 
-    private void RefreshSubCategoryList(string filter = "")
+    private void PopulateSubCategoryList(string filter = "")
     {
         SubCategoryListPanel.Children.Clear();
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using App7.Domain.Entities;
 using App7.Domain.Services;
 using App7.Domain.Usecases;
@@ -49,15 +49,6 @@ public partial class ModelListViewModel : PagedListViewModelBase
         _syncService.DataChanged += OnExternalDataChanged;
     }
 
-    // reload subcategories when category changes
-    partial void OnSelectedCategoryChanged(string? value)
-    {
-        SelectedSubCategory = null;
-        SubCategories.Clear();
-        if (!string.IsNullOrEmpty(value))
-            _ = LoadSubCategoriesAsync(value);
-    }
-
     // ── PagedListViewModelBase contract ────────────────────────────────
     protected override async Task LoadDataCoreAsync()
     {
@@ -85,6 +76,10 @@ public partial class ModelListViewModel : PagedListViewModelBase
         var cats = await _getModelFilters.GetCategoriesAsync();
         Categories.Clear();
         foreach (var c in cats) Categories.Add(c);
+
+        var subs = await _getModelFilters.GetSubCategoriesAsync();
+        SubCategories.Clear();
+        foreach (var s in subs) SubCategories.Add(s);
     }
 
     protected override void ClearFilterValues()
@@ -93,15 +88,6 @@ public partial class ModelListViewModel : PagedListViewModelBase
         SelectedManufacturer = null;
         SelectedCategory    = null;
         SelectedSubCategory = null;
-        SubCategories.Clear();
-    }
-
-    // ── Private ───────────────────────────────────────────────────────
-    private async Task LoadSubCategoriesAsync(string category)
-    {
-        var subs = await _getModelFilters.GetSubCategoriesAsync(category);
-        SubCategories.Clear();
-        foreach (var s in subs) SubCategories.Add(s);
     }
 
     private static string? NullIfEmpty(string s)

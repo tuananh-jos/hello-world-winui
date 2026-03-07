@@ -20,6 +20,6 @@ public class GetModelFiltersUseCase
     public async Task<IEnumerable<string>> GetCategoriesAsync()
         => await _modelRepository.GetCategoriesAsync();
 
-    public async Task<IEnumerable<string>> GetSubCategoriesAsync(string category)
-        => await _modelRepository.GetSubCategoriesAsync(category);
+    public async Task<IEnumerable<string>> GetSubCategoriesAsync()
+        => await _modelRepository.GetSubCategoriesAsync();
 }

@@ -1,4 +1,4 @@
-﻿using App7.Domain.Entities;
+using App7.Domain.Entities;
 
 namespace App7.Data.IDataSource;
 
@@ -18,7 +18,7 @@ public interface IModelDataSource
 
     Task<List<string>> GetCategoriesAsync();
 
-    Task<List<string>> GetSubCategoriesAsync(string category);
+    Task<List<string>> GetSubCategoriesAsync();
 
     Task IncrementAvailableAsync(Guid modelId);
 

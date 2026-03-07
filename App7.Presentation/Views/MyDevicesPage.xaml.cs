@@ -172,37 +172,41 @@ public sealed partial class MyDevicesPage : Page
     };
 
     // ── Shared search handlers ──────────────────────────────────────
+    private DispatcherTimer? _searchDebounceTimer;
+
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
         if (sender is not TextBox tb) return;
-        // Update the bound ViewModel property immediately so Enter works correctly
         var text = tb.Text;
-        // x:Bind TwoWay already declared, but TextChanged fires before focus-loss sync
-        // so we just re-trigger by re-assigning via x:Bind (binding already set above tracks it)
-        // For safety, dispatch a property set via the Tag convention:
+
         switch (tb.Tag?.ToString())
         {
+            case "Name":             ViewModel.SearchName        = text; break;
             case "ModelName":        ViewModel.SearchModelName   = text; break;
-            case "IMEI":             ViewModel.SearchIMEI         = text; break;
-            case "SerialLab":        ViewModel.SearchSerialLab    = text; break;
-            case "SerialNumber":     ViewModel.SearchSerialNumber = text; break;
-            case "CircuitSerialNumber": ViewModel.SearchCircuitSerial = text; break;
-            case "HWVersion":        ViewModel.SearchHWVersion    = text; break;
+            case "IMEI":             ViewModel.SearchIMEI        = text; break;
+            case "SerialLab":        ViewModel.SearchSerialLab   = text; break;
+            case "SerialNumber":     ViewModel.SearchSerialNumber= text; break;
+            case "CircuitSerialNumber": ViewModel.SearchCircuitSerial= text; break;
+            case "HWVersion":        ViewModel.SearchHWVersion   = text; break;
         }
+
+        if (_searchDebounceTimer == null)
+        {
+            _searchDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _searchDebounceTimer.Tick += async (_, _) =>
+            {
+                _searchDebounceTimer.Stop();
+                await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+            };
+        }
+        _searchDebounceTimer.Stop();
+        _searchDebounceTimer.Start();
     }
 
     private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
         => DevicesGrid.SelectedItem = null;
 
-    // ── Shared KeyDown handler for all search TextBoxes ───────────────
-    private async void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key == Windows.System.VirtualKey.Enter)
-            await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
-    }
 
-    private async void OnSearchLostFocus(object sender, RoutedEventArgs e)
-        => await ViewModel.ApplyFiltersCommand.ExecuteAsync(null);
 
     // ── Return device ─────────────────────────────────────────────────
     private async void OnReturnClicked(object sender, RoutedEventArgs e)

@@ -1,4 +1,4 @@
-﻿using App7.Data.IDataSource;
+using App7.Data.IDataSource;
 using App7.Domain.Entities;
 using App7.Domain.IRepository;
 
@@ -33,8 +33,8 @@ public class ModelRepository : IModelRepository
     public async Task<IEnumerable<string>> GetCategoriesAsync()
         => await _dataSource.GetCategoriesAsync();
 
-    public async Task<IEnumerable<string>> GetSubCategoriesAsync(string category)
-        => await _dataSource.GetSubCategoriesAsync(category);
+    public async Task<IEnumerable<string>> GetSubCategoriesAsync()
+        => await _dataSource.GetSubCategoriesAsync();
 
     public async Task IncrementAvailableAsync(Guid modelId)
         => await _dataSource.IncrementAvailableAsync(modelId);

@@ -1,4 +1,4 @@
-﻿using App7.Data.Db;
+using App7.Data.Db;
 using App7.Data.IDataSource;
 using App7.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -82,11 +82,10 @@ public class ModelDataSource : IModelDataSource
             .ToListAsync();
     }
 
-    public async Task<List<string>> GetSubCategoriesAsync(string category)
+    public async Task<List<string>> GetSubCategoriesAsync()
     {
         return await _context.Models
             .AsNoTracking()
-            .Where(m => m.Category == category)
             .Select(m => m.SubCategory)
             .Distinct()
             .OrderBy(s => s)

@@ -1,4 +1,4 @@
-﻿using App7.Domain.Entities;
+using App7.Domain.Entities;
 
 namespace App7.Domain.IRepository;
 
@@ -29,9 +29,9 @@ public interface IModelRepository
     Task<IEnumerable<string>> GetCategoriesAsync();
 
     /// <summary>
-    /// Returns all distinct SubCategory values for a given category.
+    /// Returns all distinct SubCategory values.
     /// </summary>
-    Task<IEnumerable<string>> GetSubCategoriesAsync(string category);
+    Task<IEnumerable<string>> GetSubCategoriesAsync();
 
     /// <summary>
     /// Increments the Available count for a model (called after a device is returned).
