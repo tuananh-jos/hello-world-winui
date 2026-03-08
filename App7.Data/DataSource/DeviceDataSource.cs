@@ -103,27 +103,13 @@ public class DeviceDataSource : DataSourceBase<Device>, IDeviceDataSource
             throw new InvalidOperationException(
                 $"Not enough available devices. Requested: {quantity}, available: {candidateIds.Count}.");
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            var updatedCount = await _context.Devices
-                .Where(d => candidateIds.Contains(d.Id) && d.Status == "Available")
-                .ExecuteUpdateAsync(s => s.SetProperty(d => d.Status, "Borrowed"));
+        var updatedCount = await _context.Devices
+            .Where(d => candidateIds.Contains(d.Id) && d.Status == "Available")
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.Status, "Borrowed"));
 
-            if (updatedCount < quantity)
-            {
-                await transaction.RollbackAsync();
-                throw new InvalidOperationException(
-                    "Concurrent borrow detected: some devices were borrowed by another operation. Please try again.");
-            }
-
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        if (updatedCount < quantity)
+            throw new InvalidOperationException(
+                "Concurrent borrow detected: some devices were borrowed by another operation. Please try again.");
     }
 
     /// <summary>
@@ -132,27 +118,13 @@ public class DeviceDataSource : DataSourceBase<Device>, IDeviceDataSource
     /// </summary>
     public async Task ReturnAsync(Guid deviceId)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            var updatedCount = await _context.Devices
-                .Where(d => d.Id == deviceId && d.Status == "Borrowed")
-                .ExecuteUpdateAsync(s => s.SetProperty(d => d.Status, "Available"));
+        var updatedCount = await _context.Devices
+            .Where(d => d.Id == deviceId && d.Status == "Borrowed")
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.Status, "Available"));
 
-            if (updatedCount == 0)
-            {
-                await transaction.RollbackAsync();
-                throw new InvalidOperationException(
-                    $"Device {deviceId} is not currently borrowed or does not exist.");
-            }
-
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        if (updatedCount == 0)
+            throw new InvalidOperationException(
+                $"Device {deviceId} is not currently borrowed or does not exist.");
     }
 
 }

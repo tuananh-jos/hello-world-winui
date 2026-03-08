@@ -6,21 +6,29 @@ namespace App7.Domain.Usecases;
 
 public class BorrowDeviceUseCase : IUseCase<BorrowDeviceRequest>
 {
-    private readonly IDeviceRepository _deviceRepository;
-    private readonly IModelRepository _modelRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IInstanceSyncService _syncService;
 
-    public BorrowDeviceUseCase(IDeviceRepository deviceRepository, IModelRepository modelRepository, IInstanceSyncService syncService)
+    public BorrowDeviceUseCase(IUnitOfWork unitOfWork, IInstanceSyncService syncService)
     {
-        _deviceRepository = deviceRepository;
-        _modelRepository  = modelRepository;
-        _syncService      = syncService;
+        _unitOfWork  = unitOfWork;
+        _syncService = syncService;
     }
 
     public async Task ExecuteAsync(BorrowDeviceRequest request)
     {
-        await _deviceRepository.BorrowAsync(request.ModelId, request.Quantity);
-        await _modelRepository.DecrementAvailableAsync(request.ModelId, request.Quantity);
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            await _unitOfWork.Devices.BorrowAsync(request.ModelId, request.Quantity);
+            await _unitOfWork.Models.DecrementAvailableAsync(request.ModelId, request.Quantity);
+            await _unitOfWork.CommitAsync();
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
 
         _syncService.SignalChange();
     }

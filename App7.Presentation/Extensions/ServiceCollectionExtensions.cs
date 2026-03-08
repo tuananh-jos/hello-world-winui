@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
         // ── Repositories (Data Layer) ──────────────────────────────────
         services.AddTransient<IDeviceRepository, DeviceRepository>();
         services.AddTransient<IModelRepository, ModelRepository>();
+        services.AddTransient<IUnitOfWork, UnitOfWork>();
 
         // ── DataSources (Data Layer) ───────────────────────────────────
         services.AddTransient<IDeviceDataSource, DeviceDataSource>();
