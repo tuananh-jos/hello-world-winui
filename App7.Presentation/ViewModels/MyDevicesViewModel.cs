@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using App7.Domain.Constants;
 using App7.Domain.Entities;
-using App7.Domain.Services;
+using App7.Presentation.Contracts.Services;
 using App7.Domain.Usecases;
 using App7.Domain.Dtos;
 using CommunityToolkit.Mvvm.ComponentModel;

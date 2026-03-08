@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using App7.Presentation.Contracts.ViewModels;
-using App7.Domain.Services;
+using App7.Presentation.Contracts.Services;
 using App7.Domain.Dtos;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -16,10 +16,12 @@ namespace App7.Presentation.ViewModels;
 public abstract partial class PagedListViewModelBase : ObservableRecipient, INavigationAware
 {
     private readonly DispatcherQueue _dispatcher;
+    private readonly IInstanceSyncService _syncService;
 
     protected PagedListViewModelBase(IInstanceSyncService syncService)
     {
         _dispatcher = DispatcherQueue.GetForCurrentThread();
+        _syncService = syncService;
         syncService.DataChanged += OnExternalDataChanged;
     }
 
@@ -269,7 +271,14 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
         _searchDebounceTimer.Start();
     }
 
-    /// <summary>Called by MyDevicesPage after return — public so code-behind can invoke.</summary>
+    /// <summary>Called by Page code-behind after a successful mutation (borrow/return).</summary>
+    public async Task NotifyDataChanged()
+    {
+        _syncService.SignalChange();
+        await ReloadAsync();
+    }
+
+    /// <summary>Reloads data with overlay.</summary>
     public async Task ReloadAsync() => await OverlayLoadAsync();
 }
 

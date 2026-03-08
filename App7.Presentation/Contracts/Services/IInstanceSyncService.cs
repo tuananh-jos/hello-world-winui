@@ -1,13 +1,13 @@
-namespace App7.Domain.Services;
+namespace App7.Presentation.Contracts.Services;
 
 /// <summary>
-/// Notifies all running instances of the app that device data has changed
+/// Notifies all running instances of the app that data has changed
 /// (borrow or return occurred) so they can refresh their views.
 /// </summary>
 public interface IInstanceSyncService
 {
     /// <summary>
-    /// Raised on a background thread when another instance signals a data change.
+    /// Raised when another instance signals a data change.
     /// Subscribers must dispatch to the UI thread before touching UI-bound state.
     /// </summary>
     event Action DataChanged;

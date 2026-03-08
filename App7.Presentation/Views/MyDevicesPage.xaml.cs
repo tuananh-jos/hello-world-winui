@@ -35,7 +35,7 @@ public sealed partial class MyDevicesPage : Page
 
         if (dialog.Confirmed)
         {
-            await ViewModel.ReloadAsync();
+            await ViewModel.NotifyDataChanged();
             ShowInfoBar(InfoBarSeverity.Success,
                 $"Returned \"{device.ModelName}\" (IMEI: {device.IMEI}) successfully.");
         }

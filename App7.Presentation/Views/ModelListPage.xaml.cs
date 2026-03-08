@@ -35,6 +35,7 @@ public sealed partial class ModelListPage : Page
 
         if (dialog.ViewModel.Confirmed)
         {
+            await ViewModel.NotifyDataChanged();
             ShowInfoBar(InfoBarSeverity.Success,
                 $"Borrowed {dialog.ViewModel.SelectedQuantity} device(s) from \"{model.Name}\" successfully.");
         }

@@ -3,9 +3,7 @@ using App7.Data.DataSource;
 using App7.Data.Db;
 using App7.Data.IDataSource;
 using App7.Data.Repository;
-using App7.Data.Services;
 using App7.Domain.IRepository;
-using App7.Domain.Services;
 using App7.Domain.Usecases;
 using App7.Presentation.Activation;
 using App7.Presentation.Contracts.Services;
@@ -49,7 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IDeviceDataSource, DeviceDataSource>();
         services.AddTransient<IModelDataSource, ModelDataSource>();
 
-        // ── Sync Service (Domain Service) ──────────────────────────────
+        // ── Sync Service (Presentation Service) ────────────────────────
         services.AddSingleton<IInstanceSyncService>(sp =>
         {
             var folder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;

@@ -1,5 +1,4 @@
 using App7.Domain.IRepository;
-using App7.Domain.Services;
 using App7.Domain.Dtos;
 
 namespace App7.Domain.Usecases;
@@ -7,12 +6,10 @@ namespace App7.Domain.Usecases;
 public class BorrowDeviceUseCase : IUseCase<BorrowDeviceRequest>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IInstanceSyncService _syncService;
 
-    public BorrowDeviceUseCase(IUnitOfWork unitOfWork, IInstanceSyncService syncService)
+    public BorrowDeviceUseCase(IUnitOfWork unitOfWork)
     {
-        _unitOfWork  = unitOfWork;
-        _syncService = syncService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task ExecuteAsync(BorrowDeviceRequest request)
@@ -29,7 +26,5 @@ public class BorrowDeviceUseCase : IUseCase<BorrowDeviceRequest>
             await _unitOfWork.RollbackAsync();
             throw;
         }
-
-        _syncService.SignalChange();
     }
 }

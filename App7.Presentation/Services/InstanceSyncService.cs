@@ -1,19 +1,15 @@
-using App7.Domain.Services;
-using System.IO;
+using App7.Presentation.Contracts.Services;
 
-namespace App7.Data.Services;
+namespace App7.Presentation.Services;
 
 /// <summary>
 /// Implements IInstanceSyncService using a shared signal file + FileSystemWatcher.
-/// 
+///
 /// Mechanism:
-///   - SignalChange() writes the current UTC timestamp to "sync_signal.txt"
-///     in Windows.Storage.ApplicationData.Current.LocalFolder (same folder as app.db).
+///   - SignalChange() writes the current UTC timestamp to "sync_signal.txt".
 ///   - A FileSystemWatcher watches the same folder for changes to that file.
 ///   - On change, raises DataChanged after a 500ms debounce so that rapid
-///     successive signals (e.g. batch borrows) only trigger one reload.
-///   - DataChanged is raised on a ThreadPool thread; subscribers must dispatch
-///     to the UI thread before touching UI-bound state.
+///     successive signals only trigger one reload.
 /// </summary>
 public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
 {
@@ -41,14 +37,13 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
         }
         catch (IOException)
         {
-            // Best-effort — if write fails (e.g. another instance writing simultaneously),
-            // the other instance's write will still trigger watchers.
+            // Best-effort — if write fails, the other instance's write will still trigger watchers.
         }
     }
 
     public void Start()
     {
-        if (_watcher != null) return; // already started
+        if (_watcher != null) return;
 
         var folder = Path.GetDirectoryName(_signalFilePath)!;
 
@@ -83,7 +78,6 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
 
     private void OnSignalFileChanged(object sender, FileSystemEventArgs e)
     {
-        // Debounce: cancel any pending fire and schedule a new one 500ms out.
         CancellationTokenSource newCts;
         CancellationTokenSource? oldCts;
 
