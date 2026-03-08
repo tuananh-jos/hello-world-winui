@@ -157,15 +157,13 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     // ── Shared commands ───────────────────────────────────────────────
 
     [RelayCommand]
-    public async Task ApplyFiltersAsync() => await OverlayLoadAsync(resetPage: true);
+    public async Task ApplyFiltersAsync() => await OverlayLoadAsync(resetPage: false);
 
     [RelayCommand]
     public async Task ClearFiltersAsync()
     {
         ClearFilterValues();
-        SortColumn = null;
-        SortAscending = true;
-        await OverlayLoadAsync(resetPage: true);
+        await OverlayLoadAsync(resetPage: false);
     }
 
     [RelayCommand(CanExecute = nameof(HasPreviousPage))]
@@ -213,7 +211,7 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
             SortColumn = column;
             SortAscending = true;
         }
-        await OverlayLoadAsync(resetPage: true);
+        await OverlayLoadAsync(resetPage: false);
     }
 
     [RelayCommand]
