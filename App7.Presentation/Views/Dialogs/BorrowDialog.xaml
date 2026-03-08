@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:localc="using:App7.Presentation.Controls"
     mc:Ignorable="d"
     DefaultButton="None"
     Style="{StaticResource DefaultContentDialogStyle}">
@@ -42,7 +43,7 @@
                 Foreground="{StaticResource AppOnNavyBrush}" />
 
             <!-- X button -->
-            <Button
+            <localc:HandButton
                 Grid.Column="1"
                 x:Name="CloseButton"
                 Content="✕"
@@ -125,12 +126,12 @@
                 Orientation="Horizontal"
                 HorizontalAlignment="Right"
                 Spacing="8">
-                <Button
+                <localc:HandButton
                     x:Name="CancelBtn"
                     Content="Cancel"
                     Style="{StaticResource AppCancelButtonStyle}"
                     Click="OnCancelClicked" />
-                <Button
+                <localc:HandButton
                     x:Name="OkBtn"
                     Content="OK"
                     Style="{StaticResource AppOkButtonStyle}"

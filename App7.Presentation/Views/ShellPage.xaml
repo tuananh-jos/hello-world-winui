@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:localc="using:App7.Presentation.Controls"
     mc:Ignorable="d"
     Loaded="OnLoaded">
 
@@ -52,7 +53,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- ☰ Hamburger — flush left, no hover effect -->
-            <Button
+            <localc:HandButton
                 Grid.Column="0"
                 x:Name="HamburgerBtn"
                 Command="{x:Bind ViewModel.ToggleSidebarCommand}"
@@ -65,15 +66,15 @@
                 Content="&#xE700;"
                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                 VerticalAlignment="Center">
-                <Button.Template>
+                <localc:HandButton.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                               Foreground="{TemplateBinding Foreground}" />
                         </Border>
                     </ControlTemplate>
-                </Button.Template>
-            </Button>
+                </localc:HandButton.Template>
+            </localc:HandButton>
 
             <!-- Logo — centred in sidebar-width zone -->
             <Image
@@ -116,7 +117,7 @@
                     <!-- Nav items -->
                     <StackPanel Grid.Row="1">
 
-                        <Button
+                        <localc:HandButton
                             x:Name="NavRequestDevice"
                             Content="Request Device"
                             Command="{x:Bind ViewModel.NavigateToModelsCommand}"
@@ -125,7 +126,7 @@
                             Style="{StaticResource AppSidebarItemStyle}"
                             Background="{x:Bind NavModelsBg, Mode=OneWay}" />
 
-                        <Button
+                        <localc:HandButton
                             x:Name="NavMyDevice"
                             Content="My Device"
                             Command="{x:Bind ViewModel.NavigateToMyDevicesCommand}"

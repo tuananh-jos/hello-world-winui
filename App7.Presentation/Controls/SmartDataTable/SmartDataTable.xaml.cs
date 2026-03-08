@@ -91,7 +91,7 @@ public sealed partial class SmartDataTable : UserControl
             TextBlock? sortIcon = null;
             if (col.IsSortable && !string.IsNullOrEmpty(col.Tag))
             {
-                var btn = new Button
+                var btn = new HandButton
                 {
                     Command = SortCommand,
                     CommandParameter = col.Tag,
@@ -186,7 +186,7 @@ public sealed partial class SmartDataTable : UserControl
             }
             else if (col.FilterType == SmartFilterType.ClearButton)
             {
-                var btn = new Button
+                var btn = new HandButton
                 {
                     Content = "Clear Filter",
                     HorizontalAlignment = HorizontalAlignment.Stretch,

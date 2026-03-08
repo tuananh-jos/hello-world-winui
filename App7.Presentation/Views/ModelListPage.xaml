@@ -86,14 +86,14 @@
                                         FilterType="ClearButton">
                         <localc:SmartColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Tag="{Binding}" Click="OnBorrowClicked"
+                                <localc:HandButton Tag="{Binding}" Click="OnBorrowClicked"
                                         IsEnabled="{Binding IsAvailable}"
                                         Style="{StaticResource AppFunctionButtonStyle}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
                                         <TextBlock Text="Borrow" VerticalAlignment="Center" FontSize="12" />
                                     </StackPanel>
-                                </Button>
+                                </localc:HandButton>
                             </DataTemplate>
                         </localc:SmartColumn.CellTemplate>
                     </localc:SmartColumn>

@@ -1,7 +1,8 @@
-﻿<Application
+<Application
     x:Class="App7.Presentation.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:localc="using:App7.Presentation.Controls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -13,6 +14,9 @@
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="FlyoutLightDismissOverlayBackground" Color="#323232" Opacity="0.2"/>
+
+            <!-- HandButton inherits full Button look (border, hover, etc.) -->
+            <Style TargetType="localc:HandButton" BasedOn="{StaticResource DefaultButtonStyle}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

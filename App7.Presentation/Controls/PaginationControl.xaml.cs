@@ -62,7 +62,7 @@ public sealed partial class PaginationControl : UserControl
         foreach (var pageNum in ViewModel.PageNumbers)
         {
             var isActive = pageNum == ViewModel.CurrentPage;
-            var btn = new Button
+            var btn = new HandButton
             {
                 Content = pageNum.ToString(),
                 Style = isActive
@@ -82,7 +82,7 @@ public sealed partial class PaginationControl : UserControl
 
     private static Button MakeNavButton(string label, System.Windows.Input.ICommand command)
     {
-        return new Button
+        return new HandButton
         {
             Content = label,
             Command = command,

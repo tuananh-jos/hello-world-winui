@@ -94,13 +94,13 @@
                                        FilterType="ClearButton">
                         <localc:SmartColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Tag="{Binding}" Click="OnReturnClicked"
+                                <localc:HandButton Tag="{Binding}" Click="OnReturnClicked"
                                         Style="{StaticResource AppFunctionButtonStyle}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
                                         <TextBlock Text="Return" VerticalAlignment="Center" FontSize="12" />
                                     </StackPanel>
-                                </Button>
+                                </localc:HandButton>
                             </DataTemplate>
                         </localc:SmartColumn.CellTemplate>
                     </localc:SmartColumn>
