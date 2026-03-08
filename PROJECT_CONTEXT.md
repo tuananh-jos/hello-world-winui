@@ -84,9 +84,11 @@ UC6 – Return Device
   + SQLite persistence
   + Local-only usage
   + Clean 3-layer architecture
-- Planned but NOT Implemented Yet
   + Multi-instance synchronization (InstanceSyncService)
   + Concurrency protection between instances
+- Planned but NOT Implemented Yet
+  + Refactoring
+  + Unit tests
 - Out of Scope
   + Cloud sync
   + Authentication / multi-user system
@@ -112,13 +114,13 @@ The application is designed according to a 3-layer architecture:
 
 5. Current Implementation State
 
-At present, project is in the foundation stage:
+At present, project is in the refactoring and testing stage:
 - UseCase:
-  + use case 1 is doing
-  + usecase 2, 3, 4, 5, 6: todo
-
-- InstanceSyncService: todo
-- Concurrency handling: todo
+  + use cases 1 to 6: done
+- InstanceSyncService: done
+- Concurrency handling: done
+- Refactoring: doing
+- Unit Tests: todo
 
 6. Database Initialization & Persistence
 
@@ -132,15 +134,15 @@ Behavior:
 Database uses SQLite local file.
 There is no migration system or versioning yet.
 
-7. Planned Multi-Instance Synchronization
+7. Multi-Instance Synchronization
 
 Goal:
 - Support multiple instances running on the same machine
 - When one instance changes device status, the other instance must update UI
 
-Planned design:
-- InstanceSyncService uses file signal + polling + file watcher will be called after Borrow/Return success
-- Not implemented yet.
+Design:
+- InstanceSyncService uses file signal + polling + file watcher called after Borrow/Return success
+- Implemented and functionally complete.
 
 8. Non-Functional Goals (Target State)
 
