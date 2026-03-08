@@ -20,14 +20,7 @@ public abstract class DataSourceBase<TBaseEntity> : IDataSourceBase<TBaseEntity>
         _dbSet = context.Set<TBaseEntity>();
     }
 
-    public virtual async Task InsertAsync(TBaseEntity entity)
-    {
-        _dbSet.Add(entity);
-        await _context.SaveChangesAsync();
-    }
-
-    protected async Task<(List<TEntity> Items, int TotalCount)> GetPagedInternalAsync<TEntity>(
-        IQueryable<TEntity> query, int page, int pageSize)
+    protected async Task<(List<TEntity> Items, int TotalCount)> GetPagedInternalAsync<TEntity>(IQueryable<TEntity> query, int page, int pageSize)
     {
         var totalCount = await query.CountAsync();
         var items = await query

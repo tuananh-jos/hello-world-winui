@@ -7,5 +7,5 @@ namespace App7.Data.IDataSource;
 
 public interface IDataSourceBase<TBaseEntity> where TBaseEntity : class, IEntity
 {
-    Task InsertAsync(TBaseEntity entity);
+
 }

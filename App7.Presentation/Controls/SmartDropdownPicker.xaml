@@ -1,0 +1,85 @@
+<UserControl
+    x:Class="App7.Presentation.Controls.SmartDropdownPicker"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="Root">
+    <UserControl.Resources>
+        <DataTemplate x:Key="DefaultButtonItemTemplate">
+            <Button Content="{Binding}" 
+                    Click="OnDefaultItemButtonClicked"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Background="Transparent" BorderThickness="0" Padding="8,4" FontSize="12" />
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Button x:Name="MainButton"
+            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0"
+            Height="32" FontSize="12" Background="White" BorderBrush="#CCCCCC" BorderThickness="1">
+        <Grid HorizontalAlignment="Stretch">
+            <TextBlock x:Name="BtnLabel" 
+                       Text="{x:Bind ButtonLabel, Mode=OneWay}"
+                       Foreground="{x:Bind ButtonLabelForeground, Mode=OneWay}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left"
+                       FontSize="12" />
+            <TextBlock Text="&#xE70D;"
+                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                       FontSize="10" Opacity="0.5"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" 
+                       Visibility="{x:Bind DropdownIconVisibility, Mode=OneWay}"
+                       Margin="16,0,0,0"/>
+        </Grid>
+        <Button.Flyout>
+            <Flyout x:Name="MainFlyout" Placement="BottomEdgeAlignedLeft" LightDismissOverlayMode="{x:Bind PickerOverlayMode, Mode=OneWay}" Opened="OnMainFlyoutOpened">
+                <Flyout.FlyoutPresenterStyle>
+                    <Style TargetType="FlyoutPresenter">
+                        <Setter Property="Padding" Value="8"/>
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="BorderBrush" Value="#DDDDDD"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="MinWidth" Value="10"/>
+                        <Setter Property="MaxHeight" Value="320"/>
+                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled"/>
+                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled"/>
+                    </Style>
+                </Flyout.FlyoutPresenterStyle>
+                
+                <Grid x:Name="PopupRootGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    
+                    <TextBox Grid.Row="0"
+                             x:Name="SearchBox"
+                             PlaceholderText="Search…"
+                             Text="{x:Bind SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="{x:Bind SearchBoxVisibility, Mode=OneWay}"
+                             Margin="0,0,0,6" FontSize="12" />
+                    
+                    <Button Grid.Row="1" x:Name="AllOptionBtn"
+                            Content="{x:Bind AllOptionLabel, Mode=OneWay}"
+                            Visibility="{x:Bind AllOptionVisibility, Mode=OneWay}"
+                            Click="OnAllOptionClicked"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            Background="Transparent" BorderThickness="0" Padding="8,4" FontSize="12" />
+                    
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Disabled" MaxHeight="240">
+                        <ItemsControl x:Name="ItemsList"
+                                      Margin="0,4,0,0">
+                            <!-- Template is set in code-behind via ItemTemplate or falls back to DefaultButtonItemTemplate -->
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="2" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Flyout>
+        </Button.Flyout>
+    </Button>
+</UserControl>

@@ -18,8 +18,11 @@ public partial class ModelListViewModel : PagedListViewModelBase<Model>
     partial void OnSearchNameChanged(string value) => DebounceSearch();
 
     [ObservableProperty] private string? _selectedManufacturer;
+    [ObservableProperty] private string  _searchManufacturer  = string.Empty;
     [ObservableProperty] private string? _selectedCategory;
+    [ObservableProperty] private string  _searchCategory      = string.Empty;
     [ObservableProperty] private string? _selectedSubCategory;
+    [ObservableProperty] private string  _searchSubCategory   = string.Empty;
     public ObservableCollection<string> Manufacturers { get; } = new();
     public ObservableCollection<string> Categories    { get; } = new();
     public ObservableCollection<string> SubCategories { get; } = new();

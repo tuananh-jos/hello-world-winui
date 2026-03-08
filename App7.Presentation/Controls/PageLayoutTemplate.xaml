@@ -22,8 +22,34 @@
                         <!-- Controls bar -->
                         <Grid Grid.Row="1" Padding="16,0,16,8">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                                <localc:ColumnVisibilityPicker ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
-                                <localc:PageSizeControl ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
+                                <localc:SmartDropdownPicker ButtonLabel="Columns" 
+                                                            ButtonLabelForeground="Black"
+                                                            AutoUpdateLabel="False"
+                                                            CloseOnSelection="False"
+                                                            ShowSearchBox="False"
+                                                            ShowAllOption="False"
+                                                            ShowDropdownIcon="False"
+                                                            PickerOverlayMode="On"
+                                                            MatchButtonWidth="False"
+                                                            DropdownMinWidth="150"
+                                                            ItemsSource="{x:Bind ViewModel.ColumnVisibilities, Mode=OneWay}">
+                                    <localc:SmartDropdownPicker.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ColumnVisibilityItem">
+                                            <CheckBox Content="{x:Bind DisplayName}" IsChecked="{x:Bind IsVisible, Mode=TwoWay}" Margin="0,0" MinHeight="24" />
+                                        </DataTemplate>
+                                    </localc:SmartDropdownPicker.ItemTemplate>
+                                </localc:SmartDropdownPicker>
+
+                                <Grid Width="55">
+                                    <localc:SmartDropdownPicker ItemsSource="{x:Bind ViewModel.PageSizeOptions, Mode=OneWay}"
+                                                                SelectedItem="{x:Bind ViewModel.SelectedPageSize, Mode=TwoWay}"
+                                                                ShowSearchBox="False"
+                                                                ShowAllOption="False"
+                                                                AutoUpdateLabel="True"
+                                                                AllOptionLabel="10"
+                                                                DropdownMinWidth="60">
+                                    </localc:SmartDropdownPicker>
+                                </Grid>
                             </StackPanel>
                         </Grid>
 

@@ -100,61 +100,35 @@
                                     Text="{x:Bind ViewModel.SearchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Margin="4,0" FontSize="12" />
 
-                        <!-- Manufacturer: filter button that opens popup -->
-                        <Button Grid.Column="1"
-                                x:Name="ManufacturerFilterBtn"
-                                Click="OnManufacturerFilterClicked"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Stretch"
-                                Margin="4,0" Padding="8,0"
-                                Background="White" BorderBrush="#CCCCCC" BorderThickness="1"
-                                Height="32" FontSize="12">
-                            <Grid>
-                                <TextBlock x:Name="ManufacturerFilterLabel"
-                                            Text="All manufacturers"
-                                            Foreground="#888888"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Left"
-                                            FontSize="12" />
-                                <TextBlock Text="&#xE70D;"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            FontSize="10" Opacity="0.5"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
+                        <!-- Manufacturer filter -->
+                        <localc:SmartDropdownPicker Grid.Column="1" Margin="4,0"
+                                                    ItemsSource="{x:Bind ViewModel.Manufacturers, Mode=OneWay}"
+                                                    SelectedItem="{x:Bind ViewModel.SelectedManufacturer, Mode=TwoWay}"
+                                                    ShowSearchBox="True" 
+                                                    SearchText="{x:Bind ViewModel.SearchManufacturer, Mode=TwoWay}"
+                                                    ShowAllOption="True" 
+                                                    AllOptionLabel="All manufacturers"
+                                                    SelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
 
-                        <!-- Category filter button -->
-                        <Button Grid.Column="2"
-                                x:Name="CategoryFilterBtn"
-                                Click="OnCategoryFilterClicked"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                                Margin="4,0" Padding="8,0"
-                                Background="White" BorderBrush="#CCCCCC" BorderThickness="1"
-                                Height="32" FontSize="12">
-                            <Grid>
-                                <TextBlock x:Name="CategoryFilterLabel" Text="All categories"
-                                            Foreground="#888888" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="12" />
-                                <TextBlock Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            FontSize="10" Opacity="0.5" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
+                        <!-- Category filter -->
+                        <localc:SmartDropdownPicker Grid.Column="2" Margin="4,0"
+                                                    ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+                                                    SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
+                                                    ShowSearchBox="True" 
+                                                    SearchText="{x:Bind ViewModel.SearchCategory, Mode=TwoWay}"
+                                                    ShowAllOption="True" 
+                                                    AllOptionLabel="All categories"
+                                                    SelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
 
-                        <!-- SubCategory filter button -->
-                        <Button Grid.Column="3"
-                                x:Name="SubCategoryFilterBtn"
-                                Click="OnSubCategoryFilterClicked"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                                Margin="4,0" Padding="8,0"
-                                Background="White" BorderBrush="#CCCCCC" BorderThickness="1"
-                                Height="32" FontSize="12">
-                            <Grid>
-                                <TextBlock x:Name="SubCategoryFilterLabel" Text="All sub-categories"
-                                            Foreground="#888888" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="12" />
-                                <TextBlock Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            FontSize="10" Opacity="0.5" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
+                        <!-- SubCategory filter -->
+                        <localc:SmartDropdownPicker Grid.Column="3" Margin="4,0"
+                                                    ItemsSource="{x:Bind ViewModel.SubCategories, Mode=OneWay}"
+                                                    SelectedItem="{x:Bind ViewModel.SelectedSubCategory, Mode=TwoWay}"
+                                                    ShowSearchBox="True" 
+                                                    SearchText="{x:Bind ViewModel.SearchSubCategory, Mode=TwoWay}"
+                                                    ShowAllOption="True" 
+                                                    AllOptionLabel="All sub-categories"
+                                                    SelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
 
                         <!-- Clear filter button -->
                         <Button Grid.Column="5" Content="Clear Filter"
@@ -213,48 +187,6 @@
 
         <localc:PageLayoutTemplate.Overlays>
             <Grid>
-
-                <!-- Manufacturer filter popup -->
-                <Popup x:Name="ManufacturerPopup" IsLightDismissEnabled="True">
-                    <Border Background="White" CornerRadius="6" BorderBrush="#CCCCCC" BorderThickness="1" Width="200" Padding="8">
-                        <StackPanel Spacing="6">
-                            <TextBox x:Name="ManufacturerSearchBox" PlaceholderText="Search…"
-                             TextChanged="OnManufacturerSearchChanged" FontSize="12" />
-                            <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
-                                <StackPanel x:Name="ManufacturerListPanel" Spacing="2" />
-                            </ScrollViewer>
-                        </StackPanel>
-                    </Border>
-                </Popup>
-
-                <!-- Category filter popup -->
-                <Popup x:Name="CategoryPopup" IsLightDismissEnabled="True">
-                    <Border Background="White" CornerRadius="6" BorderBrush="#CCCCCC" BorderThickness="1" Width="160" Padding="8">
-                        <StackPanel Spacing="6">
-                            <TextBox x:Name="CategorySearchBox" PlaceholderText="Search…"
-                             TextChanged="OnCategorySearchChanged" FontSize="12" />
-                            <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
-                                <StackPanel x:Name="CategoryListPanel" Spacing="2" />
-                            </ScrollViewer>
-                        </StackPanel>
-                    </Border>
-                </Popup>
-
-                <!-- SubCategory filter popup -->
-                <Popup x:Name="SubCategoryPopup" IsLightDismissEnabled="True">
-                    <Border Background="White" CornerRadius="6" BorderBrush="#CCCCCC" BorderThickness="1" Width="160" Padding="8">
-                        <StackPanel Spacing="6">
-                            <TextBox x:Name="SubCategorySearchBox" PlaceholderText="Search…"
-                             TextChanged="OnSubCategorySearchChanged" FontSize="12" />
-                            <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
-                                <StackPanel x:Name="SubCategoryListPanel" Spacing="2" />
-                            </ScrollViewer>
-                        </StackPanel>
-                    </Border>
-                </Popup>
-
-
-
                 <InfoBar x:Name="BorrowInfoBar" IsOpen="False" IsClosable="True" VerticalAlignment="Top" Margin="20,8,20,0" />
             </Grid>
         </localc:PageLayoutTemplate.Overlays>

@@ -191,9 +191,6 @@
 
         <localc:PageLayoutTemplate.Overlays>
             <Grid>
-
-
-
                 <InfoBar x:Name="ReturnInfoBar" IsOpen="False" IsClosable="True" VerticalAlignment="Top" Margin="20,8,20,0" />
             </Grid>
         </localc:PageLayoutTemplate.Overlays>
