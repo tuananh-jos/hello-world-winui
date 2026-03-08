@@ -19,8 +19,6 @@ public sealed partial class MyDevicesPage : Page
 {
     public MyDevicesViewModel ViewModel { get; }
     private readonly ReturnDeviceUseCase _returnUseCase;
-    private readonly DataGridSyncHelper _syncHelper;
-
 
     public MyDevicesPage()
     {
@@ -28,50 +26,13 @@ public sealed partial class MyDevicesPage : Page
         _returnUseCase = App.GetService<ReturnDeviceUseCase>();
         InitializeComponent();
 
-        _syncHelper = new DataGridSyncHelper(DevicesGrid, new[]
-        {
-            new ColumnSyncInfo { Tag = ColumnTags.NAME,                SortIcon = SortIconName,          HeaderColumn = ColDefName,          FilterColumn = FilterColDefName,          NaturalMinWidth = 100 },
-            new ColumnSyncInfo { Tag = ColumnTags.MODEL_NAME,          SortIcon = SortIconModelName,     HeaderColumn = ColDefModelName,     FilterColumn = FilterColDefModelName,     NaturalMinWidth = 120 },
-            new ColumnSyncInfo { Tag = ColumnTags.IMEI,                SortIcon = SortIconIMEI,          HeaderColumn = ColDefIMEI,          FilterColumn = FilterColDefIMEI,          NaturalMinWidth = 100 },
-            new ColumnSyncInfo { Tag = ColumnTags.SERIAL_LAB,          SortIcon = SortIconSerialLab,     HeaderColumn = ColDefSerialLab,     FilterColumn = FilterColDefSerialLab,     NaturalMinWidth = 80 },
-            new ColumnSyncInfo { Tag = ColumnTags.SERIAL_NUMBER,       SortIcon = SortIconSerialNumber,  HeaderColumn = ColDefSerialNumber,  FilterColumn = FilterColDefSerialNumber,  NaturalMinWidth = 80 },
-            new ColumnSyncInfo { Tag = ColumnTags.CIRCUIT_SERIAL_NUMBER,SortIcon = SortIconCircuitSerial,HeaderColumn = ColDefCircuitSerial, FilterColumn = FilterColDefCircuitSerial, NaturalMinWidth = 80 },
-            new ColumnSyncInfo { Tag = ColumnTags.HW_VERSION,          SortIcon = SortIconHWVersion,     HeaderColumn = ColDefHWVersion,     FilterColumn = FilterColDefHWVersion,     NaturalMinWidth = 70 },
-            new ColumnSyncInfo { Tag = ColumnTags.FUNCTION,            SortIcon = null,                  HeaderColumn = ColDefFunction,      FilterColumn = FilterColDefFunction,      NaturalWidth = new GridLength(120) }
-        });
-
-        ViewModel.PropertyChanged += (_, e) =>
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ViewModel.SortColumn) or nameof(ViewModel.SortAscending):
-                    _syncHelper.UpdateSortIcons(ViewModel.SortColumn, ViewModel.SortAscending);
-                    break;
-            }
-        };
-
         foreach (var col in ViewModel.ColumnVisibilities)
-            col.PropertyChanged += (_, _) => _syncHelper.SyncColumnVisibility(col);
-
-
-
-        // Hover effect on DataGrid rows
-        DevicesGrid.LoadingRow += (_, e) =>
-        {
-            var row = e.Row;
-            row.PointerEntered += (_, _) =>
-                row.Background = new SolidColorBrush(Color.FromArgb(255, 0xEC, 0xF3, 0xF8));
-            row.PointerExited += (_, _) =>
-                row.Background = new SolidColorBrush(Colors.Transparent);
-        };
+            col.PropertyChanged += (_, _) => DevicesTable.SyncColumnVisibility(col.ColumnTag, col.IsVisible);
     }
 
 
 
     // ── Shared search handlers ──────────────────────────────────────
-
-    private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
-        => DevicesGrid.SelectedItem = null;
 
 
 

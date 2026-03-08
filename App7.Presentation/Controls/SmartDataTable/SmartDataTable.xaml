@@ -1,0 +1,43 @@
+<UserControl
+    x:Class="App7.Presentation.Controls.SmartDataTable"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    x:Name="Root">
+    
+    <Grid RowDefinitions="Auto,Auto,Auto">
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2D8A8888">
+            <Grid x:Name="HeaderGrid" Height="40" />
+        </Border>
+        
+        <!-- Filter -->
+        <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,1,0,1" Padding="0,4">
+            <Grid x:Name="FilterGrid" />
+        </Border>
+
+        <!-- DataGrid -->
+        <Grid Grid.Row="2">
+            <controls:DataGrid x:Name="InnerDataGrid"
+                               HorizontalScrollBarVisibility="Disabled"
+                               AutoGenerateColumns="False"
+                               GridLinesVisibility="All"
+                               CanUserSortColumns="False"
+                               HeadersVisibility="None"
+                               RowBackground="White"
+                               AlternatingRowBackground="#F9F9F9"
+                               ItemsSource="{x:Bind ItemsSource, Mode=OneWay}"
+                               IsReadOnly="True" MinHeight="200"
+                               BorderThickness="0"
+                               SelectionChanged="OnInnerDataGridSelectionChanged">
+            </controls:DataGrid>
+
+            <!-- Empty state -->
+            <TextBlock Text="&#xE7BA;  No matching records found"
+                       FontSize="14" Foreground="#888888"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Padding="0,40"
+                       Visibility="{x:Bind EmptyVisibility, Mode=OneWay}" />
+        </Grid>
+    </Grid>
+</UserControl>

@@ -20,12 +20,6 @@ public sealed partial class ModelListPage : Page
 {
     public ModelListViewModel ViewModel { get; }
     private readonly BorrowDeviceUseCase _borrowUseCase;
-    private readonly DataGridSyncHelper _syncHelper;
-
-
-    private string? _selectedManufacturer;
-    private string? _selectedCategory;
-    private string? _selectedSubCategory;
 
     public ModelListPage()
     {
@@ -33,48 +27,11 @@ public sealed partial class ModelListPage : Page
         _borrowUseCase = App.GetService<BorrowDeviceUseCase>();
         InitializeComponent();
 
-        _syncHelper = new DataGridSyncHelper(ModelsGrid, new[]
-        {
-            new ColumnSyncInfo { Tag = ColumnTags.NAME,         SortIcon = SortIconName,         HeaderColumn = HdrColName,         FilterColumn = FltColName,         NaturalMinWidth = 120 },
-            new ColumnSyncInfo { Tag = ColumnTags.MANUFACTURER, SortIcon = SortIconManufacturer, HeaderColumn = HdrColManufacturer, FilterColumn = FltColManufacturer, NaturalMinWidth = 100 },
-            new ColumnSyncInfo { Tag = ColumnTags.CATEGORY,     SortIcon = SortIconCategory,     HeaderColumn = HdrColCategory,     FilterColumn = FltColCategory,     NaturalMinWidth = 90 },
-            new ColumnSyncInfo { Tag = ColumnTags.SUB_CATEGORY,  SortIcon = SortIconSubCategory,  HeaderColumn = HdrColSubCategory,  FilterColumn = FltColSubCategory,  NaturalMinWidth = 90 },
-            new ColumnSyncInfo { Tag = ColumnTags.AVAILABLE,    SortIcon = SortIconAvailable,    HeaderColumn = HdrColAvailable,    FilterColumn = FltColAvailable,    NaturalWidth = new GridLength(100) },
-            new ColumnSyncInfo { Tag = ColumnTags.FUNCTION,     SortIcon = null,                 HeaderColumn = HdrColFunction,     FilterColumn = FltColFunction,     NaturalWidth = new GridLength(120) }
-        });
-
-        ViewModel.PropertyChanged += (_, e) =>
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ViewModel.SortColumn) or nameof(ViewModel.SortAscending):
-                    _syncHelper.UpdateSortIcons(ViewModel.SortColumn, ViewModel.SortAscending);
-                    break;
-            }
-        };
-
         foreach (var col in ViewModel.ColumnVisibilities)
-            col.PropertyChanged += (_, _) => _syncHelper.SyncColumnVisibility(col);
-
-        Loaded += (_, _) =>
-        {
-        };
-
-        // Hover effect on DataGrid rows
-        ModelsGrid.LoadingRow += (_, e) =>
-        {
-            var row = e.Row;
-            row.PointerEntered += (_, _) =>
-                row.Background = new SolidColorBrush(Color.FromArgb(255, 0xEC, 0xF3, 0xF8));
-            row.PointerExited += (_, _) =>
-                row.Background = new SolidColorBrush(Colors.Transparent);
-        };
+            col.PropertyChanged += (_, _) => ModelsTable.SyncColumnVisibility(col.ColumnTag, col.IsVisible);
     }
 
     // ── Filter handlers ───────────────────────────────────────────────
-
-    private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
-        => ModelsGrid.SelectedItem = null;
 
 
 

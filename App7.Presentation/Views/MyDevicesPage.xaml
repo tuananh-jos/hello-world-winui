@@ -23,169 +23,89 @@
         <localc:PageLayoutTemplate.TableContent>
             <Grid RowDefinitions="Auto,Auto,Auto">
 
-                <!-- Custom column header row -->
-                <Border Grid.Row="0" Background="#2D8A8888">
-                    <Grid x:Name="HeaderGrid" Height="40">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="ColDefName"               Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="ColDefModelName"          Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="ColDefIMEI"               Width="*" MinWidth="150" />
-                            <ColumnDefinition x:Name="ColDefSerialLab"          Width="*" MinWidth="130" />
-                            <ColumnDefinition x:Name="ColDefSerialNumber"       Width="*" MinWidth="130" />
-                            <ColumnDefinition x:Name="ColDefCircuitSerial"      Width="*" MinWidth="130" />
-                            <ColumnDefinition x:Name="ColDefHWVersion"          Width="*" MinWidth="70" />
-                            <ColumnDefinition x:Name="ColDefFunction"           Width="120" />
-                        </Grid.ColumnDefinitions>
+                <localc:SmartDataTable Grid.Row="0" Grid.RowSpan="3"
+                                      ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+                                      EmptyVisibility="{x:Bind ViewModel.EmptyVisibility, Mode=OneWay}"
+                                      SortCommand="{x:Bind ViewModel.SortByCommand, Mode=OneWay}"
+                                      ClearFiltersCommand="{x:Bind ViewModel.ClearFiltersCommand, Mode=OneWay}"
+                                      SortColumn="{x:Bind ViewModel.SortColumn, Mode=OneWay}"
+                                      SortAscending="{x:Bind ViewModel.SortAscending, Mode=OneWay}"
+                                      x:Name="DevicesTable">
 
-                        <Button Grid.Column="0" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.NAME}"
-                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.NAME_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconName" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="1" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.MODEL_NAME}"
-                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.MODEL_NAME_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconModelName" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="2" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.IMEI}"
-                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.IMEI_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconIMEI" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="3" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.SERIAL_LAB}"
-                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.SERIAL_LAB_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconSerialLab" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="4" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.SERIAL_NUMBER}"
-                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.SERIAL_NUMBER_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconSerialNumber" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="5" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.CIRCUIT_SERIAL_NUMBER}"
-                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.CIRCUIT_SERIAL_NUMBER_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconCircuitSerial" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="6" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.HW_VERSION}"
-                                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.HW_VERSION_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconHWVersion" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Border Grid.Column="7" Padding="8,0" BorderThickness="0">
-                            <TextBlock Text="Function" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
-                        </Border>
-                    </Grid>
-                </Border>
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.NAME_LABEL}" 
+                                       Tag="{x:Bind constants:ColumnTags.NAME}" 
+                                       BindingPath="Name" 
+                                       MinWidth="120"
+                                       FilterType="Text" 
+                                       FilterPlaceholder="Search name…"
+                                       SearchText="{x:Bind ViewModel.SearchName, Mode=TwoWay}" />
 
-                <!-- Filter row: 6 independent search TextBoxes -->
-                <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,1,0,1" Padding="0,4">
-                    <Grid x:Name="FilterGrid">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="FilterColDefName"               Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="FilterColDefModelName"          Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="FilterColDefIMEI"               Width="*" MinWidth="150" />
-                            <ColumnDefinition x:Name="FilterColDefSerialLab"          Width="*" MinWidth="130" />
-                            <ColumnDefinition x:Name="FilterColDefSerialNumber"       Width="*" MinWidth="130" />
-                            <ColumnDefinition x:Name="FilterColDefCircuitSerial"      Width="*" MinWidth="130" />
-                            <ColumnDefinition x:Name="FilterColDefHWVersion"          Width="*" MinWidth="70" />
-                            <ColumnDefinition x:Name="FilterColDefFunction"           Width="120" />
-                        </Grid.ColumnDefinitions>
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.MODEL_NAME_LABEL}" 
+                                       Tag="{x:Bind constants:ColumnTags.MODEL_NAME}" 
+                                       BindingPath="ModelName" 
+                                       MinWidth="120"
+                                       FilterType="Text" 
+                                       FilterPlaceholder="Search model…"
+                                       SearchText="{x:Bind ViewModel.SearchModelName, Mode=TwoWay}" />
 
-                        <TextBox Grid.Column="0" PlaceholderText="Search name…"
-                                                 Text="{x:Bind ViewModel.SearchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 Tag="{x:Bind constants:ColumnTags.NAME}" Margin="4,0" FontSize="12" />
-                        <TextBox Grid.Column="1" PlaceholderText="Search model…"
-                                                 Text="{x:Bind ViewModel.SearchModelName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 Tag="{x:Bind constants:ColumnTags.MODEL_NAME}" Margin="4,0" FontSize="12" />
-                        <TextBox Grid.Column="2" PlaceholderText="Search IMEI…"
-                                                 Text="{x:Bind ViewModel.SearchIMEI, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 Tag="{x:Bind constants:ColumnTags.IMEI}" Margin="4,0" FontSize="12" />
-                        <TextBox Grid.Column="3" PlaceholderText="Search lab…"
-                                                 Text="{x:Bind ViewModel.SearchSerialLab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 Tag="{x:Bind constants:ColumnTags.SERIAL_LAB}" Margin="4,0" FontSize="12" />
-                        <TextBox Grid.Column="4" PlaceholderText="Search serial…"
-                                                 Text="{x:Bind ViewModel.SearchSerialNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 Tag="{x:Bind constants:ColumnTags.SERIAL_NUMBER}" Margin="4,0" FontSize="12" />
-                        <TextBox Grid.Column="5" PlaceholderText="Search circuit…"
-                                                 Text="{x:Bind ViewModel.SearchCircuitSerial, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 Tag="{x:Bind constants:ColumnTags.CIRCUIT_SERIAL_NUMBER}" Margin="4,0" FontSize="12" />
-                        <TextBox Grid.Column="6" PlaceholderText="Search HW ver…"
-                                                 Text="{x:Bind ViewModel.SearchHWVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 Tag="{x:Bind constants:ColumnTags.HW_VERSION}" Margin="4,0" FontSize="12" />
-                        <Button Grid.Column="7" Content="Clear Filter"
-                                                Command="{x:Bind ViewModel.ClearFiltersCommand}"
-                                                Style="{StaticResource AppClearFilterButtonStyle}"
-                                                HorizontalAlignment="Stretch" Margin="4,0" />
-                    </Grid>
-                </Border>
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.IMEI_LABEL}" 
+                                       Tag="{x:Bind constants:ColumnTags.IMEI}" 
+                                       BindingPath="IMEI" 
+                                       MinWidth="150"
+                                       FilterType="Text" 
+                                       FilterPlaceholder="Search IMEI…"
+                                       SearchText="{x:Bind ViewModel.SearchIMEI, Mode=TwoWay}" />
 
-                <!-- DataGrid -->
-                <Grid Grid.Row="2">
-                    <controls:DataGrid x:Name="DevicesGrid"
-                                                   HorizontalScrollBarVisibility="Disabled"
-                                                   AutoGenerateColumns="False"
-                                                   GridLinesVisibility="All"
-                                                   CanUserSortColumns="False"
-                                                   HeadersVisibility="None"
-                                                   RowBackground="White"
-                                                   AlternatingRowBackground="#F9F9F9"
-                                                   ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
-                                                   IsReadOnly="True" MinHeight="200"
-                                                   BorderThickness="0"
-                                                   SelectionChanged="OnGridSelectionChanged">
-                        <controls:DataGrid.Columns>
-                            <controls:DataGridTextColumn Binding="{Binding Name}"               Tag="{x:Bind constants:ColumnTags.NAME}"               Width="*" MinWidth="120" />
-                            <controls:DataGridTextColumn Binding="{Binding ModelName}"          Tag="{x:Bind constants:ColumnTags.MODEL_NAME}"          Width="*" MinWidth="120" />
-                            <controls:DataGridTextColumn Binding="{Binding IMEI}"               Tag="{x:Bind constants:ColumnTags.IMEI}"               Width="*" MinWidth="150" />
-                            <controls:DataGridTextColumn Binding="{Binding SerialLab}"          Tag="{x:Bind constants:ColumnTags.SERIAL_LAB}"          Width="*" MinWidth="130" />
-                            <controls:DataGridTextColumn Binding="{Binding SerialNumber}"       Tag="{x:Bind constants:ColumnTags.SERIAL_NUMBER}"       Width="*" MinWidth="130" />
-                            <controls:DataGridTextColumn Binding="{Binding CircuitSerialNumber}" Tag="{x:Bind constants:ColumnTags.CIRCUIT_SERIAL_NUMBER}" Width="*" MinWidth="130" />
-                            <controls:DataGridTextColumn Binding="{Binding HWVersion}"          Tag="{x:Bind constants:ColumnTags.HW_VERSION}"          Width="*" MinWidth="70" />
-                            <controls:DataGridTemplateColumn Tag="{x:Bind constants:ColumnTags.FUNCTION}" Width="120" MinWidth="100" IsReadOnly="True">
-                                <controls:DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Tag="{Binding}" Click="OnReturnClicked"
-                                                            Style="{StaticResource AppFunctionButtonStyle}">
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
-                                                <TextBlock Text="Return" VerticalAlignment="Center" FontSize="12" />
-                                            </StackPanel>
-                                        </Button>
-                                    </DataTemplate>
-                                </controls:DataGridTemplateColumn.CellTemplate>
-                            </controls:DataGridTemplateColumn>
-                        </controls:DataGrid.Columns>
-                    </controls:DataGrid>
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.SERIAL_LAB_LABEL}" 
+                                       Tag="{x:Bind constants:ColumnTags.SERIAL_LAB}" 
+                                       BindingPath="SerialLab" 
+                                       MinWidth="130"
+                                       FilterType="Text" 
+                                       FilterPlaceholder="Search lab…"
+                                       SearchText="{x:Bind ViewModel.SearchSerialLab, Mode=TwoWay}" />
 
-                    <!-- Empty state: inside grid area -->
-                    <TextBlock Text="&#xE7BA;  No matching records found"
-                                           FontSize="14" Foreground="#888888"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Padding="0,40"
-                                           Visibility="{x:Bind ViewModel.EmptyVisibility, Mode=OneWay}" />
-                </Grid>
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.SERIAL_NUMBER_LABEL}" 
+                                       Tag="{x:Bind constants:ColumnTags.SERIAL_NUMBER}" 
+                                       BindingPath="SerialNumber" 
+                                       MinWidth="130"
+                                       FilterType="Text" 
+                                       FilterPlaceholder="Search serial…"
+                                       SearchText="{x:Bind ViewModel.SearchSerialNumber, Mode=TwoWay}" />
+
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.CIRCUIT_SERIAL_NUMBER_LABEL}" 
+                                       Tag="{x:Bind constants:ColumnTags.CIRCUIT_SERIAL_NUMBER}" 
+                                       BindingPath="CircuitSerialNumber" 
+                                       MinWidth="130"
+                                       FilterType="Text" 
+                                       FilterPlaceholder="Search circuit…"
+                                       SearchText="{x:Bind ViewModel.SearchCircuitSerial, Mode=TwoWay}" />
+
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.HW_VERSION_LABEL}" 
+                                       Tag="{x:Bind constants:ColumnTags.HW_VERSION}" 
+                                       BindingPath="HWVersion" 
+                                       MinWidth="70"
+                                       FilterType="Text" 
+                                       FilterPlaceholder="Search HW ver…"
+                                       SearchText="{x:Bind ViewModel.SearchHWVersion, Mode=TwoWay}" />
+
+                    <localc:SmartColumn Header="Function" 
+                                       Tag="{x:Bind constants:ColumnTags.FUNCTION}" 
+                                       MinWidth="100" Width="120"
+                                       IsSortable="False"
+                                       FilterType="ClearButton">
+                        <localc:SmartColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Tag="{Binding}" Click="OnReturnClicked"
+                                        Style="{StaticResource AppFunctionButtonStyle}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
+                                        <TextBlock Text="Return" VerticalAlignment="Center" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </localc:SmartColumn.CellTemplate>
+                    </localc:SmartColumn>
+                </localc:SmartDataTable>
             </Grid>
         </localc:PageLayoutTemplate.TableContent>
 

@@ -23,165 +23,82 @@
         <localc:PageLayoutTemplate.TableContent>
             <Grid RowDefinitions="Auto,Auto,Auto">
 
-                <!-- Custom column header row -->
-                <Border Grid.Row="0" Background="#2D8A8888">
-                    <Grid x:Name="HeaderGrid" Height="40">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="HdrColName"         Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="HdrColManufacturer" Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="HdrColCategory"     Width="*" MinWidth="90" />
-                            <ColumnDefinition x:Name="HdrColSubCategory"  Width="*" MinWidth="90" />
-                            <ColumnDefinition x:Name="HdrColAvailable"    Width="*" MinWidth="70" />
-                            <ColumnDefinition x:Name="HdrColFunction"     Width="120" />
-                        </Grid.ColumnDefinitions>
+                <localc:SmartDataTable Grid.Row="0" Grid.RowSpan="3"
+                                       ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+                                       EmptyVisibility="{x:Bind ViewModel.EmptyVisibility, Mode=OneWay}"
+                                       SortCommand="{x:Bind ViewModel.SortByCommand, Mode=OneWay}"
+                                       ClearFiltersCommand="{x:Bind ViewModel.ClearFiltersCommand, Mode=OneWay}"
+                                       SortColumn="{x:Bind ViewModel.SortColumn, Mode=OneWay}"
+                                       SortAscending="{x:Bind ViewModel.SortAscending, Mode=OneWay}"
+                                       x:Name="ModelsTable">
+                    
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.NAME_LABEL}" 
+                                        Tag="{x:Bind constants:ColumnTags.NAME}" 
+                                        BindingPath="Name" 
+                                        MinWidth="120"
+                                        FilterType="Text" 
+                                        FilterPlaceholder="Search name…"
+                                        SearchText="{x:Bind ViewModel.SearchName, Mode=TwoWay}" />
 
-                        <Button Grid.Column="0" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.NAME}"
-                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.NAME_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconName" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="1" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.MANUFACTURER}"
-                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.MANUFACTURER_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconManufacturer" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="2" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.CATEGORY}"
-                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.CATEGORY_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconCategory" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="3" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.SUB_CATEGORY}"
-                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.SUB_CATEGORY_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconSubCategory" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="4" Command="{x:Bind ViewModel.SortByCommand}" CommandParameter="{x:Bind constants:ColumnTags.AVAILABLE}"
-                                Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#4AFFFFFF"
-                                Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,0">
-                            <Grid>
-                                <TextBlock Text="{x:Bind constants:ColumnTags.AVAILABLE_LABEL}" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="SortIconAvailable" Text="&#xE70D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="10" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                            </Grid>
-                        </Button>
-                        <Border Grid.Column="5" Padding="8,0" BorderThickness="0" >
-                            <TextBlock Text="Function" Foreground="#337f94" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
-                        </Border>
-                    </Grid>
-                </Border>
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.MANUFACTURER_LABEL}" 
+                                        Tag="{x:Bind constants:ColumnTags.MANUFACTURER}" 
+                                        BindingPath="Manufacturer" 
+                                        MinWidth="120"
+                                        FilterType="Dropdown"
+                                        AllOptionLabel="All manufacturers"
+                                        DropdownMinWidth="200"
+                                        ItemsSource="{x:Bind ViewModel.Manufacturers, Mode=OneWay}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedManufacturer, Mode=TwoWay}"
+                                        SearchTextDropdown="{x:Bind ViewModel.SearchManufacturer, Mode=TwoWay}"
+                                        DropdownSelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
 
-                <!-- Filter row -->
-                <Border Grid.Row="1" Background="#EEF2F3" BorderBrush="#CCCCCC" BorderThickness="0,1,0,1" Padding="0,4">
-                    <Grid x:Name="FilterGrid">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="FltColName"         Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="FltColManufacturer" Width="*" MinWidth="120" />
-                            <ColumnDefinition x:Name="FltColCategory"     Width="*" MinWidth="90" />
-                            <ColumnDefinition x:Name="FltColSubCategory"  Width="*" MinWidth="90" />
-                            <ColumnDefinition x:Name="FltColAvailable"    Width="100" />
-                            <ColumnDefinition x:Name="FltColFunction"     Width="120" />
-                        </Grid.ColumnDefinitions>
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.CATEGORY_LABEL}" 
+                                        Tag="{x:Bind constants:ColumnTags.CATEGORY}" 
+                                        BindingPath="Category" 
+                                        MinWidth="90"
+                                        FilterType="Dropdown"
+                                        AllOptionLabel="All categories"
+                                        ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
+                                        SearchTextDropdown="{x:Bind ViewModel.SearchCategory, Mode=TwoWay}"
+                                        DropdownSelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
 
-                        <!-- Name: search TextBox -->
-                        <TextBox Grid.Column="0"
-                                    x:Name="SearchNameBox"
-                                    PlaceholderText="Search name…"
-                                    Text="{x:Bind ViewModel.SearchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Margin="4,0" FontSize="12" />
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.SUB_CATEGORY_LABEL}" 
+                                        Tag="{x:Bind constants:ColumnTags.SUB_CATEGORY}" 
+                                        BindingPath="SubCategory" 
+                                        MinWidth="90"
+                                        FilterType="Dropdown"
+                                        AllOptionLabel="All sub-categories"
+                                        ItemsSource="{x:Bind ViewModel.SubCategories, Mode=OneWay}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedSubCategory, Mode=TwoWay}"
+                                        SearchTextDropdown="{x:Bind ViewModel.SearchSubCategory, Mode=TwoWay}"
+                                        DropdownSelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
 
-                        <!-- Manufacturer filter -->
-                        <localc:SmartDropdownPicker Grid.Column="1" Margin="4,0"
-                                                    ItemsSource="{x:Bind ViewModel.Manufacturers, Mode=OneWay}"
-                                                    SelectedItem="{x:Bind ViewModel.SelectedManufacturer, Mode=TwoWay}"
-                                                    ShowSearchBox="True" 
-                                                    SearchText="{x:Bind ViewModel.SearchManufacturer, Mode=TwoWay}"
-                                                    ShowAllOption="True" 
-                                                    AllOptionLabel="All manufacturers"
-                                                    SelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
+                    <localc:SmartColumn Header="{x:Bind constants:ColumnTags.AVAILABLE_LABEL}" 
+                                        Tag="{x:Bind constants:ColumnTags.AVAILABLE}" 
+                                        BindingPath="Available" 
+                                        MinWidth="70"
+                                        FilterType="None" />
 
-                        <!-- Category filter -->
-                        <localc:SmartDropdownPicker Grid.Column="2" Margin="4,0"
-                                                    ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
-                                                    SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
-                                                    ShowSearchBox="True" 
-                                                    SearchText="{x:Bind ViewModel.SearchCategory, Mode=TwoWay}"
-                                                    ShowAllOption="True" 
-                                                    AllOptionLabel="All categories"
-                                                    SelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
-
-                        <!-- SubCategory filter -->
-                        <localc:SmartDropdownPicker Grid.Column="3" Margin="4,0"
-                                                    ItemsSource="{x:Bind ViewModel.SubCategories, Mode=OneWay}"
-                                                    SelectedItem="{x:Bind ViewModel.SelectedSubCategory, Mode=TwoWay}"
-                                                    ShowSearchBox="True" 
-                                                    SearchText="{x:Bind ViewModel.SearchSubCategory, Mode=TwoWay}"
-                                                    ShowAllOption="True" 
-                                                    AllOptionLabel="All sub-categories"
-                                                    SelectionChangedCommand="{x:Bind ViewModel.ApplyFiltersCommand}" />
-
-                        <!-- Clear filter button -->
-                        <Button Grid.Column="5" Content="Clear Filter"
-                                Command="{x:Bind ViewModel.ClearFiltersCommand}"
-                                Style="{StaticResource AppClearFilterButtonStyle}"
-                                HorizontalAlignment="Stretch" Margin="4,0" />
-                    </Grid>
-                </Border>
-
-                <!-- DataGrid -->
-                <Grid Grid.Row="2">
-                    <controls:DataGrid x:Name="ModelsGrid"
-                                    HorizontalScrollBarVisibility="Disabled"
-                                    AutoGenerateColumns="False"
-                                    GridLinesVisibility="All"
-                                    CanUserSortColumns="False"
-                                    HeadersVisibility="None"
-                                    RowBackground="White"
-                                    AlternatingRowBackground="#F9F9F9"
-                                    ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
-                                    IsReadOnly="True" MinHeight="200"
-                                    BorderThickness="0"
-                                    SelectionChanged="OnGridSelectionChanged">
-                        <controls:DataGrid.Columns>
-                            <controls:DataGridTextColumn Binding="{Binding Name}"         Tag="{x:Bind constants:ColumnTags.NAME}"         Width="*" MinWidth="120" />
-                            <controls:DataGridTextColumn Binding="{Binding Manufacturer}" Tag="{x:Bind constants:ColumnTags.MANUFACTURER}" Width="*" MinWidth="120" />
-                            <controls:DataGridTextColumn Binding="{Binding Category}"     Tag="{x:Bind constants:ColumnTags.CATEGORY}"     Width="*" MinWidth="90" />
-                            <controls:DataGridTextColumn Binding="{Binding SubCategory}"  Tag="{x:Bind constants:ColumnTags.SUB_CATEGORY}"  Width="*" MinWidth="90" />
-                            <controls:DataGridTextColumn Binding="{Binding Available}"    Tag="{x:Bind constants:ColumnTags.AVAILABLE}"    Width="*" MinWidth="70" />
-                            <controls:DataGridTemplateColumn Tag="{x:Bind constants:ColumnTags.FUNCTION}" Width="120" MinWidth="100" IsReadOnly="True">
-                                <controls:DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Tag="{Binding}" Click="OnBorrowClicked"
-                                            IsEnabled="{Binding IsAvailable}"
-                                            Style="{StaticResource AppFunctionButtonStyle}">
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
-                                                <TextBlock Text="Borrow" VerticalAlignment="Center" FontSize="12" />
-                                            </StackPanel>
-                                        </Button>
-                                    </DataTemplate>
-                                </controls:DataGridTemplateColumn.CellTemplate>
-                            </controls:DataGridTemplateColumn>
-                        </controls:DataGrid.Columns>
-                    </controls:DataGrid>
-
-                    <!-- Empty state: inside grid area -->
-                    <TextBlock Text="&#xE7BA;  No matching records found"
-                            FontSize="14" Foreground="#888888"
-                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                            Padding="0,40"
-                            Visibility="{x:Bind ViewModel.EmptyVisibility, Mode=OneWay}" />
-                </Grid>
+                    <localc:SmartColumn Header="Function" 
+                                        Tag="{x:Bind constants:ColumnTags.FUNCTION}" 
+                                        MinWidth="100" Width="120"
+                                        IsSortable="False"
+                                        FilterType="ClearButton">
+                        <localc:SmartColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Tag="{Binding}" Click="OnBorrowClicked"
+                                        IsEnabled="{Binding IsAvailable}"
+                                        Style="{StaticResource AppFunctionButtonStyle}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="&#xE8EA;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" VerticalAlignment="Center" />
+                                        <TextBlock Text="Borrow" VerticalAlignment="Center" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </localc:SmartColumn.CellTemplate>
+                    </localc:SmartColumn>
+                </localc:SmartDataTable>
             </Grid>
         </localc:PageLayoutTemplate.TableContent>
 

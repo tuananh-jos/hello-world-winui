@@ -251,7 +251,7 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     {
         if (_searchDebounceTimer == null)
         {
-            _searchDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _searchDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
             _searchDebounceTimer.Tick += async (_, _) =>
             {
                 _searchDebounceTimer.Stop();
