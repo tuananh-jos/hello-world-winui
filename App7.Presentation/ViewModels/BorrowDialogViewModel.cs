@@ -44,4 +44,7 @@ public partial class BorrowDialogViewModel : ObservableObject
     // ── Commands (called from code-behind after dialog closes) ────────
     public void Confirm()  { Confirmed = true; }
     public void Cancel()   { Confirmed = false; }
+
+    public string? ErrorMessage { get; private set; }
+    public void SetError(string message) { ErrorMessage = message; }
 }

@@ -33,7 +33,11 @@ public sealed partial class MyDevicesPage : Page
         dialog.Init(device);
         await dialog.ShowAsync();
 
-        if (dialog.Confirmed)
+        if (dialog.ErrorMessage != null)
+        {
+            ShowInfoBar(InfoBarSeverity.Error, $"Return failed: {dialog.ErrorMessage}");
+        }
+        else if (dialog.Confirmed)
         {
             await ViewModel.NotifyDataChanged();
             ShowInfoBar(InfoBarSeverity.Success,

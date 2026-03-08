@@ -51,22 +51,12 @@ public sealed partial class BorrowDialog : ContentDialog
         {
             await _borrowUseCase.ExecuteAsync(new BorrowDeviceRequest(ViewModel.ModelId, ViewModel.SelectedQuantity));
             ViewModel.Confirm();
-            Hide();
         }
         catch (Exception ex)
         {
-            // Show inline error — restore buttons so user can retry or cancel
-            OkBtn.IsEnabled = true;
-            CancelBtn.IsEnabled = true;
-
-            var errorDialog = new ContentDialog
-            {
-                Title = "Borrow failed",
-                Content = ex.Message,
-                CloseButtonText = "OK",
-                XamlRoot = XamlRoot
-            };
-            await errorDialog.ShowAsync();
+            ViewModel.SetError(ex.Message);
         }
+
+        Hide();
     }
 }

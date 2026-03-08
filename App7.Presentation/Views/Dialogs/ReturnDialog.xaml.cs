@@ -42,6 +42,8 @@ public sealed partial class ReturnDialog : ContentDialog
         Hide();
     }
 
+    public string? ErrorMessage { get; private set; }
+
     private async void OnConfirmClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         if (_device == null) return;
@@ -53,21 +55,12 @@ public sealed partial class ReturnDialog : ContentDialog
         {
             await _returnUseCase.ExecuteAsync(new ReturnDeviceRequest(_device.Id, _device.ModelId));
             Confirmed = true;
-            Hide();
         }
         catch (Exception ex)
         {
-            ConfirmBtn.IsEnabled = true;
-            CancelBtn.IsEnabled  = true;
-
-            var errorDialog = new ContentDialog
-            {
-                Title           = "Return failed",
-                Content         = ex.Message,
-                CloseButtonText = "OK",
-                XamlRoot        = XamlRoot
-            };
-            await errorDialog.ShowAsync();
+            ErrorMessage = ex.Message;
         }
+
+        Hide();
     }
 }

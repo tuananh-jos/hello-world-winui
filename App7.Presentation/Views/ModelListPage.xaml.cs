@@ -33,7 +33,11 @@ public sealed partial class ModelListPage : Page
         dialog.Init(model);
         await dialog.ShowAsync();
 
-        if (dialog.ViewModel.Confirmed)
+        if (dialog.ViewModel.ErrorMessage != null)
+        {
+            ShowInfoBar(InfoBarSeverity.Error, $"Borrow failed: {dialog.ViewModel.ErrorMessage}");
+        }
+        else if (dialog.ViewModel.Confirmed)
         {
             await ViewModel.NotifyDataChanged();
             ShowInfoBar(InfoBarSeverity.Success,
