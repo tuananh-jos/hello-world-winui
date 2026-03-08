@@ -4,6 +4,7 @@ using App7.Presentation.ViewModels;
 using App7.Presentation.Views.Dialogs;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace App7.Presentation.Views;
 
@@ -17,6 +18,7 @@ public sealed partial class ModelListPage : Page
         ViewModel      = App.GetService<ModelListViewModel>();
         _borrowUseCase = App.GetService<BorrowDeviceUseCase>();
         InitializeComponent();
+        NavigationCacheMode = NavigationCacheMode.Required;
 
         foreach (var col in ViewModel.ColumnVisibilities)
             col.PropertyChanged += (_, _) => ModelsTable.SyncColumnVisibility(col.ColumnTag, col.IsVisible);

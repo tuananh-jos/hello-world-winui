@@ -137,19 +137,15 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
 
     public async void OnNavigatedTo(object parameter)
     {
-        await LoadFilterOptionsAsync();
-
         if (_firstLoad)
         {
             _firstLoad = false;
+            await LoadFilterOptionsAsync();
             IsInitialLoading = true;
             try   { await LoadDataCoreAsync(); }
             finally { IsInitialLoading = false; }
         }
-        else
-        {
-            await OverlayLoadAsync(resetPage: false);
-        }
+        // Subsequent visits: skip reload — InstanceSyncService keeps data fresh.
     }
 
     public void OnNavigatedFrom() { }

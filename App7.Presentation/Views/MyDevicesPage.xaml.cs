@@ -4,6 +4,7 @@ using App7.Presentation.ViewModels;
 using App7.Presentation.Views.Dialogs;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace App7.Presentation.Views;
 
@@ -17,6 +18,7 @@ public sealed partial class MyDevicesPage : Page
         ViewModel      = App.GetService<MyDevicesViewModel>();
         _returnUseCase = App.GetService<ReturnDeviceUseCase>();
         InitializeComponent();
+        NavigationCacheMode = NavigationCacheMode.Required;
 
         foreach (var col in ViewModel.ColumnVisibilities)
             col.PropertyChanged += (_, _) => DevicesTable.SyncColumnVisibility(col.ColumnTag, col.IsVisible);
