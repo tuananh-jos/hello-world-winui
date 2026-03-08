@@ -78,7 +78,7 @@ UC6 – Return Device
   + Upon confirmation, the system updates the device status to Available.
 
 3. Scope Boundaries
-- In Scope (Current Phase)
+- In Scope (Completed)
   + Device CRUD
   + Borrow / Return workflow
   + SQLite persistence
@@ -86,9 +86,8 @@ UC6 – Return Device
   + Clean 3-layer architecture
   + Multi-instance synchronization (InstanceSyncService)
   + Concurrency protection between instances
-- Planned but NOT Implemented Yet
-  + Refactoring
-  + Unit tests
+  + UI polish (HandButton, WrapPanel, responsive sidebar)
+  + Unit tests (NUnit + Moq, 22 tests)
 - Out of Scope
   + Cloud sync
   + Authentication / multi-user system
@@ -99,28 +98,42 @@ UC6 – Return Device
 4. Architecture Overview
 
 The application is designed according to a 3-layer architecture:
-- Presentation Layer
-  + View
+- Presentation Layer (App7.Presentation)
+  + View (Pages, Dialogs, Controls)
   + ViewModel
-- Domain Layer
-  + Entity
-  + UseCase
-  + IRepository
-- Data Layer
-  + Repository
+  + Custom Controls (HandButton, WrapPanel, PaginationControl, SmartDataTable, SmartDropdownPicker)
+- Domain Layer (App7.Domain)
+  + Entity (Model, Device)
+  + UseCase (Borrow, Return, GetModelsPaged, GetBorrowedDevices, GetModelFilters)
+  + IRepository (IUnitOfWork, IModelRepository, IDeviceRepository)
+- Data Layer (App7.Data)
+  + Repository (UnitOfWork, ModelRepository, DeviceRepository)
   + IDataSource
-  + DataSource
-  + DbContext
+  + DataSource (ModelDataSource, DeviceDataSource)
+  + DbContext (AppDbContext — SQLite + WAL mode)
+- Test Layer (App7.Tests)
+  + Unit tests for all UseCases
+  + Performance tests (< 1s per UseCase)
+  + Multi-instance concurrency tests
 
 5. Current Implementation State
 
-At present, project is in the refactoring and testing stage:
+All features are implemented and tested:
 - UseCase:
   + use cases 1 to 6: done
 - InstanceSyncService: done
 - Concurrency handling: done
-- Refactoring: doing
-- Unit Tests: todo
+- UI Polish: done
+  + HandButton (hand cursor on hover for all buttons)
+  + WrapPanel (pagination button wrapping)
+  + Responsive sidebar (auto open/close based on window width)
+  + Hamburger button hover effect removed
+  + Disabled button opacity for unavailable models
+- Unit Tests: done (22 tests, all passing)
+  + UseCase logic tests (15)
+  + Performance tests (5)
+  + Multi-instance concurrency tests (2)
+  + See docs/unit-tests.md for details
 
 6. Database Initialization & Persistence
 
