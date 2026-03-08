@@ -15,9 +15,4 @@ public abstract class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where T
     {
         _dataSource = dataSource;
     }
-
-    public virtual async Task AddAsync(TEntity entity)
-    {
-        await _dataSource.InsertAsync(entity);
-    }
 }

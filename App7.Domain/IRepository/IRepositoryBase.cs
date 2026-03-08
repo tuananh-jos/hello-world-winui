@@ -7,5 +7,5 @@ namespace App7.Domain.IRepository;
 
 public interface IRepositoryBase<TEntity> where TEntity : class, IEntity
 {
-    Task AddAsync(TEntity entity);
+    
 }
