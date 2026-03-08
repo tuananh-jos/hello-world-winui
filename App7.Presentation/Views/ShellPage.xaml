@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="App7.Presentation.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -51,7 +51,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- ☰ Hamburger — flush left -->
+            <!-- ☰ Hamburger — flush left, no hover effect -->
             <Button
                 Grid.Column="0"
                 x:Name="HamburgerBtn"
@@ -64,9 +64,16 @@
                 Height="56"
                 Content="&#xE700;"
                 FontFamily="{StaticResource SymbolThemeFontFamily}"
-                VerticalAlignment="Center"
-                PointerEntered="HamburgerBtn_PointerEntered"
-                PointerExited="HamburgerBtn_PointerExited" />
+                VerticalAlignment="Center">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
 
             <!-- Logo — centred in sidebar-width zone -->
             <Image

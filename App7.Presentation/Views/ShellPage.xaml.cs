@@ -1,6 +1,5 @@
-﻿using App7.Presentation.Helpers;
+using App7.Presentation.Helpers;
 using App7.Presentation.ViewModels;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -15,6 +14,8 @@ public sealed partial class ShellPage : Page
 
     private readonly SolidColorBrush _selectedBrush;
     private readonly SolidColorBrush _normalBrush;
+
+    private const double SidebarBreakpoint = 900;
 
     // ── x:Bind properties for sidebar selection highlight ─────────────
     public Brush NavModelsBg    => GetNavItemBg("ModelList");
@@ -39,11 +40,18 @@ public sealed partial class ShellPage : Page
                 Bindings.Update();
         };
 
-        // Custom title bar: Row 0 (AppTitleBar) is the drag region.
-        // The header bar (Row 1) is separate, so hamburger clicks work correctly.
+        // Custom title bar
         App.MainWindow.ExtendsContentIntoTitleBar = true;
         App.MainWindow.SetTitleBar(AppTitleBar);
         AppTitleBarText.Text = "AppDisplayName".GetLocalized();
+
+        // Auto close/open sidebar based on window width
+        App.MainWindow.SizeChanged += OnWindowSizeChanged;
+    }
+
+    private void OnWindowSizeChanged(object sender, WindowSizeChangedEventArgs args)
+    {
+        ViewModel.IsSidebarOpen = args.Size.Width >= SidebarBreakpoint;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -51,15 +59,6 @@ public sealed partial class ShellPage : Page
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
     }
-
-    // ── Hamburger cursor ──────────────────────────────────────────────
-    // ProtectedCursor is a protected member of UIElement — must be set on
-    // 'this' (the Page), not on the button instance directly.
-    private void HamburgerBtn_PointerEntered(object sender, PointerRoutedEventArgs e)
-        => ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
-
-    private void HamburgerBtn_PointerExited(object sender, PointerRoutedEventArgs e)
-        => ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
 
     // ── Sidebar selection helper ──────────────────────────────────────
     private Brush GetNavItemBg(string pageKeyFragment)
