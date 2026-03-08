@@ -12,6 +12,7 @@ public class GetBorrowedDevicesUseCase : IUseCase<GetBorrowedDevicesRequest, (IE
 
     public async Task<(IEnumerable<Device> Items, int TotalCount)> ExecuteAsync(GetBorrowedDevicesRequest request)
     {
+        await Task.Delay(100);
         return await _deviceRepository.GetBorrowedPagedAsync(request);
     }
 }

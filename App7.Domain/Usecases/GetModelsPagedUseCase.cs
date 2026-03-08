@@ -12,6 +12,7 @@ public class GetModelsPagedUseCase : IUseCase<GetModelsPagedRequest, (IEnumerabl
 
     public async Task<(IEnumerable<Model> Items, int TotalCount)> ExecuteAsync(GetModelsPagedRequest request)
     {
+        await Task.Delay(100);
         return await _modelRepository.GetPagedAsync(request);
     }
 }
