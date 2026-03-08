@@ -1,39 +1,17 @@
 using App7.Domain.Entities;
 using App7.Domain.IRepository;
+using App7.Domain.Dtos;
 
 namespace App7.Domain.Usecases;
 
-/// <summary>
-/// UC4 + UC5: Returns a paginated, filtered, and sorted list of currently borrowed devices.
-/// </summary>
-public class GetBorrowedDevicesUseCase
+public class GetBorrowedDevicesUseCase : IUseCase<GetBorrowedDevicesRequest, (IEnumerable<Device> Items, int TotalCount)>
 {
     private readonly IDeviceRepository _deviceRepository;
 
-    public GetBorrowedDevicesUseCase(IDeviceRepository deviceRepository)
-        => _deviceRepository = deviceRepository;
+    public GetBorrowedDevicesUseCase(IDeviceRepository deviceRepository) => _deviceRepository = deviceRepository;
 
-    public async Task<(IEnumerable<Device> Items, int TotalCount)> ExecuteAsync(
-        int page,
-        int pageSize,
-        string? searchName       = null,
-        string? searchModelName  = null,
-        string? searchIMEI       = null,
-        string? searchSerialLab  = null,
-        string? searchSerialNumber  = null,
-        string? searchCircuitSerial = null,
-        string? searchHWVersion  = null,
-        string? sortColumn       = null,
-        bool    ascending        = true)
+    public async Task<(IEnumerable<Device> Items, int TotalCount)> ExecuteAsync(GetBorrowedDevicesRequest request)
     {
-        return await _deviceRepository.GetBorrowedPagedAsync(
-            page, pageSize,
-            searchName, searchModelName, searchIMEI,
-            searchSerialLab, searchSerialNumber,
-            searchCircuitSerial, searchHWVersion,
-            sortColumn, ascending);
+        return await _deviceRepository.GetBorrowedPagedAsync(request);
     }
-
-    public async Task<IEnumerable<string>> GetHWVersionsAsync()
-        => await _deviceRepository.GetBorrowedHWVersionsAsync();
 }

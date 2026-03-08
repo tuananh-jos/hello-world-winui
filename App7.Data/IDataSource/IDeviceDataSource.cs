@@ -1,27 +1,14 @@
-﻿using App7.Domain.Entities;
+using App7.Domain.Entities;
+using App7.Domain.Dtos;
 
 namespace App7.Data.IDataSource;
 
-public interface IDeviceDataSource
+public interface IDeviceDataSource : IDataSourceBase<Device>
 {
-    Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
-        int page,
-        int pageSize,
-        string? searchName,
-        string? searchModelName,
-        string? searchIMEI,
-        string? searchSerialLab,
-        string? searchSerialNumber,
-        string? searchCircuitSerial,
-        string? searchHWVersion,
-        string? sortColumn,
-        bool ascending);
-
-    Task<List<string>> GetBorrowedHWVersionsAsync();
+    Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(GetBorrowedDevicesRequest request);
 
     Task BorrowAsync(Guid modelId, int quantity);
 
     Task ReturnAsync(Guid deviceId);
 
-    Task InsertAsync(Device device);
 }

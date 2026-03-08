@@ -1,7 +1,10 @@
 using System.Collections.ObjectModel;
 using App7.Presentation.Contracts.ViewModels;
+using App7.Domain.Services;
+using App7.Domain.Dtos;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 namespace App7.Presentation.ViewModels;
@@ -12,6 +15,18 @@ namespace App7.Presentation.ViewModels;
 /// </summary>
 public abstract partial class PagedListViewModelBase : ObservableRecipient, INavigationAware
 {
+    private readonly DispatcherQueue _dispatcher;
+
+    protected PagedListViewModelBase(IInstanceSyncService syncService)
+    {
+        _dispatcher = DispatcherQueue.GetForCurrentThread();
+        syncService.DataChanged += OnExternalDataChanged;
+    }
+
+    private void OnExternalDataChanged()
+    {
+        _dispatcher.TryEnqueue(async () => await ReloadAsync());
+    }
     // ── Page size ─────────────────────────────────────────────────────
     public IReadOnlyList<int> PageSizeOptions { get; } = new[] { 10, 25, 50, 100 };
 

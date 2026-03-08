@@ -1,18 +1,11 @@
 using App7.Domain.Entities;
+using App7.Domain.Dtos;
 
 namespace App7.Data.IDataSource;
 
-public interface IModelDataSource
+public interface IModelDataSource : IDataSourceBase<Model>
 {
-    Task<(List<Model> Items, int TotalCount)> GetPagedAsync(
-        int page,
-        int pageSize,
-        string? searchName,
-        string? searchManufacturer,
-        string? filterCategory,
-        string? filterSubCategory,
-        string? sortColumn,
-        bool ascending);
+    Task<(List<Model> Items, int TotalCount)> GetPagedAsync(GetModelsPagedRequest request);
 
     Task<List<string>> GetManufacturersAsync();
 
@@ -24,5 +17,4 @@ public interface IModelDataSource
 
     Task DecrementAvailableAsync(Guid modelId, int quantity);
 
-    Task InsertAsync(Model model);
 }

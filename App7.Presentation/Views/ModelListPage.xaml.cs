@@ -12,6 +12,7 @@ using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
 using App7.Domain.Constants;
+using App7.Presentation.Helpers;
 
 namespace App7.Presentation.Views;
 
@@ -19,6 +20,7 @@ public sealed partial class ModelListPage : Page
 {
     public ModelListViewModel ViewModel { get; }
     private readonly BorrowDeviceUseCase _borrowUseCase;
+    private readonly DataGridSyncHelper _syncHelper;
 
     private static readonly SolidColorBrush ActivePageBrush
         = (SolidColorBrush)Application.Current.Resources["AppOkBrush"];
@@ -37,18 +39,28 @@ public sealed partial class ModelListPage : Page
         _borrowUseCase = App.GetService<BorrowDeviceUseCase>();
         InitializeComponent();
 
+        _syncHelper = new DataGridSyncHelper(ModelsGrid, new[]
+        {
+            new ColumnSyncInfo { Tag = ColumnTags.NAME,         SortIcon = SortIconName,         HeaderColumn = HdrColName,         FilterColumn = FltColName,         NaturalMinWidth = 120 },
+            new ColumnSyncInfo { Tag = ColumnTags.MANUFACTURER, SortIcon = SortIconManufacturer, HeaderColumn = HdrColManufacturer, FilterColumn = FltColManufacturer, NaturalMinWidth = 100 },
+            new ColumnSyncInfo { Tag = ColumnTags.CATEGORY,     SortIcon = SortIconCategory,     HeaderColumn = HdrColCategory,     FilterColumn = FltColCategory,     NaturalMinWidth = 90 },
+            new ColumnSyncInfo { Tag = ColumnTags.SUB_CATEGORY,  SortIcon = SortIconSubCategory,  HeaderColumn = HdrColSubCategory,  FilterColumn = FltColSubCategory,  NaturalMinWidth = 90 },
+            new ColumnSyncInfo { Tag = ColumnTags.AVAILABLE,    SortIcon = SortIconAvailable,    HeaderColumn = HdrColAvailable,    FilterColumn = FltColAvailable,    NaturalWidth = new GridLength(100) },
+            new ColumnSyncInfo { Tag = ColumnTags.FUNCTION,     SortIcon = null,                 HeaderColumn = HdrColFunction,     FilterColumn = FltColFunction,     NaturalWidth = new GridLength(120) }
+        });
+
         ViewModel.PropertyChanged += (_, e) =>
         {
             switch (e.PropertyName)
             {
                 case nameof(ViewModel.SortColumn) or nameof(ViewModel.SortAscending):
-                    UpdateSortIcons();
+                    _syncHelper.UpdateSortIcons(ViewModel.SortColumn, ViewModel.SortAscending);
                     break;
             }
         };
 
         foreach (var col in ViewModel.ColumnVisibilities)
-            col.PropertyChanged += (_, _) => SyncColumnVisibility(col);
+            col.PropertyChanged += (_, _) => _syncHelper.SyncColumnVisibility(col);
 
         Loaded += (_, _) =>
         {
@@ -107,71 +119,10 @@ public sealed partial class ModelListPage : Page
         };
     }
 
-    // ── Sort icons ────────────────────────────────────────────────────
-    private void UpdateSortIcons()
-    {
-        var icons = new (string col, TextBlock tb)[]
-        {
-            (ColumnTags.NAME,         SortIconName),
-            (ColumnTags.MANUFACTURER, SortIconManufacturer),
-            (ColumnTags.CATEGORY,     SortIconCategory),
-            (ColumnTags.SUB_CATEGORY,  SortIconSubCategory),
-            (ColumnTags.AVAILABLE,    SortIconAvailable),
-        };
-
-        foreach (var (col, tb) in icons)
-        {
-            if (col == ViewModel.SortColumn)
-            {
-                tb.Text    = ViewModel.SortAscending ? "\uE70E" : "\uE70D";
-                tb.Opacity = 1.0;
-            }
-            else
-            {
-                tb.Text    = "\uE70D";
-                tb.Opacity = 0.4;
-            }
-        }
-    }
-
     // ── Filter handlers ───────────────────────────────────────────────
 
     private void OnGridSelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
         => ModelsGrid.SelectedItem = null;
-
-    // ── Sync header/filter column widths with DataGrid actual widths ───
-    private bool _syncingLayout = false;
-    private void OnGridLayoutUpdated(object? sender, object e)
-    {
-        if (_syncingLayout) return;
-        if (ModelsGrid.Columns.Count < 6) return;
-
-        var colWidths = ModelsGrid.Columns.Select(c => c.ActualWidth).ToArray();
-        // Only skip if NOTHING has rendered yet (all zeros)
-        if (colWidths.All(w => w <= 0)) return;
-
-        _syncingLayout = true;
-        try
-        {
-            HdrColName.Width         = new GridLength(colWidths[0]);
-            HdrColManufacturer.Width = new GridLength(colWidths[1]);
-            HdrColCategory.Width     = new GridLength(colWidths[2]);
-            HdrColSubCategory.Width  = new GridLength(colWidths[3]);
-            HdrColAvailable.Width    = new GridLength(colWidths[4]);
-            HdrColFunction.Width     = new GridLength(colWidths[5]);
-
-            FltColName.Width         = new GridLength(colWidths[0]);
-            FltColManufacturer.Width = new GridLength(colWidths[1]);
-            FltColCategory.Width     = new GridLength(colWidths[2]);
-            FltColSubCategory.Width  = new GridLength(colWidths[3]);
-            FltColAvailable.Width    = new GridLength(colWidths[4]);
-            FltColFunction.Width     = new GridLength(colWidths[5]);
-        }
-        finally
-        {
-            _syncingLayout = false;
-        }
-    }
 
     // ── Manufacturer filter popup ─────────────────────────────────────
     private void OnManufacturerFilterClicked(object sender, RoutedEventArgs e)
@@ -390,79 +341,4 @@ public sealed partial class ModelListPage : Page
     private void OnColumnsOverlayPressed(object sender, PointerRoutedEventArgs e)
         => ViewModel.CloseColumnsPopupCommand.Execute(null);
 
-    // ── Column visibility — sync DataGrid column + header + filter ────
-    private static readonly (string Tag, ColumnDefinition HdrCol, ColumnDefinition FltCol)[] _colMapCache
-        = Array.Empty<(string, ColumnDefinition, ColumnDefinition)>();
-
-    private void SyncColumnVisibility(ColumnVisibilityItem item)
-    {
-        var visible = item.IsVisible;
-        var tag = item.ColumnTag;
-
-        // 1. DataGrid column
-        foreach (var col in ModelsGrid.Columns)
-        {
-            if (col.Tag?.ToString() == tag)
-            {
-                col.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-                break;
-            }
-        }
-
-        // 2. Header ColumnDefinition width
-        var hdrColDef = GetHeaderColDef(tag);
-        if (hdrColDef != null)
-        {
-            hdrColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
-            hdrColDef.MinWidth = visible ? GetNaturalMinWidth(tag) : 0;
-            hdrColDef.MaxWidth = visible ? double.PositiveInfinity : 0;
-        }
-
-        // 3. Filter ColumnDefinition width
-        var fltColDef = GetFilterColDef(tag);
-        if (fltColDef != null)
-        {
-            fltColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
-            fltColDef.MinWidth = visible ? GetNaturalMinWidth(tag) : 0;
-            fltColDef.MaxWidth = visible ? double.PositiveInfinity : 0;
-        }
-    }
-
-    private ColumnDefinition? GetHeaderColDef(string tag) => tag switch
-    {
-        ColumnTags.NAME        => HdrColName,
-        ColumnTags.MANUFACTURER=> HdrColManufacturer,
-        ColumnTags.CATEGORY    => HdrColCategory,
-        ColumnTags.SUB_CATEGORY => HdrColSubCategory,
-        ColumnTags.AVAILABLE   => HdrColAvailable,
-        ColumnTags.FUNCTION    => HdrColFunction,
-        _                      => null
-    };
-
-    private ColumnDefinition? GetFilterColDef(string tag) => tag switch
-    {
-        ColumnTags.NAME        => FltColName,
-        ColumnTags.MANUFACTURER=> FltColManufacturer,
-        ColumnTags.CATEGORY    => FltColCategory,
-        ColumnTags.SUB_CATEGORY => FltColSubCategory,
-        ColumnTags.AVAILABLE   => FltColAvailable,
-        ColumnTags.FUNCTION    => FltColFunction,
-        _                      => null
-    };
-
-    private static GridLength GetNaturalWidth(string tag) => tag switch
-    {
-        ColumnTags.AVAILABLE   => new GridLength(100),
-        ColumnTags.FUNCTION    => new GridLength(120),
-        _                      => new GridLength(1, GridUnitType.Star)
-    };
-
-    private static double GetNaturalMinWidth(string tag) => tag switch
-    {
-        ColumnTags.NAME        => 120,
-        ColumnTags.MANUFACTURER=> 100,
-        ColumnTags.CATEGORY    => 90,
-        ColumnTags.SUB_CATEGORY => 90,
-        _                      => 0
-    };
 }

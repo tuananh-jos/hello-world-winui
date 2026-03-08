@@ -11,6 +11,7 @@ using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
 using App7.Domain.Constants;
+using App7.Presentation.Helpers;
 
 namespace App7.Presentation.Views;
 
@@ -18,6 +19,7 @@ public sealed partial class MyDevicesPage : Page
 {
     public MyDevicesViewModel ViewModel { get; }
     private readonly ReturnDeviceUseCase _returnUseCase;
+    private readonly DataGridSyncHelper _syncHelper;
 
     private static readonly SolidColorBrush ActivePageBrush
         = (SolidColorBrush)Application.Current.Resources["AppOkBrush"];
@@ -30,18 +32,30 @@ public sealed partial class MyDevicesPage : Page
         _returnUseCase = App.GetService<ReturnDeviceUseCase>();
         InitializeComponent();
 
+        _syncHelper = new DataGridSyncHelper(DevicesGrid, new[]
+        {
+            new ColumnSyncInfo { Tag = ColumnTags.NAME,                SortIcon = SortIconName,          HeaderColumn = ColDefName,          FilterColumn = FilterColDefName,          NaturalMinWidth = 100 },
+            new ColumnSyncInfo { Tag = ColumnTags.MODEL_NAME,          SortIcon = SortIconModelName,     HeaderColumn = ColDefModelName,     FilterColumn = FilterColDefModelName,     NaturalMinWidth = 120 },
+            new ColumnSyncInfo { Tag = ColumnTags.IMEI,                SortIcon = SortIconIMEI,          HeaderColumn = ColDefIMEI,          FilterColumn = FilterColDefIMEI,          NaturalMinWidth = 100 },
+            new ColumnSyncInfo { Tag = ColumnTags.SERIAL_LAB,          SortIcon = SortIconSerialLab,     HeaderColumn = ColDefSerialLab,     FilterColumn = FilterColDefSerialLab,     NaturalMinWidth = 80 },
+            new ColumnSyncInfo { Tag = ColumnTags.SERIAL_NUMBER,       SortIcon = SortIconSerialNumber,  HeaderColumn = ColDefSerialNumber,  FilterColumn = FilterColDefSerialNumber,  NaturalMinWidth = 80 },
+            new ColumnSyncInfo { Tag = ColumnTags.CIRCUIT_SERIAL_NUMBER,SortIcon = SortIconCircuitSerial,HeaderColumn = ColDefCircuitSerial, FilterColumn = FilterColDefCircuitSerial, NaturalMinWidth = 80 },
+            new ColumnSyncInfo { Tag = ColumnTags.HW_VERSION,          SortIcon = SortIconHWVersion,     HeaderColumn = ColDefHWVersion,     FilterColumn = FilterColDefHWVersion,     NaturalMinWidth = 70 },
+            new ColumnSyncInfo { Tag = ColumnTags.FUNCTION,            SortIcon = null,                  HeaderColumn = ColDefFunction,      FilterColumn = FilterColDefFunction,      NaturalWidth = new GridLength(120) }
+        });
+
         ViewModel.PropertyChanged += (_, e) =>
         {
             switch (e.PropertyName)
             {
                 case nameof(ViewModel.SortColumn) or nameof(ViewModel.SortAscending):
-                    UpdateSortIcons();
+                    _syncHelper.UpdateSortIcons(ViewModel.SortColumn, ViewModel.SortAscending);
                     break;
             }
         };
 
         foreach (var col in ViewModel.ColumnVisibilities)
-            col.PropertyChanged += (_, _) => SyncColumnVisibility(col);
+            col.PropertyChanged += (_, _) => _syncHelper.SyncColumnVisibility(col);
 
         Loaded += (_, _) =>
         {
@@ -58,72 +72,6 @@ public sealed partial class MyDevicesPage : Page
             row.PointerExited += (_, _) =>
                 row.Background = new SolidColorBrush(Colors.Transparent);
         };
-    }
-
-    // ── Sort icons ────────────────────────────────────────────────────
-    private void UpdateSortIcons()
-    {
-        var icons = new (string col, TextBlock tb)[]
-        {
-            (ColumnTags.NAME,                SortIconName),
-            (ColumnTags.MODEL_NAME,           SortIconModelName),
-            (ColumnTags.IMEI,                SortIconIMEI),
-            (ColumnTags.SERIAL_LAB,           SortIconSerialLab),
-            (ColumnTags.SERIAL_NUMBER,        SortIconSerialNumber),
-            (ColumnTags.CIRCUIT_SERIAL_NUMBER, SortIconCircuitSerial),
-            (ColumnTags.HW_VERSION,           SortIconHWVersion),
-        };
-
-        foreach (var (col, tb) in icons)
-        {
-            if (col == ViewModel.SortColumn)
-            {
-                tb.Text    = ViewModel.SortAscending ? "\uE70E" : "\uE70D";
-                tb.Opacity = 1.0;
-            }
-            else
-            {
-                tb.Text    = "\uE70D";
-                tb.Opacity = 0.4;
-            }
-        }
-    }
-
-    // ── Sync header/filter column widths ──────────────────────────────
-    private bool _syncingLayout = false;
-    private void OnGridLayoutUpdated(object? sender, object e)
-    {
-        if (_syncingLayout) return;
-        if (DevicesGrid.Columns.Count < 8) return;
-
-        var colWidths = DevicesGrid.Columns.Select(c => c.ActualWidth).ToArray();
-        if (colWidths.All(w => w <= 0)) return;
-
-        _syncingLayout = true;
-        try
-        {
-            ColDefName.Width         = new GridLength(colWidths[0]);
-            ColDefModelName.Width    = new GridLength(colWidths[1]);
-            ColDefIMEI.Width         = new GridLength(colWidths[2]);
-            ColDefSerialLab.Width    = new GridLength(colWidths[3]);
-            ColDefSerialNumber.Width = new GridLength(colWidths[4]);
-            ColDefCircuitSerial.Width= new GridLength(colWidths[5]);
-            ColDefHWVersion.Width    = new GridLength(colWidths[6]);
-            ColDefFunction.Width     = new GridLength(colWidths[7]);
-
-            FilterColDefName.Width         = new GridLength(colWidths[0]);
-            FilterColDefModelName.Width    = new GridLength(colWidths[1]);
-            FilterColDefIMEI.Width         = new GridLength(colWidths[2]);
-            FilterColDefSerialLab.Width    = new GridLength(colWidths[3]);
-            FilterColDefSerialNumber.Width = new GridLength(colWidths[4]);
-            FilterColDefCircuitSerial.Width= new GridLength(colWidths[5]);
-            FilterColDefHWVersion.Width    = new GridLength(colWidths[6]);
-            FilterColDefFunction.Width     = new GridLength(colWidths[7]);
-        }
-        finally
-        {
-            _syncingLayout = false;
-        }
     }
 
 
@@ -174,83 +122,4 @@ public sealed partial class MyDevicesPage : Page
 
     private void OnColumnsOverlayPressed(object sender, PointerRoutedEventArgs e)
         => ViewModel.CloseColumnsPopupCommand.Execute(null);
-
-    // ── Column visibility — sync DataGrid column + header + filter ────
-    private void SyncColumnVisibility(ColumnVisibilityItem item)
-    {
-        var visible = item.IsVisible;
-        var tag = item.ColumnTag;
-
-        // 1. DataGrid column
-        foreach (var col in DevicesGrid.Columns)
-        {
-            if (col.Tag?.ToString() == tag)
-            {
-                col.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-                break;
-            }
-        }
-
-        // 2. Header ColumnDefinition width
-        var hdrColDef = GetHeaderColDef(tag);
-        if (hdrColDef != null)
-        {
-            hdrColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
-            hdrColDef.MinWidth = visible ? GetNaturalMinWidth(tag) : 0;
-            hdrColDef.MaxWidth = visible ? double.PositiveInfinity : 0;
-        }
-
-        // 3. Filter ColumnDefinition width
-        var fltColDef = GetFilterColDef(tag);
-        if (fltColDef != null)
-        {
-            fltColDef.Width = visible ? GetNaturalWidth(tag) : new GridLength(0);
-            fltColDef.MinWidth = visible ? GetNaturalMinWidth(tag) : 0;
-            fltColDef.MaxWidth = visible ? double.PositiveInfinity : 0;
-        }
-    }
-
-    private ColumnDefinition? GetHeaderColDef(string tag) => tag switch
-    {
-        ColumnTags.NAME               => ColDefName,
-        ColumnTags.MODEL_NAME          => ColDefModelName,
-        ColumnTags.IMEI               => ColDefIMEI,
-        ColumnTags.SERIAL_LAB          => ColDefSerialLab,
-        ColumnTags.SERIAL_NUMBER       => ColDefSerialNumber,
-        ColumnTags.CIRCUIT_SERIAL_NUMBER=> ColDefCircuitSerial,
-        ColumnTags.HW_VERSION          => ColDefHWVersion,
-        ColumnTags.FUNCTION           => ColDefFunction,
-        _                             => null
-    };
-
-    private ColumnDefinition? GetFilterColDef(string tag) => tag switch
-    {
-        ColumnTags.NAME               => FilterColDefName,
-        ColumnTags.MODEL_NAME          => FilterColDefModelName,
-        ColumnTags.IMEI               => FilterColDefIMEI,
-        ColumnTags.SERIAL_LAB          => FilterColDefSerialLab,
-        ColumnTags.SERIAL_NUMBER       => FilterColDefSerialNumber,
-        ColumnTags.CIRCUIT_SERIAL_NUMBER=> FilterColDefCircuitSerial,
-        ColumnTags.HW_VERSION          => FilterColDefHWVersion,
-        ColumnTags.FUNCTION           => FilterColDefFunction,
-        _                             => null
-    };
-
-    private static GridLength GetNaturalWidth(string tag) => tag switch
-    {
-        ColumnTags.FUNCTION => new GridLength(120),
-        _ => new GridLength(1, GridUnitType.Star)
-    };
-
-    private static double GetNaturalMinWidth(string tag) => tag switch
-    {
-        ColumnTags.NAME               => 100,
-        ColumnTags.MODEL_NAME          => 120,
-        ColumnTags.IMEI               => 100,
-        ColumnTags.SERIAL_LAB          => 80,
-        ColumnTags.SERIAL_NUMBER       => 80,
-        ColumnTags.CIRCUIT_SERIAL_NUMBER=> 80,
-        ColumnTags.HW_VERSION          => 70,
-        _                             => 0
-    };
 }

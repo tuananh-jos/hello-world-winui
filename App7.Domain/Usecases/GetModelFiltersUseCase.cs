@@ -1,25 +1,26 @@
 using App7.Domain.IRepository;
+using App7.Domain.Dtos;
 
 namespace App7.Domain.Usecases;
 
-/// <summary>
-/// UC2 helper: provides distinct Category and SubCategory lists for filter dropdowns.
-/// </summary>
-public class GetModelFiltersUseCase
+public class GetModelFiltersUseCase : IUseCaseWithOutput<ModelFiltersResponse>
 {
     private readonly IModelRepository _modelRepository;
 
-    public GetModelFiltersUseCase(IModelRepository modelRepository)
+    public GetModelFiltersUseCase(IModelRepository modelRepository) => _modelRepository = modelRepository;
+
+    public async Task<ModelFiltersResponse> ExecuteAsync()
     {
-        _modelRepository = modelRepository;
+        var mfrsTask = _modelRepository.GetManufacturersAsync();
+        var catsTask = _modelRepository.GetCategoriesAsync();
+        var subsTask = _modelRepository.GetSubCategoriesAsync();
+
+        await Task.WhenAll(mfrsTask, catsTask, subsTask);
+
+        return new ModelFiltersResponse(
+            await mfrsTask,
+            await catsTask,
+            await subsTask
+        );
     }
-
-    public async Task<IEnumerable<string>> GetManufacturersAsync()
-        => await _modelRepository.GetManufacturersAsync();
-
-    public async Task<IEnumerable<string>> GetCategoriesAsync()
-        => await _modelRepository.GetCategoriesAsync();
-
-    public async Task<IEnumerable<string>> GetSubCategoriesAsync()
-        => await _modelRepository.GetSubCategoriesAsync();
 }

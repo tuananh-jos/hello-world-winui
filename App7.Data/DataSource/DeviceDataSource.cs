@@ -2,29 +2,18 @@ using App7.Data.Db;
 using App7.Data.IDataSource;
 using App7.Domain.Constants;
 using App7.Domain.Entities;
+using App7.Domain.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace App7.Data.DataSource;
 
-public class DeviceDataSource : IDeviceDataSource
+public class DeviceDataSource : DataSourceBase<Device>, IDeviceDataSource
 {
-    private readonly AppDbContext _context;
+    public DeviceDataSource(AppDbContext context) : base(context)
+    {
+    }
 
-    public DeviceDataSource(AppDbContext context)
-        => _context = context;
-
-    public async Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(
-        int page,
-        int pageSize,
-        string? searchName,
-        string? searchModelName,
-        string? searchIMEI,
-        string? searchSerialLab,
-        string? searchSerialNumber,
-        string? searchCircuitSerial,
-        string? searchHWVersion,
-        string? sortColumn,
-        bool ascending)
+    public async Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(GetBorrowedDevicesRequest request)
     {
         // Join Devices with Models to get ModelName
         var query = _context.Devices
@@ -36,48 +25,48 @@ public class DeviceDataSource : IDeviceDataSource
                   // Include Device Name and joined ModelName
                   (d, m) => new { Device = d, ModelName = m.Name, DeviceName = d.Name });
 
-        // Per-column search — each filter is independent
-        if (!string.IsNullOrWhiteSpace(searchName))
-            query = query.Where(x => x.DeviceName.ToLower().Contains(searchName.ToLower()));
+        // search
+        if (!string.IsNullOrWhiteSpace(request.SearchName))
+            query = query.Where(x => x.DeviceName.ToLower().Contains(request.SearchName.ToLower()));
 
-        if (!string.IsNullOrWhiteSpace(searchModelName))
-            query = query.Where(x => x.ModelName.ToLower().Contains(searchModelName.ToLower()));
+        if (!string.IsNullOrWhiteSpace(request.SearchModelName))
+            query = query.Where(x => x.ModelName.ToLower().Contains(request.SearchModelName.ToLower()));
 
-        if (!string.IsNullOrWhiteSpace(searchIMEI))
-            query = query.Where(x => x.Device.IMEI.ToLower().Contains(searchIMEI.ToLower()));
+        if (!string.IsNullOrWhiteSpace(request.SearchIMEI))
+            query = query.Where(x => x.Device.IMEI.ToLower().Contains(request.SearchIMEI.ToLower()));
 
-        if (!string.IsNullOrWhiteSpace(searchSerialLab))
-            query = query.Where(x => x.Device.SerialLab.ToLower().Contains(searchSerialLab.ToLower()));
+        if (!string.IsNullOrWhiteSpace(request.SearchSerialLab))
+            query = query.Where(x => x.Device.SerialLab.ToLower().Contains(request.SearchSerialLab.ToLower()));
 
-        if (!string.IsNullOrWhiteSpace(searchSerialNumber))
-            query = query.Where(x => x.Device.SerialNumber.ToLower().Contains(searchSerialNumber.ToLower()));
+        if (!string.IsNullOrWhiteSpace(request.SearchSerialNumber))
+            query = query.Where(x => x.Device.SerialNumber.ToLower().Contains(request.SearchSerialNumber.ToLower()));
 
-        if (!string.IsNullOrWhiteSpace(searchCircuitSerial))
-            query = query.Where(x => x.Device.CircuitSerialNumber.ToLower().Contains(searchCircuitSerial.ToLower()));
+        if (!string.IsNullOrWhiteSpace(request.SearchCircuitSerial))
+            query = query.Where(x => x.Device.CircuitSerialNumber.ToLower().Contains(request.SearchCircuitSerial.ToLower()));
 
-        if (!string.IsNullOrWhiteSpace(searchHWVersion))
-            query = query.Where(x => x.Device.HWVersion.ToLower().Contains(searchHWVersion.ToLower()));
+        if (!string.IsNullOrWhiteSpace(request.SearchHWVersion))
+            query = query.Where(x => x.Device.HWVersion.ToLower().Contains(request.SearchHWVersion.ToLower()));
 
         // Total count BEFORE pagination
         var totalCount = await query.CountAsync();
 
         // Sort
-        query = sortColumn switch
+        query = request.SortColumn switch
         {
-            ColumnTags.NAME                => ascending ? query.OrderBy(x => x.DeviceName)              : query.OrderByDescending(x => x.DeviceName),
-            ColumnTags.MODEL_NAME           => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
-            ColumnTags.IMEI                => ascending ? query.OrderBy(x => x.Device.IMEI)             : query.OrderByDescending(x => x.Device.IMEI),
-            ColumnTags.SERIAL_LAB           => ascending ? query.OrderBy(x => x.Device.SerialLab)        : query.OrderByDescending(x => x.Device.SerialLab),
-            ColumnTags.SERIAL_NUMBER        => ascending ? query.OrderBy(x => x.Device.SerialNumber)     : query.OrderByDescending(x => x.Device.SerialNumber),
-            ColumnTags.CIRCUIT_SERIAL_NUMBER => ascending ? query.OrderBy(x => x.Device.CircuitSerialNumber) : query.OrderByDescending(x => x.Device.CircuitSerialNumber),
-            ColumnTags.HW_VERSION           => ascending ? query.OrderBy(x => x.Device.HWVersion)        : query.OrderByDescending(x => x.Device.HWVersion),
-            _                              => ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
+            ColumnTags.NAME                => request.Ascending ? query.OrderBy(x => x.DeviceName)              : query.OrderByDescending(x => x.DeviceName),
+            ColumnTags.MODEL_NAME           => request.Ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
+            ColumnTags.IMEI                => request.Ascending ? query.OrderBy(x => x.Device.IMEI)             : query.OrderByDescending(x => x.Device.IMEI),
+            ColumnTags.SERIAL_LAB           => request.Ascending ? query.OrderBy(x => x.Device.SerialLab)        : query.OrderByDescending(x => x.Device.SerialLab),
+            ColumnTags.SERIAL_NUMBER        => request.Ascending ? query.OrderBy(x => x.Device.SerialNumber)     : query.OrderByDescending(x => x.Device.SerialNumber),
+            ColumnTags.CIRCUIT_SERIAL_NUMBER => request.Ascending ? query.OrderBy(x => x.Device.CircuitSerialNumber) : query.OrderByDescending(x => x.Device.CircuitSerialNumber),
+            ColumnTags.HW_VERSION           => request.Ascending ? query.OrderBy(x => x.Device.HWVersion)        : query.OrderByDescending(x => x.Device.HWVersion),
+            _                              => request.Ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
         };
 
         // Pagination + project into Device with ModelName populated
         var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(x => new Device
             {
                 Id                  = x.Device.Id,
@@ -94,17 +83,6 @@ public class DeviceDataSource : IDeviceDataSource
             .ToListAsync();
 
         return (items, totalCount);
-    }
-
-    public async Task<List<string>> GetBorrowedHWVersionsAsync()
-    {
-        return await _context.Devices
-            .AsNoTracking()
-            .Where(d => d.Status == "Borrowed")
-            .Select(d => d.HWVersion)
-            .Distinct()
-            .OrderBy(v => v)
-            .ToListAsync();
     }
 
     /// <summary>
@@ -177,9 +155,4 @@ public class DeviceDataSource : IDeviceDataSource
         }
     }
 
-    public async Task InsertAsync(Device device)
-    {
-        _context.Devices.Add(device);
-        await _context.SaveChangesAsync();
-    }
 }

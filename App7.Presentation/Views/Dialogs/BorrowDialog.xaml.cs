@@ -1,5 +1,6 @@
 using App7.Domain.Entities;
 using App7.Domain.Usecases;
+using App7.Domain.Dtos;
 using App7.Presentation.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 
@@ -48,7 +49,7 @@ public sealed partial class BorrowDialog : ContentDialog
 
         try
         {
-            await _borrowUseCase.ExecuteAsync(ViewModel.ModelId, ViewModel.SelectedQuantity);
+            await _borrowUseCase.ExecuteAsync(new BorrowDeviceRequest(ViewModel.ModelId, ViewModel.SelectedQuantity));
             ViewModel.Confirm();
             Hide();
         }

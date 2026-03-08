@@ -3,6 +3,7 @@ using App7.Domain.Constants;
 using App7.Domain.Entities;
 using App7.Domain.Services;
 using App7.Domain.Usecases;
+using App7.Domain.Dtos;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 
@@ -10,7 +11,6 @@ namespace App7.Presentation.ViewModels;
 
 public partial class MyDevicesViewModel : PagedListViewModelBase
 {
-
     public ObservableCollection<Device> Devices { get; } = new();
 
     // ── Per-column search ─────────────────────────────────────────────
@@ -43,35 +43,31 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
     };
 
     private readonly GetBorrowedDevicesUseCase _getDevices;
-    private readonly IInstanceSyncService       _syncService;
-    private readonly DispatcherQueue            _dispatcher;
 
     public MyDevicesViewModel(
         GetBorrowedDevicesUseCase getDevices,
-        IInstanceSyncService      syncService)
+        IInstanceSyncService      syncService) : base(syncService)
     {
         _getDevices  = getDevices;
-        _syncService = syncService;
-        _dispatcher  = DispatcherQueue.GetForCurrentThread();
-
-        _syncService.DataChanged += OnExternalDataChanged;
     }
 
     // ── PagedListViewModelBase contract ────────────────────────────────
     protected override async Task LoadDataCoreAsync()
     {
-        var (items, total) = await _getDevices.ExecuteAsync(
-            page:               CurrentPage,
-            pageSize:           SelectedPageSize,
-            searchName:         NullIfEmpty(SearchName),
-            searchModelName:    NullIfEmpty(SearchModelName),
-            searchIMEI:         NullIfEmpty(SearchIMEI),
-            searchSerialLab:    NullIfEmpty(SearchSerialLab),
-            searchSerialNumber: NullIfEmpty(SearchSerialNumber),
-            searchCircuitSerial:NullIfEmpty(SearchCircuitSerial),
-            searchHWVersion:    NullIfEmpty(SearchHWVersion),
-            sortColumn:         SortColumn,
-            ascending:          SortAscending);
+        var request = new GetBorrowedDevicesRequest(
+            Page:               CurrentPage,
+            PageSize:           SelectedPageSize,
+            SearchName:         NullIfEmpty(SearchName),
+            SearchModelName:    NullIfEmpty(SearchModelName),
+            SearchIMEI:         NullIfEmpty(SearchIMEI),
+            SearchSerialLab:    NullIfEmpty(SearchSerialLab),
+            SearchSerialNumber: NullIfEmpty(SearchSerialNumber),
+            SearchCircuitSerial:NullIfEmpty(SearchCircuitSerial),
+            SearchHWVersion:    NullIfEmpty(SearchHWVersion),
+            SortColumn:         SortColumn,
+            Ascending:          SortAscending);
+
+        var (items, total) = await _getDevices.ExecuteAsync(request);
 
         Devices.Clear();
         foreach (var d in items) Devices.Add(d);
@@ -93,10 +89,4 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
 
     private static string? NullIfEmpty(string s)
         => string.IsNullOrWhiteSpace(s) ? null : s;
-
-    // ── External sync ─────────────────────────────────────────────────
-    private void OnExternalDataChanged()
-    {
-        _dispatcher.TryEnqueue(async () => await ReloadAsync());
-    }
 }

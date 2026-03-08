@@ -3,6 +3,7 @@ using App7.Domain.Constants;
 using App7.Domain.Entities;
 using App7.Domain.Services;
 using App7.Domain.Usecases;
+using App7.Domain.Dtos;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 
@@ -10,7 +11,6 @@ namespace App7.Presentation.ViewModels;
 
 public partial class ModelListViewModel : PagedListViewModelBase
 {
-
     public ObservableCollection<Model> Models { get; } = new();
 
     // ── Filters ───────────────────────────────────────────────────────
@@ -36,34 +36,30 @@ public partial class ModelListViewModel : PagedListViewModelBase
 
     private readonly GetModelsPagedUseCase  _getModelsPaged;
     private readonly GetModelFiltersUseCase _getModelFilters;
-    private readonly IInstanceSyncService   _syncService;
-    private readonly DispatcherQueue        _dispatcher;
 
     public ModelListViewModel(
         GetModelsPagedUseCase  getModelsPaged,
         GetModelFiltersUseCase getModelFilters,
-        IInstanceSyncService   syncService)
+        IInstanceSyncService   syncService) : base(syncService)
     {
         _getModelsPaged  = getModelsPaged;
         _getModelFilters = getModelFilters;
-        _syncService     = syncService;
-        _dispatcher      = DispatcherQueue.GetForCurrentThread();
-
-        _syncService.DataChanged += OnExternalDataChanged;
     }
 
     // ── PagedListViewModelBase contract ────────────────────────────────
     protected override async Task LoadDataCoreAsync()
     {
-        var (items, total) = await _getModelsPaged.ExecuteAsync(
-            page:              CurrentPage,
-            pageSize:          SelectedPageSize,
-            searchName:        NullIfEmpty(SearchName),
-            searchManufacturer: SelectedManufacturer,   // exact match from hardcoded list
-            filterCategory:    SelectedCategory,
-            filterSubCategory: SelectedSubCategory,
-            sortColumn:        SortColumn,
-            ascending:         SortAscending);
+        var request = new GetModelsPagedRequest(
+            Page:              CurrentPage,
+            PageSize:          SelectedPageSize,
+            SearchName:        NullIfEmpty(SearchName),
+            SearchManufacturer: SelectedManufacturer,
+            FilterCategory:    SelectedCategory,
+            FilterSubCategory: SelectedSubCategory,
+            SortColumn:        SortColumn,
+            Ascending:         SortAscending);
+
+        var (items, total) = await _getModelsPaged.ExecuteAsync(request);
 
         Models.Clear();
         foreach (var m in items) Models.Add(m);
@@ -72,17 +68,16 @@ public partial class ModelListViewModel : PagedListViewModelBase
 
     protected override async Task LoadFilterOptionsAsync()
     {
-        var mfrs = await _getModelFilters.GetManufacturersAsync();
+        var filters = await _getModelFilters.ExecuteAsync();
+
         Manufacturers.Clear();
-        foreach (var m in mfrs) Manufacturers.Add(m);
+        foreach (var m in filters.Manufacturers) Manufacturers.Add(m);
 
-        var cats = await _getModelFilters.GetCategoriesAsync();
         Categories.Clear();
-        foreach (var c in cats) Categories.Add(c);
+        foreach (var c in filters.Categories) Categories.Add(c);
 
-        var subs = await _getModelFilters.GetSubCategoriesAsync();
         SubCategories.Clear();
-        foreach (var s in subs) SubCategories.Add(s);
+        foreach (var s in filters.SubCategories) SubCategories.Add(s);
     }
 
     protected override void ClearFilterValues()
@@ -95,11 +90,4 @@ public partial class ModelListViewModel : PagedListViewModelBase
 
     private static string? NullIfEmpty(string s)
         => string.IsNullOrWhiteSpace(s) ? null : s;
-
-    // ── External sync ─────────────────────────────────────────────────
-    private void OnExternalDataChanged()
-    {
-        // Raised on ThreadPool — must dispatch to UI thread
-        _dispatcher.TryEnqueue(async () => await ReloadAsync());
-    }
 }

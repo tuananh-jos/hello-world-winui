@@ -200,8 +200,7 @@
                                                    ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
                                                    IsReadOnly="True" MinHeight="200"
                                                    BorderThickness="0"
-                                                   SelectionChanged="OnGridSelectionChanged"
-                                                   LayoutUpdated="OnGridLayoutUpdated">
+                                                   SelectionChanged="OnGridSelectionChanged">
                                         <controls:DataGrid.Columns>
                                             <controls:DataGridTextColumn Binding="{Binding Name}"         Tag="{x:Bind constants:ColumnTags.NAME}"         Width="*" MinWidth="120" />
                                             <controls:DataGridTextColumn Binding="{Binding Manufacturer}" Tag="{x:Bind constants:ColumnTags.MANUFACTURER}" Width="*" MinWidth="120" />

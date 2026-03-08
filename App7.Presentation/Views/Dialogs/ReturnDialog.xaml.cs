@@ -1,5 +1,6 @@
 using App7.Domain.Entities;
 using App7.Domain.Usecases;
+using App7.Domain.Dtos;
 using Microsoft.UI.Xaml.Controls;
 
 namespace App7.Presentation.Views.Dialogs;
@@ -50,7 +51,7 @@ public sealed partial class ReturnDialog : ContentDialog
 
         try
         {
-            await _returnUseCase.ExecuteAsync(_device.Id, _device.ModelId);
+            await _returnUseCase.ExecuteAsync(new ReturnDeviceRequest(_device.Id, _device.ModelId));
             Confirmed = true;
             Hide();
         }

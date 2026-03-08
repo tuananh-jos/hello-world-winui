@@ -1,47 +1,36 @@
 using App7.Data.IDataSource;
 using App7.Domain.Entities;
 using App7.Domain.IRepository;
+using App7.Domain.Dtos;
 
 namespace App7.Data.Repository;
 
-public class ModelRepository : IModelRepository
+public class ModelRepository : RepositoryBase<Model>, IModelRepository
 {
-    private readonly IModelDataSource _dataSource;
+    private IModelDataSource ModelDataSource => (IModelDataSource)_dataSource;
 
-    public ModelRepository(IModelDataSource dataSource)
+    public ModelRepository(IModelDataSource dataSource) : base(dataSource)
     {
-        _dataSource = dataSource;
     }
 
-    public async Task<(IEnumerable<Model> Items, int TotalCount)> GetPagedAsync(
-        int page, int pageSize,
-        string? searchName, string? searchManufacturer,
-        string? filterCategory, string? filterSubCategory,
-        string? sortColumn, bool ascending)
+    public async Task<(IEnumerable<Model> Items, int TotalCount)> GetPagedAsync(GetModelsPagedRequest request)
     {
-        var result = await _dataSource.GetPagedAsync(
-            page, pageSize,
-            searchName, searchManufacturer,
-            filterCategory, filterSubCategory,
-            sortColumn, ascending);
+        var result = await ModelDataSource.GetPagedAsync(request);
         return (result.Items, result.TotalCount);
     }
 
     public async Task<IEnumerable<string>> GetManufacturersAsync()
-        => await _dataSource.GetManufacturersAsync();
+        => await ModelDataSource.GetManufacturersAsync();
 
     public async Task<IEnumerable<string>> GetCategoriesAsync()
-        => await _dataSource.GetCategoriesAsync();
+        => await ModelDataSource.GetCategoriesAsync();
 
     public async Task<IEnumerable<string>> GetSubCategoriesAsync()
-        => await _dataSource.GetSubCategoriesAsync();
+        => await ModelDataSource.GetSubCategoriesAsync();
 
     public async Task IncrementAvailableAsync(Guid modelId)
-        => await _dataSource.IncrementAvailableAsync(modelId);
+        => await ModelDataSource.IncrementAvailableAsync(modelId);
 
     public async Task DecrementAvailableAsync(Guid modelId, int quantity)
-        => await _dataSource.DecrementAvailableAsync(modelId, quantity);
-
-    public async Task AddAsync(Model model)
-        => await _dataSource.InsertAsync(model);
+        => await ModelDataSource.DecrementAvailableAsync(modelId, quantity);
 }

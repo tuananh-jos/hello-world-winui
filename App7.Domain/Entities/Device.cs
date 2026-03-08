@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace App7.Domain.Entities;
 
-public class Device
+public class Device : IEntity
 {
     public Guid Id { get; set; }
     public Guid ModelId { get; set; }
@@ -15,9 +15,7 @@ public class Device
     public string HWVersion { get; set; } = string.Empty;
     public string Status { get; set; } = "Available";
 
-    /// <summary>
-    /// Populated by join at query time — never stored in DB.
-    /// </summary>
     [NotMapped]
     public string ModelName { get; set; } = string.Empty;
 }
+ 
