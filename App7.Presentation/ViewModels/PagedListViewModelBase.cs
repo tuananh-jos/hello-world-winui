@@ -201,9 +201,22 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     public async Task SortByAsync(string column)
     {
         if (SortColumn == column)
-            SortAscending = !SortAscending;
+        {
+            if (SortAscending)
+            {
+                // Ascending → Descending
+                SortAscending = false;
+            }
+            else
+            {
+                // Descending → Neutral (clear sort)
+                SortColumn = null;
+                SortAscending = true;
+            }
+        }
         else
         {
+            // Neutral or different column → Ascending
             SortColumn = column;
             SortAscending = true;
         }

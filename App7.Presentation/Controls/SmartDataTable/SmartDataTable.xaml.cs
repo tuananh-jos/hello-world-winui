@@ -119,7 +119,7 @@ public sealed partial class SmartDataTable : UserControl
                 };
                 sortIcon = new TextBlock
                 {
-                    Text = "\uE70D",
+                    Text = "\uE8CB", // Sort neutral icon
                     FontFamily = (FontFamily)Application.Current.Resources["SymbolThemeFontFamily"],
                     FontSize = 10,
                     Opacity = 0.4,
@@ -301,7 +301,7 @@ public sealed partial class SmartDataTable : UserControl
             }
             else
             {
-                info.SortIcon.Text = "\uE70D";
+                info.SortIcon.Text = "\uE8CB"; // Neutral sort icon
                 info.SortIcon.Opacity = 0.4;
             }
         }
