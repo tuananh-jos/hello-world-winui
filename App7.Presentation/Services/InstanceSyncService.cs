@@ -6,11 +6,10 @@ namespace App7.Presentation.Services;
 /// Implements IInstanceSyncService using a shared signal file + FileSystemWatcher + polling fallback.
 ///
 /// Mechanism:
-///   - SignalChange() writes the current UTC timestamp to "sync_signal.txt".
-///   - A FileSystemWatcher watches the same folder for changes to that file.
-///   - A polling timer checks the file every 5 seconds as a fallback.
-///   - On change, raises DataChanged after a 500ms debounce.
-///   - Self-triggered changes (from our own SignalChange) are ignored.
+///   - SignalChange() writes "[instanceId]|[timestamp]" to "sync_signal.txt".
+///   - FileSystemWatcher + polling timer detect changes.
+///   - On change, reads the file — if instanceId differs from ours, raises DataChanged.
+///   - Self-triggered changes are ignored by comparing instance IDs.
 /// </summary>
 public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
 {
@@ -19,13 +18,14 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
     private const int PollingIntervalMs = 5000;
 
     private readonly string _signalFilePath;
+    private readonly string _instanceId = Guid.NewGuid().ToString("N")[..8]; // Unique per app instance
+
     private FileSystemWatcher? _watcher;
     private Timer? _pollingTimer;
     private CancellationTokenSource? _debounceCts;
     private readonly object _lock = new();
 
     private DateTime _lastKnownWriteTime = DateTime.MinValue;
-    private DateTime _selfSignalTime = DateTime.MinValue;
 
     public event Action? DataChanged;
 
@@ -40,15 +40,10 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
     {
         try
         {
-            // Mark as self-signal so we skip our own FileSystemWatcher event
-            lock (_lock)
-            {
-                _selfSignalTime = DateTime.UtcNow;
-            }
+            // Write our instance ID + timestamp so other instances can detect it's not from them
+            File.WriteAllText(_signalFilePath, $"{_instanceId}|{DateTimeOffset.UtcNow:o}");
 
-            File.WriteAllText(_signalFilePath, DateTimeOffset.UtcNow.ToString("o"));
-
-            // Update last known write time so polling won't trigger either
+            // Update last known write time so polling won't re-trigger
             lock (_lock)
             {
                 _lastKnownWriteTime = File.GetLastWriteTimeUtc(_signalFilePath);
@@ -56,7 +51,7 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
         }
         catch (IOException)
         {
-            // Best-effort — if write fails, the other instance's write will still trigger watchers.
+            // Best-effort
         }
     }
 
@@ -64,7 +59,6 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
     {
         if (_watcher != null) return;
 
-        // Initialize last known write time
         if (File.Exists(_signalFilePath))
         {
             _lastKnownWriteTime = File.GetLastWriteTimeUtc(_signalFilePath);
@@ -109,19 +103,34 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
 
     // ── Private ───────────────────────────────────────────────────────
 
+    /// <summary>Returns true if the signal file was written by a DIFFERENT instance.</summary>
+    private bool IsExternalSignal()
+    {
+        try
+        {
+            if (!File.Exists(_signalFilePath)) return false;
+            var content = File.ReadAllText(_signalFilePath).Trim();
+            // Format: "instanceId|timestamp"
+            var parts = content.Split('|');
+            if (parts.Length < 2) return true; // Unknown format → treat as external
+            return parts[0] != _instanceId;
+        }
+        catch (IOException)
+        {
+            return false; // Can't read → skip this cycle
+        }
+    }
+
     private void OnSignalFileChanged(object sender, FileSystemEventArgs e)
     {
-        // Skip if this was our own write (within 2 seconds)
+        // Update last known write time so polling doesn't re-trigger for the same change
         lock (_lock)
         {
-            if ((DateTime.UtcNow - _selfSignalTime).TotalSeconds < 2)
-            {
-                _lastKnownWriteTime = File.Exists(_signalFilePath)
-                    ? File.GetLastWriteTimeUtc(_signalFilePath)
-                    : DateTime.MinValue;
-                return;
-            }
+            try { _lastKnownWriteTime = File.GetLastWriteTimeUtc(_signalFilePath); }
+            catch (IOException) { }
         }
+
+        if (!IsExternalSignal()) return; // Skip our own writes
 
         ScheduleDataChanged();
     }
@@ -138,16 +147,15 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
             {
                 if (currentWriteTime <= _lastKnownWriteTime) return;
                 _lastKnownWriteTime = currentWriteTime;
-
-                // Skip if this was our own write
-                if ((DateTime.UtcNow - _selfSignalTime).TotalSeconds < 2) return;
             }
+
+            if (!IsExternalSignal()) return; // Skip our own writes
 
             ScheduleDataChanged();
         }
         catch (IOException)
         {
-            // File might be locked by another instance, try next polling cycle
+            // File might be locked, try next cycle
         }
     }
 
