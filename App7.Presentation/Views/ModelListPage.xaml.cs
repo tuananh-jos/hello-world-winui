@@ -2,17 +2,8 @@ using App7.Domain.Entities;
 using App7.Domain.Usecases;
 using App7.Presentation.ViewModels;
 using App7.Presentation.Views.Dialogs;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using System.Linq;
-using Windows.Foundation;
-using Windows.UI;
-using App7.Domain.Constants;
-using App7.Presentation.Helpers;
 
 namespace App7.Presentation.Views;
 
@@ -30,12 +21,6 @@ public sealed partial class ModelListPage : Page
         foreach (var col in ViewModel.ColumnVisibilities)
             col.PropertyChanged += (_, _) => ModelsTable.SyncColumnVisibility(col.ColumnTag, col.IsVisible);
     }
-
-    // ── Filter handlers ───────────────────────────────────────────────
-
-
-
-
 
     // ── Borrow ────────────────────────────────────────────────────────
     private async void OnBorrowClicked(object sender, RoutedEventArgs e)

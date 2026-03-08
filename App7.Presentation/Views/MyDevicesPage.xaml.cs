@@ -2,16 +2,8 @@ using App7.Domain.Entities;
 using App7.Domain.Usecases;
 using App7.Presentation.ViewModels;
 using App7.Presentation.Views.Dialogs;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using System.Linq;
-using Windows.Foundation;
-using Windows.UI;
-using App7.Domain.Constants;
-using App7.Presentation.Helpers;
 
 namespace App7.Presentation.Views;
 
@@ -29,12 +21,6 @@ public sealed partial class MyDevicesPage : Page
         foreach (var col in ViewModel.ColumnVisibilities)
             col.PropertyChanged += (_, _) => DevicesTable.SyncColumnVisibility(col.ColumnTag, col.IsVisible);
     }
-
-
-
-    // ── Shared search handlers ──────────────────────────────────────
-
-
 
     // ── Return device ─────────────────────────────────────────────────
     private async void OnReturnClicked(object sender, RoutedEventArgs e)
