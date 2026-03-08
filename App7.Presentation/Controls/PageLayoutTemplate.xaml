@@ -1,0 +1,67 @@
+<UserControl
+    x:Class="App7.Presentation.Controls.PageLayoutTemplate"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:localc="using:App7.Presentation.Controls"
+    xmlns:vm="using:App7.Presentation.ViewModels">
+
+    <Grid Background="White">
+        <ScrollViewer x:Name="MainScroller" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="ContentGrid" RowDefinitions="*,Auto">
+
+                <Border Grid.Row="0" VerticalAlignment="Top" Margin="20,20,20,20"
+                        CornerRadius="8" Background="White" BorderBrush="#E0E0E0"
+                        BorderThickness="1" Translation="0,0,32">
+                    <Border.Shadow><ThemeShadow /></Border.Shadow>
+
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+
+                        <!-- Title -->
+                        <TextBlock Grid.Row="0" Text="{x:Bind Title, Mode=OneWay}" FontSize="18" FontWeight="Bold" Padding="16,16,16,8" />
+
+                        <!-- Controls bar -->
+                        <Grid Grid.Row="1" Padding="16,0,16,8">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                                <localc:ColumnVisibilityPicker ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
+                                <localc:PageSizeControl ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Table area (Content) -->
+                        <Border Grid.Row="2" Margin="16,0,16,0" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="2">
+                            <ScrollViewer x:Name="TableScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                                <ContentPresenter Content="{x:Bind TableContent, Mode=OneWay}" MinWidth="{x:Bind TableMinWidth, Mode=OneWay}" Width="{Binding ElementName=TableScroller, Path=ViewportWidth}" />
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Table footer -->
+                        <Grid Grid.Row="3" Background="#FAFAFA" MinHeight="56" Padding="16,0"
+                              ColumnDefinitions="Auto,*,Auto"
+                              Visibility="{x:Bind ViewModel.ShowingTextVisibility, Mode=OneWay}">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="280"
+                                       Text="{x:Bind ViewModel.ShowingText, Mode=OneWay}" FontSize="13" Foreground="#555555" />
+                            <localc:PaginationControl Grid.Column="2" ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
+                        </Grid>
+
+                    </Grid>
+                </Border>
+
+                <!-- Footer -->
+                <Border Grid.Row="1" Background="#F5F5F5" Padding="0,20,0,20">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="DPI Team &#x00A9; 2026 &#xB7; Report a problem" HorizontalAlignment="Center" FontSize="12" Foreground="#777777" />
+                        <Image Source="/Assets/logo.png" Height="22" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Loading overlay -->
+        <localc:LoadingOverlayControl ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
+        
+        <!-- Overlays like Popups, Dialogs, etc. -->
+        <ContentPresenter Content="{x:Bind Overlays, Mode=OneWay}" />
+
+    </Grid>
+</UserControl>

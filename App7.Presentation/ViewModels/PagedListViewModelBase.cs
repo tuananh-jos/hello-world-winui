@@ -265,3 +265,12 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     /// <summary>Called by MyDevicesPage after return — public so code-behind can invoke.</summary>
     public async Task ReloadAsync() => await OverlayLoadAsync();
 }
+
+public abstract partial class PagedListViewModelBase<TEntity> : PagedListViewModelBase
+{
+    public ObservableCollection<TEntity> Items { get; } = new();
+
+    protected PagedListViewModelBase(IInstanceSyncService syncService) : base(syncService)
+    {
+    }
+}

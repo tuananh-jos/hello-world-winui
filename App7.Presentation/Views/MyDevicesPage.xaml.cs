@@ -21,10 +21,6 @@ public sealed partial class MyDevicesPage : Page
     private readonly ReturnDeviceUseCase _returnUseCase;
     private readonly DataGridSyncHelper _syncHelper;
 
-    private static readonly SolidColorBrush ActivePageBrush
-        = (SolidColorBrush)Application.Current.Resources["AppOkBrush"];
-    private static readonly SolidColorBrush InactivePageBrush = new(Colors.Transparent);
-    private static readonly SolidColorBrush InactiveTextBrush = new(Color.FromArgb(255, 0x33, 0x33, 0x33));
 
     public MyDevicesPage()
     {
@@ -57,11 +53,7 @@ public sealed partial class MyDevicesPage : Page
         foreach (var col in ViewModel.ColumnVisibilities)
             col.PropertyChanged += (_, _) => _syncHelper.SyncColumnVisibility(col);
 
-        Loaded += (_, _) =>
-        {
-            ContentGrid.MinHeight = MainScroller.ActualHeight;
-            MainScroller.SizeChanged += (_, e) => ContentGrid.MinHeight = e.NewSize.Height;
-        };
+
 
         // Hover effect on DataGrid rows
         DevicesGrid.LoadingRow += (_, e) =>
@@ -111,15 +103,5 @@ public sealed partial class MyDevicesPage : Page
         timer.Start();
     }
 
-    // ── Columns popup ─────────────────────────────────────────────────
-    private void OnColumnsButtonClicked(object sender, RoutedEventArgs e)
-    {
-        var transform = ColumnsBtn.TransformToVisual(PageRoot);
-        var pt = transform.TransformPoint(new Point(0, ColumnsBtn.ActualHeight + 4));
-        ColumnsPanel.Margin = new Thickness(pt.X, pt.Y, 0, 0);
-        ViewModel.IsColumnsPopupOpen = true;
-    }
 
-    private void OnColumnsOverlayPressed(object sender, PointerRoutedEventArgs e)
-        => ViewModel.CloseColumnsPopupCommand.Execute(null);
 }

@@ -9,9 +9,8 @@ using Microsoft.UI.Dispatching;
 
 namespace App7.Presentation.ViewModels;
 
-public partial class MyDevicesViewModel : PagedListViewModelBase
+public partial class MyDevicesViewModel : PagedListViewModelBase<Device>
 {
-    public ObservableCollection<Device> Devices { get; } = new();
 
     // ── Per-column search ─────────────────────────────────────────────
     [ObservableProperty] private string _searchName         = string.Empty;
@@ -69,8 +68,8 @@ public partial class MyDevicesViewModel : PagedListViewModelBase
 
         var (items, total) = await _getDevices.ExecuteAsync(request);
 
-        Devices.Clear();
-        foreach (var d in items) Devices.Add(d);
+        Items.Clear();
+        foreach (var d in items) Items.Add(d);
         TotalCount = total;
     }
 

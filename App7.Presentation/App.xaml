@@ -11,6 +11,8 @@
                 <ResourceDictionary Source="/Styles/Thickness.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="FlyoutLightDismissOverlayBackground" Color="#323232" Opacity="0.2"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

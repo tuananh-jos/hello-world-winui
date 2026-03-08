@@ -9,12 +9,12 @@ using Microsoft.UI.Dispatching;
 
 namespace App7.Presentation.ViewModels;
 
-public partial class ModelListViewModel : PagedListViewModelBase
+public partial class ModelListViewModel : PagedListViewModelBase<Model>
 {
-    public ObservableCollection<Model> Models { get; } = new();
 
     // ── Filters ───────────────────────────────────────────────────────
     [ObservableProperty] private string  _searchName          = string.Empty;
+
     partial void OnSearchNameChanged(string value) => DebounceSearch();
 
     [ObservableProperty] private string? _selectedManufacturer;
@@ -61,8 +61,8 @@ public partial class ModelListViewModel : PagedListViewModelBase
 
         var (items, total) = await _getModelsPaged.ExecuteAsync(request);
 
-        Models.Clear();
-        foreach (var m in items) Models.Add(m);
+        Items.Clear();
+        foreach (var m in items) Items.Add(m);
         TotalCount = total;
     }
 

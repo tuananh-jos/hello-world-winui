@@ -22,12 +22,6 @@ public sealed partial class ModelListPage : Page
     private readonly BorrowDeviceUseCase _borrowUseCase;
     private readonly DataGridSyncHelper _syncHelper;
 
-    private static readonly SolidColorBrush ActivePageBrush
-        = (SolidColorBrush)Application.Current.Resources["AppOkBrush"];
-    private static readonly SolidColorBrush InactivePageBrush = new(Colors.Transparent);
-    private static readonly SolidColorBrush InactiveTextBrush = new(Color.FromArgb(255, 0x33, 0x33, 0x33));
-
-
 
     private string? _selectedManufacturer;
     private string? _selectedCategory;
@@ -64,8 +58,6 @@ public sealed partial class ModelListPage : Page
 
         Loaded += (_, _) =>
         {
-            ContentGrid.MinHeight = MainScroller.ActualHeight;
-            MainScroller.SizeChanged += (_, e) => ContentGrid.MinHeight = e.NewSize.Height;
             PopulateManufacturerList(string.Empty);
             PopulateCategoryList(string.Empty);
             PopulateSubCategoryList(string.Empty);
@@ -328,17 +320,5 @@ public sealed partial class ModelListPage : Page
         timer.Tick += (_, _) => { BorrowInfoBar.IsOpen = false; timer.Stop(); };
         timer.Start();
     }
-
-    // ── Columns popup ─────────────────────────────────────────────────
-    private void OnColumnsButtonClicked(object sender, RoutedEventArgs e)
-    {
-        var transform = ColumnsBtn.TransformToVisual(PageRoot);
-        var pt = transform.TransformPoint(new Point(0, ColumnsBtn.ActualHeight + 4));
-        ColumnsPanel.Margin = new Thickness(pt.X, pt.Y, 0, 0);
-        ViewModel.IsColumnsPopupOpen = true;
-    }
-
-    private void OnColumnsOverlayPressed(object sender, PointerRoutedEventArgs e)
-        => ViewModel.CloseColumnsPopupCommand.Execute(null);
 
 }

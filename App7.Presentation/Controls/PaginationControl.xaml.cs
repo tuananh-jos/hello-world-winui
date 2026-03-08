@@ -10,10 +10,6 @@ namespace App7.Presentation.Controls;
 
 public sealed partial class PaginationControl : UserControl
 {
-    private static readonly SolidColorBrush ActivePageBrush
-        = (SolidColorBrush)Application.Current.Resources["AppOkBrush"];
-    private static readonly SolidColorBrush InactivePageBrush = new(Colors.Transparent);
-    private static readonly SolidColorBrush InactiveTextBrush = new(Color.FromArgb(255, 0x33, 0x33, 0x33));
 
     public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(
         nameof(ViewModel),
@@ -67,15 +63,13 @@ public sealed partial class PaginationControl : UserControl
             var btn = new Button
             {
                 Content = pageNum.ToString(),
-                MinWidth = 32, Height = 32,
-                CornerRadius = new CornerRadius(16),
-                Padding = new Thickness(8, 0, 8, 0),
-                Margin = new Thickness(2, 0, 2, 0),
-                Background = isActive ? ActivePageBrush : InactivePageBrush,
-                Foreground = isActive ? new SolidColorBrush(Colors.White) : InactiveTextBrush,
-                BorderThickness = new Thickness(isActive ? 0 : 1),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(255, 0xDD, 0xDD, 0xDD)),
+                Style = isActive ? (Style)Resources["ActiveNumberButtonStyle"] : (Style)Resources["InactiveNumberButtonStyle"]
             };
+            
+            // Fallback gracefully if style not found
+            if (btn.Style == null) 
+                btn.Style = (Style)Application.Current.Resources["AppNavButtonStyle"];
+
             var captured = pageNum;
             btn.Click += async (_, _) => await ViewModel.GoToPageCommand.ExecuteAsync(captured);
             PageNumbersPanel.Children.Add(btn);
