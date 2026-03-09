@@ -8,7 +8,7 @@
 | **Framework** | NUnit 3.14 |
 | **Mocking** | Moq 4.20 |
 | **Target** | `net8.0` |
-| **Total Tests** | 22 |
+| **Total Tests** | 24 |
 | **Run Command** | `dotnet test App7.Tests` |
 
 ---
@@ -19,7 +19,7 @@
 App7.Tests/
 └── Domain/
     └── UseCases/
-        ├── BorrowDeviceUseCaseTests.cs     (4 tests)
+        ├── BorrowDeviceUseCaseTests.cs     (6 tests)
         ├── ReturnDeviceUseCaseTests.cs      (4 tests)
         ├── GetModelsPagedUseCaseTests.cs    (2 tests)
         ├── GetBorrowedDevicesUseCaseTests.cs(2 tests)
@@ -32,24 +32,26 @@ App7.Tests/
 
 ## Test Categories
 
-### 1. UseCase Logic Tests (15 tests)
+### 1. UseCase Logic Tests (17 tests)
 
 Tests that verify orchestration logic of each UseCase using Moq mocks.
 
 #### BorrowDeviceUseCaseTests
 | Test | Verifies |
 |------|----------|
-| `ExecuteAsync_Success_CallsBorrowAndDecrement` | Correct methods called on success |
+| `ExecuteAsync_Success_CallsBorrowAndDecrement` | BeginTransaction + correct methods called + Commit |
 | `ExecuteAsync_Success_CallsInCorrectOrder` | Begin → Borrow → Decrement → Commit |
-| `ExecuteAsync_BorrowThrows_RollsBackAndRethrows` | Rollback on BorrowAsync failure |
+| `ExecuteAsync_BorrowThrows_RollsBackAndRethrows` | Rollback on BorrowAsync failure, DecrementAvailable NOT called |
 | `ExecuteAsync_DecrementThrows_RollsBackAndRethrows` | Rollback on DecrementAvailable failure |
+| `ExecuteAsync_QuantityZero_ThrowsArgumentException` | Rejects quantity=0, no transaction started |
+| `ExecuteAsync_QuantityNegative_ThrowsArgumentException` | Rejects quantity<0, no transaction started |
 
 #### ReturnDeviceUseCaseTests
 | Test | Verifies |
 |------|----------|
-| `ExecuteAsync_Success_CallsReturnAndIncrement` | Correct methods called on success |
+| `ExecuteAsync_Success_CallsReturnAndIncrement` | BeginTransaction + correct methods called + Commit |
 | `ExecuteAsync_Success_CallsInCorrectOrder` | Begin → Return → Increment → Commit |
-| `ExecuteAsync_ReturnThrows_RollsBack` | Rollback on ReturnAsync failure |
+| `ExecuteAsync_ReturnThrows_RollsBack` | Rollback on ReturnAsync failure, IncrementAvailable NOT called |
 | `ExecuteAsync_IncrementThrows_RollsBack` | Rollback on IncrementAvailable failure |
 
 #### GetModelsPagedUseCaseTests
@@ -102,6 +104,7 @@ Simulates concurrent access from multiple application instances.
 | NUnit3TestAdapter | 4.5.0 | VS/dotnet test integration |
 | Microsoft.NET.Test.Sdk | 17.9.0 | MSBuild test infrastructure |
 | Moq | 4.20.70 | Mocking framework |
+| Microsoft.EntityFrameworkCore.InMemory | 8.0.6 | ⚠️ Referenced but unused — can be removed |
 
 ---
 
@@ -122,7 +125,7 @@ dotnet test App7.Tests --filter "FullyQualifiedName~BorrowDeviceUseCaseTests"
 
 ## Code Review Findings (2026-03-09)
 
-Status: **All 22 tests passing**. No critical issues. Below are known limitations to address in a future iteration.
+Status: **All 24 tests passing**.
 
 ### Finding 1: Performance tests only measure UseCase logic overhead
 - **File**: `PerformanceTests.cs`
@@ -136,9 +139,19 @@ Status: **All 22 tests passing**. No critical issues. Below are known limitation
 - **Detail**: `Task.Run` + `lock` on shared state → threads serialize through the lock → always deterministic. Tests verify correct **logic** but never produce a real race condition.
 - **Action**: Acceptable for unit tests. For true concurrency stress testing, use integration tests with real SQLite + multiple threads.
 
-### Finding 3: BorrowDeviceUseCaseTests B-01 doesn't verify BeginTransactionAsync
-- **File**: `BorrowDeviceUseCaseTests.cs`, test `ExecuteAsync_Success_CallsBorrowAndDecrement`
-- **Severity**: Low
-- **Detail**: Verifies `BorrowAsync`, `DecrementAvailableAsync`, `CommitAsync` — but missing `BeginTransactionAsync` verification. Already covered by B-02 (order test), but B-01 should have it for completeness.
-- **Action**: Add `_unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Once);` to B-01.
+### ~~Finding 3: BorrowDeviceUseCaseTests B-01 doesn't verify BeginTransactionAsync~~ ✅ FIXED
+- Added `BeginTransactionAsync` verification to both B-01 and R-01 success tests.
 
+### ~~Finding 4: Error tests missing negative verification~~ ✅ FIXED
+- **Detail**: Error tests (BorrowThrows, ReturnThrows) only verified Rollback + no Commit, but did NOT verify that operations after the failure point were NOT called.
+- **Fix**: Added `Times.Never` verification — `DecrementAvailableAsync` not called when `BorrowAsync` throws, `IncrementAvailableAsync` not called when `ReturnAsync` throws.
+
+### ~~Finding 5: Missing input validation edge cases~~ ✅ FIXED
+- **Detail**: No tests for `BorrowDeviceRequest` with `quantity <= 0`.
+- **Fix**: Added guard clause in `BorrowDeviceUseCase` + 2 new tests (quantity=0, quantity=-1).
+
+### Finding 6: Unused NuGet package
+- **File**: `App7.Tests.csproj`
+- **Severity**: Low
+- **Detail**: `Microsoft.EntityFrameworkCore.InMemory` is referenced but never used in any test file.
+- **Action**: Remove if not planned for integration tests. Keep if integration tests are intended later.

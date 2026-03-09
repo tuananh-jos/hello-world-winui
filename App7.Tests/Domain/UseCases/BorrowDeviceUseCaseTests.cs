@@ -36,6 +36,7 @@ public class BorrowDeviceUseCaseTests
 
         await _sut.ExecuteAsync(request);
 
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Once);
         _deviceRepoMock.Verify(r => r.BorrowAsync(_modelId, Quantity), Times.Once);
         _modelRepoMock.Verify(r => r.DecrementAvailableAsync(_modelId, Quantity), Times.Once);
         _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
@@ -69,6 +70,7 @@ public class BorrowDeviceUseCaseTests
         Assert.ThrowsAsync<InvalidOperationException>(
             () => _sut.ExecuteAsync(new BorrowDeviceRequest(_modelId, Quantity)));
 
+        _modelRepoMock.Verify(r => r.DecrementAvailableAsync(It.IsAny<Guid>(), It.IsAny<int>()), Times.Never);
         _unitOfWorkMock.Verify(u => u.RollbackAsync(), Times.Once);
         _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Never);
     }
@@ -84,5 +86,23 @@ public class BorrowDeviceUseCaseTests
 
         _unitOfWorkMock.Verify(u => u.RollbackAsync(), Times.Once);
         _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Never);
+    }
+
+    [Test]
+    public void ExecuteAsync_QuantityZero_ThrowsArgumentException()
+    {
+        Assert.ThrowsAsync<ArgumentException>(
+            () => _sut.ExecuteAsync(new BorrowDeviceRequest(_modelId, 0)));
+
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Never);
+    }
+
+    [Test]
+    public void ExecuteAsync_QuantityNegative_ThrowsArgumentException()
+    {
+        Assert.ThrowsAsync<ArgumentException>(
+            () => _sut.ExecuteAsync(new BorrowDeviceRequest(_modelId, -1)));
+
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Never);
     }
 }

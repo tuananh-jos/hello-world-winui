@@ -14,6 +14,9 @@ public class BorrowDeviceUseCase : IUseCase<BorrowDeviceRequest>
 
     public async Task ExecuteAsync(BorrowDeviceRequest request)
     {
+        if (request.Quantity <= 0)
+            throw new ArgumentException("Quantity must be greater than 0.", nameof(request));
+
         await _unitOfWork.BeginTransactionAsync();
         try
         {

@@ -36,6 +36,7 @@ public class ReturnDeviceUseCaseTests
 
         await _sut.ExecuteAsync(request);
 
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Once);
         _deviceRepoMock.Verify(r => r.ReturnAsync(_deviceId), Times.Once);
         _modelRepoMock.Verify(r => r.IncrementAvailableAsync(_modelId), Times.Once);
         _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
@@ -69,6 +70,7 @@ public class ReturnDeviceUseCaseTests
         Assert.ThrowsAsync<InvalidOperationException>(
             () => _sut.ExecuteAsync(new ReturnDeviceRequest(_deviceId, _modelId)));
 
+        _modelRepoMock.Verify(r => r.IncrementAvailableAsync(It.IsAny<Guid>()), Times.Never);
         _unitOfWorkMock.Verify(u => u.RollbackAsync(), Times.Once);
         _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Never);
     }
