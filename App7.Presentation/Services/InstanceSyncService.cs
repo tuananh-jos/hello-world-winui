@@ -28,6 +28,12 @@ public sealed class InstanceSyncService : IInstanceSyncService, IDisposable
     private DateTime _lastKnownWriteTime = DateTime.MinValue;
 
     public event Action? DataChanged;
+    public event Action<object>? LocalDataChanged;
+
+    public void NotifyLocalChange(object senderViewModel)
+    {
+        LocalDataChanged?.Invoke(senderViewModel);
+    }
 
     public InstanceSyncService(string folderPath)
     {

@@ -23,10 +23,17 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         _syncService = syncService;
         syncService.DataChanged += OnExternalDataChanged;
+        syncService.LocalDataChanged += OnLocalDataChanged;
     }
 
     private void OnExternalDataChanged()
     {
+        _dispatcher.TryEnqueue(async () => await ReloadAsync());
+    }
+
+    private void OnLocalDataChanged(object sender)
+    {
+        if (ReferenceEquals(sender, this)) return;
         _dispatcher.TryEnqueue(async () => await ReloadAsync());
     }
     // ── Page size ─────────────────────────────────────────────────────
@@ -275,6 +282,7 @@ public abstract partial class PagedListViewModelBase : ObservableRecipient, INav
     public async Task NotifyDataChanged()
     {
         _syncService.SignalChange();
+        _syncService.NotifyLocalChange(this);
         await ReloadAsync();
     }
 

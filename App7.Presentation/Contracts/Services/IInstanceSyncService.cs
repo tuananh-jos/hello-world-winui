@@ -12,6 +12,15 @@ public interface IInstanceSyncService
     /// </summary>
     event Action DataChanged;
 
+    /// <summary>
+    /// Raised when a local mutation occurs (borrow or return) within this instance.
+    /// The argument is the sender to avoid self-reloading.
+    /// </summary>
+    event Action<object> LocalDataChanged;
+
+    /// <summary>Notifies other local viewmodels that data has changed.</summary>
+    void NotifyLocalChange(object senderViewModel);
+
     /// <summary>Writes a signal so other instances know data has changed.</summary>
     void SignalChange();
 
