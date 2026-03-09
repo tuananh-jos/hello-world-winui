@@ -19,7 +19,7 @@ public class ModelDataSource : DataSourceBase<Model>, IModelDataSource
 
         // Search
         if (!string.IsNullOrWhiteSpace(request.SearchName))
-            query = query.Where(m => m.Name.ToLower().Contains(request.SearchName.ToLower()));
+            query = query.Where(m => EF.Functions.Like(m.Name, $"%{request.SearchName}%"));
 
         if (!string.IsNullOrWhiteSpace(request.SearchManufacturer))
             query = query.Where(m => m.Manufacturer == request.SearchManufacturer);

@@ -15,74 +15,89 @@ public class DeviceDataSource : DataSourceBase<Device>, IDeviceDataSource
 
     public async Task<(List<Device> Items, int TotalCount)> GetBorrowedPagedAsync(GetBorrowedDevicesRequest request)
     {
-        // Join Devices with Models to get ModelName
-        var query = _context.Devices
-            .AsNoTracking()
-            .Where(d => d.Status == "Borrowed")
-            .Join(_context.Models,
-                  d => d.ModelId,
-                  m => m.Id,
-                  // Include Device Name and joined ModelName
-                  (d, m) => new { Device = d, ModelName = m.Name, DeviceName = d.Name });
+        // 1. Base query — single table, no JOIN yet
+        var deviceQuery = _context.Devices.AsNoTracking().Where(d => d.Status == "Borrowed");
 
-        // search
+        // 2. Search filters — EF.Functions.Like is case-insensitive on SQLite by default
+        //    Avoids LOWER() function call that prevents index usage
         if (!string.IsNullOrWhiteSpace(request.SearchName))
-            query = query.Where(x => x.DeviceName.ToLower().Contains(request.SearchName.ToLower()));
-
-        if (!string.IsNullOrWhiteSpace(request.SearchModelName))
-            query = query.Where(x => x.ModelName.ToLower().Contains(request.SearchModelName.ToLower()));
+            deviceQuery = deviceQuery.Where(d => EF.Functions.Like(d.Name, $"%{request.SearchName}%"));
 
         if (!string.IsNullOrWhiteSpace(request.SearchIMEI))
-            query = query.Where(x => x.Device.IMEI.ToLower().Contains(request.SearchIMEI.ToLower()));
+            deviceQuery = deviceQuery.Where(d => EF.Functions.Like(d.IMEI, $"%{request.SearchIMEI}%"));
 
         if (!string.IsNullOrWhiteSpace(request.SearchSerialLab))
-            query = query.Where(x => x.Device.SerialLab.ToLower().Contains(request.SearchSerialLab.ToLower()));
+            deviceQuery = deviceQuery.Where(d => EF.Functions.Like(d.SerialLab, $"%{request.SearchSerialLab}%"));
 
         if (!string.IsNullOrWhiteSpace(request.SearchSerialNumber))
-            query = query.Where(x => x.Device.SerialNumber.ToLower().Contains(request.SearchSerialNumber.ToLower()));
+            deviceQuery = deviceQuery.Where(d => EF.Functions.Like(d.SerialNumber, $"%{request.SearchSerialNumber}%"));
 
         if (!string.IsNullOrWhiteSpace(request.SearchCircuitSerial))
-            query = query.Where(x => x.Device.CircuitSerialNumber.ToLower().Contains(request.SearchCircuitSerial.ToLower()));
+            deviceQuery = deviceQuery.Where(d => EF.Functions.Like(d.CircuitSerialNumber, $"%{request.SearchCircuitSerial}%"));
 
         if (!string.IsNullOrWhiteSpace(request.SearchHWVersion))
-            query = query.Where(x => x.Device.HWVersion.ToLower().Contains(request.SearchHWVersion.ToLower()));
+            deviceQuery = deviceQuery.Where(d => EF.Functions.Like(d.HWVersion, $"%{request.SearchHWVersion}%"));
 
-        // Total count BEFORE pagination
-        var totalCount = await query.CountAsync();
-
-        // Sort
-        query = request.SortColumn switch
+        // SearchModelName — 2-phase: find matching ModelIds first, then filter Devices
+        if (!string.IsNullOrWhiteSpace(request.SearchModelName))
         {
-            ColumnTags.NAME                => request.Ascending ? query.OrderBy(x => x.DeviceName)              : query.OrderByDescending(x => x.DeviceName),
-            ColumnTags.MODEL_NAME           => request.Ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
-            ColumnTags.IMEI                => request.Ascending ? query.OrderBy(x => x.Device.IMEI)             : query.OrderByDescending(x => x.Device.IMEI),
-            ColumnTags.SERIAL_LAB           => request.Ascending ? query.OrderBy(x => x.Device.SerialLab)        : query.OrderByDescending(x => x.Device.SerialLab),
-            ColumnTags.SERIAL_NUMBER        => request.Ascending ? query.OrderBy(x => x.Device.SerialNumber)     : query.OrderByDescending(x => x.Device.SerialNumber),
-            ColumnTags.CIRCUIT_SERIAL_NUMBER => request.Ascending ? query.OrderBy(x => x.Device.CircuitSerialNumber) : query.OrderByDescending(x => x.Device.CircuitSerialNumber),
-            ColumnTags.HW_VERSION           => request.Ascending ? query.OrderBy(x => x.Device.HWVersion)        : query.OrderByDescending(x => x.Device.HWVersion),
-            _                              => request.Ascending ? query.OrderBy(x => x.ModelName)               : query.OrderByDescending(x => x.ModelName),
+            var matchingModelIds = await _context.Models
+                .AsNoTracking()
+                .Where(m => EF.Functions.Like(m.Name, $"%{request.SearchModelName}%"))
+                .Select(m => m.Id)
+                .ToListAsync();
+            deviceQuery = deviceQuery.Where(d => matchingModelIds.Contains(d.ModelId));
+        }
+
+        // 3. Count — on single table (fast with Status index)
+        var totalCount = await deviceQuery.CountAsync();
+
+        // 4. Sort + paginate — get IDs only
+        var sortedQuery = request.SortColumn switch
+        {
+            ColumnTags.NAME                  => request.Ascending ? deviceQuery.OrderBy(d => d.Name)                : deviceQuery.OrderByDescending(d => d.Name),
+            ColumnTags.IMEI                  => request.Ascending ? deviceQuery.OrderBy(d => d.IMEI)                : deviceQuery.OrderByDescending(d => d.IMEI),
+            ColumnTags.SERIAL_LAB            => request.Ascending ? deviceQuery.OrderBy(d => d.SerialLab)           : deviceQuery.OrderByDescending(d => d.SerialLab),
+            ColumnTags.SERIAL_NUMBER         => request.Ascending ? deviceQuery.OrderBy(d => d.SerialNumber)        : deviceQuery.OrderByDescending(d => d.SerialNumber),
+            ColumnTags.CIRCUIT_SERIAL_NUMBER  => request.Ascending ? deviceQuery.OrderBy(d => d.CircuitSerialNumber) : deviceQuery.OrderByDescending(d => d.CircuitSerialNumber),
+            ColumnTags.HW_VERSION            => request.Ascending ? deviceQuery.OrderBy(d => d.HWVersion)           : deviceQuery.OrderByDescending(d => d.HWVersion),
+            _                                => request.Ascending ? deviceQuery.OrderBy(d => d.Name)                : deviceQuery.OrderByDescending(d => d.Name),
         };
 
-        // Pagination + project into Device with ModelName populated
-        var items = await query
+        var pagedIds = await sortedQuery
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(x => new Device
-            {
-                Id                  = x.Device.Id,
-                ModelId             = x.Device.ModelId,
-                Name                = x.Device.Name,
-                ModelName           = x.ModelName,
-                IMEI                = x.Device.IMEI,
-                SerialLab           = x.Device.SerialLab,
-                SerialNumber        = x.Device.SerialNumber,
-                CircuitSerialNumber = x.Device.CircuitSerialNumber,
-                HWVersion           = x.Device.HWVersion,
-                Status              = x.Device.Status,
-            })
+            .Select(d => d.Id)
             .ToListAsync();
 
-        return (items, totalCount);
+        // 5. Late JOIN — only join the paged rows (e.g. 20) with Models for ModelName
+        var items = await _context.Devices
+            .AsNoTracking()
+            .Where(d => pagedIds.Contains(d.Id))
+            .Join(_context.Models,
+                d => d.ModelId,
+                m => m.Id,
+                (d, m) => new Device
+                {
+                    Id                  = d.Id,
+                    ModelId             = d.ModelId,
+                    Name                = d.Name,
+                    ModelName           = m.Name,
+                    IMEI                = d.IMEI,
+                    SerialLab           = d.SerialLab,
+                    SerialNumber        = d.SerialNumber,
+                    CircuitSerialNumber = d.CircuitSerialNumber,
+                    HWVersion           = d.HWVersion,
+                    Status              = d.Status,
+                })
+            .ToListAsync();
+
+        // 6. Re-order in memory to match sort from step 4 (only ~20 items, instant)
+        var sortedItems = pagedIds
+            .Select(id => items.First(x => x.Id == id))
+            .ToList();
+
+        return (sortedItems, totalCount);
     }
 
     public async Task BorrowAsync(Guid modelId, int quantity)

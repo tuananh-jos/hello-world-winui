@@ -56,19 +56,23 @@ public class DatabaseInitializer
 
     private async Task CreateIndexes()
     {
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Models_Name ON Models (Name);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Models_Manufacturer ON Models (Manufacturer);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Models_Category ON Models (Category);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Models_SubCategory ON Models (SubCategory);");
+        // Model indexes
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Models_Name ON Models (Name);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Models_Manufacturer ON Models (Manufacturer);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Models_Category ON Models (Category);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Models_SubCategory ON Models (SubCategory);");
 
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_ModelId ON Devices (ModelId);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_Name ON Devices (Name);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_IMEI ON Devices (IMEI);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_SerialLab ON Devices (SerialLab);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_SerialNumber ON Devices (SerialNumber);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_CircuitSerialNumber ON Devices (CircuitSerialNumber);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_HWVersion ON Devices (HWVersion);");
-        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IX_Devices_Status ON Devices (Status);");
+        // Device composite indexes — (Status, Column) for efficient WHERE Status='Borrowed' + sort/search
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_Status_Name ON Devices (Status, Name);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_Status_ModelId ON Devices (Status, ModelId);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_Status_IMEI ON Devices (Status, IMEI);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_Status_SerialLab ON Devices (Status, SerialLab);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_Status_SerialNumber ON Devices (Status, SerialNumber);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_Status_CircuitSerial ON Devices (Status, CircuitSerialNumber);");
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_Status_HWVersion ON Devices (Status, HWVersion);");
+
+        // Device single-column indexes — for BorrowAsync/ReturnAsync lookups
+        await _context.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS IX_Devices_ModelId ON Devices (ModelId);");
     }
 
     private async Task SeedModelsAsync(string filePath)
@@ -119,6 +123,8 @@ public class DatabaseInitializer
         {
             if (device == null)
                 continue;
+
+            device.Status = "Borrowed";
 
             batch.Add(device);
 
