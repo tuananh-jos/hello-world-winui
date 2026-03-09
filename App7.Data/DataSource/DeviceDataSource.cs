@@ -85,11 +85,6 @@ public class DeviceDataSource : DataSourceBase<Device>, IDeviceDataSource
         return (items, totalCount);
     }
 
-    /// <summary>
-    /// Atomically borrows `quantity` available devices from the given model.
-    /// Uses a transaction to ensure all-or-nothing update (NFR6).
-    /// Throws InvalidOperationException if stock is insufficient.
-    /// </summary>
     public async Task BorrowAsync(Guid modelId, int quantity)
     {
         var candidateIds = await _context.Devices
@@ -112,10 +107,6 @@ public class DeviceDataSource : DataSourceBase<Device>, IDeviceDataSource
                 "Concurrent borrow detected: some devices were borrowed by another operation. Please try again.");
     }
 
-    /// <summary>
-    /// Atomically returns a borrowed device to "Available" status.
-    /// Uses a transaction (NFR6).
-    /// </summary>
     public async Task ReturnAsync(Guid deviceId)
     {
         var updatedCount = await _context.Devices

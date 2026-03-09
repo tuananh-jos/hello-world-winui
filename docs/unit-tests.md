@@ -117,3 +117,28 @@ dotnet test App7.Tests --logger "console;verbosity=detailed"
 # Run specific test class
 dotnet test App7.Tests --filter "FullyQualifiedName~BorrowDeviceUseCaseTests"
 ```
+
+---
+
+## Code Review Findings (2026-03-09)
+
+Status: **All 22 tests passing**. No critical issues. Below are known limitations to address in a future iteration.
+
+### Finding 1: Performance tests only measure UseCase logic overhead
+- **File**: `PerformanceTests.cs`
+- **Severity**: Low
+- **Detail**: Mock repos return instantly (0ms), so tests only measure Moq + UseCase orchestration overhead (~1ms). They do NOT test real DB performance.
+- **Action**: If end-to-end performance testing is needed, create integration tests using real SQLite DB.
+
+### Finding 2: Multi-instance tests are deterministic, not true race conditions
+- **File**: `MultiInstanceTests.cs`
+- **Severity**: Low
+- **Detail**: `Task.Run` + `lock` on shared state → threads serialize through the lock → always deterministic. Tests verify correct **logic** but never produce a real race condition.
+- **Action**: Acceptable for unit tests. For true concurrency stress testing, use integration tests with real SQLite + multiple threads.
+
+### Finding 3: BorrowDeviceUseCaseTests B-01 doesn't verify BeginTransactionAsync
+- **File**: `BorrowDeviceUseCaseTests.cs`, test `ExecuteAsync_Success_CallsBorrowAndDecrement`
+- **Severity**: Low
+- **Detail**: Verifies `BorrowAsync`, `DecrementAvailableAsync`, `CommitAsync` — but missing `BeginTransactionAsync` verification. Already covered by B-02 (order test), but B-01 should have it for completeness.
+- **Action**: Add `_unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Once);` to B-01.
+
