@@ -13,6 +13,12 @@ public class DatabaseInitializer
         _context = context;
     }
 
+    public async Task<bool> NeedsInitializationAsync()
+    {
+        await _context.Database.EnsureCreatedAsync();
+        return !await _context.Models.AnyAsync();
+    }
+
     public async Task InitializeAsync()
     {
         await _context.Database.EnsureCreatedAsync();
@@ -123,8 +129,6 @@ public class DatabaseInitializer
         {
             if (device == null)
                 continue;
-
-            device.Status = "Borrowed";
 
             batch.Add(device);
 

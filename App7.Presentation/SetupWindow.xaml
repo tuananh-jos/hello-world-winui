@@ -1,0 +1,14 @@
+<Window x:Class="App7.Presentation.SetupWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	Title="Device Management Setup">
+	
+    <Grid Background="#FAFAFA">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+            <ProgressRing IsActive="True" Width="60" Height="60" />
+            <TextBlock Text="Đang thiết lập dữ liệu lần đầu..." FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Text="Vui lòng đợi trong giây lát, quá trình này có thể mất vài phút." Foreground="Gray"/>
+        </StackPanel>
+    </Grid>
+	
+</Window>

@@ -81,19 +81,34 @@ public partial class App : Application
         var fullPath = Path.GetFullPath(context.Database.GetDbConnection().DataSource);
         System.Diagnostics.Debug.WriteLine("FULL DB PATH: " + fullPath);
 
-        await context.Database.EnsureCreatedAsync();
+        var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+        var needsSetup = await initializer.NeedsInitializationAsync();
+
+        SetupWindow? setupWindow = null;
+
+        if (needsSetup)
+        {
+            // Show splash window during first-time data import
+            setupWindow = new SetupWindow();
+            setupWindow.Activate();
+        }
 
         // import data if required
         var watch = Stopwatch.StartNew();
-        var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
         await initializer.InitializeAsync();
         watch.Stop();
-        var elapsedMs = watch.ElapsedMilliseconds;
-        Debug.WriteLine($"Import xong trong: {elapsedMs} ms");
+        Debug.WriteLine($"Import xong trong: {watch.ElapsedMilliseconds} ms");
 
         // Start sync watcher after DB is ready
         App.GetService<IInstanceSyncService>().Start();
 
+        // Activate MainWindow FIRST — must have a visible window before closing SetupWindow
+        // otherwise WinUI sees 0 windows and terminates the process
         await App.GetService<IActivationService>().ActivateAsync(args);
+
+        if (setupWindow != null)
+        {
+            setupWindow.Close();
+        }
     }
 }
