@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:App7.Presentation.ViewModels"
-    xmlns:localc="using:App7.Presentation.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     x:Name="Root">
 
     <UserControl.Resources>
@@ -81,8 +81,7 @@
         </Style>
     </UserControl.Resources>
 
-    <localc:WrapPanel x:Name="PaginationPanel" VerticalSpacing="4" HorizontalSpacing="4"
+    <controls:WrapPanel x:Name="PaginationPanel" VerticalSpacing="4" HorizontalSpacing="4"
                        VerticalAlignment="Center" HorizontalAlignment="Right">
-        <!-- Buttons are rebuilt programmatically in code-behind -->
-    </localc:WrapPanel>
+    </controls:WrapPanel>
 </UserControl>

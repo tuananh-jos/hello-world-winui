@@ -62,9 +62,9 @@
 
                         <!-- Table footer -->
                         <Grid Grid.Row="3" Background="#FAFAFA" MinHeight="56" Padding="16,8"
-                              ColumnDefinitions="Auto,*"
+                              ColumnDefinitions="4*,6*"
                               Visibility="{x:Bind ViewModel.ShowingTextVisibility, Mode=OneWay}">
-                            <TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="280"
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" TextWrapping="Wrap" MaxWidth="280"
                                        Text="{x:Bind ViewModel.ShowingText, Mode=OneWay}" FontSize="13" Foreground="#555555" Margin="0,0,16,0" />
                             <localc:PaginationControl Grid.Column="1" ViewModel="{x:Bind ViewModel, Mode=OneWay}" HorizontalAlignment="Right" />
                         </Grid>
